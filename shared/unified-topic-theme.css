@@ -1,0 +1,272 @@
+/* Unified A-Level Physics topic theme
+   Applied to every topic app during the course build so the specialist apps
+   feel like one product without removing their subject-specific interactions. */
+
+:root{
+  --uc-bg:#07111f;
+  --uc-surface:#0d1b2a;
+  --uc-surface-2:#112235;
+  --uc-surface-3:#162b42;
+  --uc-line:#263d55;
+  --uc-line-soft:rgba(151,181,210,.14);
+  --uc-text:#edf4fb;
+  --uc-muted:#9caec0;
+  --uc-accent:#65d6cf;
+  --uc-accent-strong:#44b9b3;
+  --uc-blue:#7daaf0;
+  --uc-good:#82dba4;
+  --uc-warn:#f1c979;
+  --uc-radius:14px;
+  --uc-radius-sm:10px;
+  --uc-shadow:0 10px 28px rgba(0,0,0,.16);
+  --uc-font:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+
+html{scroll-behavior:smooth;background:var(--uc-bg)}
+body{
+  margin:0!important;
+  background:linear-gradient(180deg,#07111f 0,#081522 100%)!important;
+  color:var(--uc-text)!important;
+  font-family:var(--uc-font)!important;
+  min-height:100vh;
+}
+*{scrollbar-color:#35516d transparent;scrollbar-width:thin}
+::selection{background:rgba(101,214,207,.26)}
+
+/* Page frame */
+.wrap{width:min(1280px,calc(100% - 28px))!important;margin-inline:auto!important}
+.main{padding:18px 0 34px!important}
+footer,.footer{color:var(--uc-muted)!important;border-color:var(--uc-line-soft)!important}
+
+/* Compact common header */
+.topbar{
+  background:rgba(7,17,31,.96)!important;
+  border-bottom:1px solid var(--uc-line-soft)!important;
+  box-shadow:none!important;
+  backdrop-filter:blur(16px)!important;
+}
+.topbar-inner{min-height:58px!important;padding:8px 0!important;gap:14px!important}
+.brand{font-size:1rem!important;line-height:1.2!important;font-weight:800!important;letter-spacing:-.01em!important}
+.topbar .small{font-size:.74rem!important}
+.topbar .pills{gap:5px!important}
+.pill,.eyebrow{
+  border-color:rgba(101,214,207,.22)!important;
+  background:rgba(101,214,207,.07)!important;
+  color:#aeece8!important;
+  box-shadow:none!important;
+}
+.eyebrow{background:transparent!important;border:0!important;color:#70d8d1!important}
+
+/* Embedded mode removes duplicated landing-page chrome. */
+html.unified-course-embedded .topbar{position:sticky!important;top:0!important;z-index:110!important}
+html.unified-course-embedded .topbar .pills{display:none!important}
+html.unified-course-embedded .hero{display:none!important}
+html.unified-course-embedded .main{padding-top:10px!important}
+
+/* One consistent navigation language */
+.main-nav{
+  position:sticky!important;
+  top:0!important;
+  z-index:95!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:6px!important;
+  max-width:100%!important;
+  margin:0 0 18px!important;
+  padding:6px!important;
+  overflow-x:auto!important;
+  overscroll-behavior-inline:contain;
+  border:1px solid var(--uc-line-soft)!important;
+  border-radius:14px!important;
+  background:rgba(9,22,35,.96)!important;
+  box-shadow:0 7px 22px rgba(0,0,0,.12)!important;
+  backdrop-filter:blur(14px)!important;
+}
+html.unified-course-embedded .main-nav{top:59px!important}
+.nav-button{
+  flex:0 0 auto!important;
+  min-height:38px!important;
+  padding:8px 12px!important;
+  border:1px solid transparent!important;
+  border-radius:9px!important;
+  background:transparent!important;
+  color:#b9c8d7!important;
+  font:600 .84rem/1.1 var(--uc-font)!important;
+  white-space:nowrap!important;
+  box-shadow:none!important;
+  transform:none!important;
+}
+.nav-button:hover{background:rgba(255,255,255,.045)!important;color:var(--uc-text)!important;border-color:rgba(255,255,255,.05)!important}
+.nav-button.active,.nav-button[aria-current="page"]{
+  background:rgba(101,214,207,.13)!important;
+  border-color:rgba(101,214,207,.26)!important;
+  color:#dffbf8!important;
+}
+
+/* Sections */
+.view{min-width:0!important}
+.section-head{
+  align-items:flex-start!important;
+  gap:18px!important;
+  margin:0 0 14px!important;
+}
+.section-head h2{margin:4px 0 0!important;font-size:clamp(1.35rem,2.1vw,1.9rem)!important;line-height:1.12!important;letter-spacing:-.025em!important}
+.section-head>p{max-width:620px!important;margin:3px 0 0!important;font-size:.86rem!important;line-height:1.5!important;color:var(--uc-muted)!important}
+h1,h2,h3,h4{color:var(--uc-text)!important}
+p,.muted{color:var(--uc-muted)!important}
+
+/* Cards and content surfaces */
+.panel,.card,.lesson-card,.mission-card,.learning-box,.sim-heading,.quiz-main,.quiz-stats,.practical-panel,.textbook-article{
+  background:var(--uc-surface)!important;
+  border:1px solid var(--uc-line-soft)!important;
+  border-radius:var(--uc-radius)!important;
+  box-shadow:var(--uc-shadow)!important;
+}
+.pad{padding:18px!important}
+.course-layout,.textbook-layout,.lab-layout,.formula-layout,.practical-grid,.quiz-layout,.extended-layout{
+  gap:14px!important;
+}
+.course-layout{grid-template-columns:minmax(220px,280px) minmax(0,1fr)!important}
+.course-list{gap:7px!important}
+.course-button,.lesson-path-step,.chapter-button,.textbook-sidebar button{
+  border:1px solid transparent!important;
+  border-radius:10px!important;
+  background:rgba(255,255,255,.025)!important;
+  color:#c5d3e0!important;
+  box-shadow:none!important;
+}
+.course-button:hover,.course-button.active,.lesson-path-step:hover,.lesson-path-step.active,.chapter-button:hover,.chapter-button.active,.textbook-sidebar button:hover,.textbook-sidebar button.active{
+  background:rgba(101,214,207,.09)!important;
+  border-color:rgba(101,214,207,.22)!important;
+  color:var(--uc-text)!important;
+}
+.lesson-panel{padding:20px!important;min-width:0!important}
+.lesson-panel h2,.lesson-panel h3{letter-spacing:-.015em!important}
+.lesson-panel p,.lesson-panel li,.textbook-article p,.textbook-article li{line-height:1.62!important}
+
+/* Buttons */
+.button,.text-button{
+  appearance:none!important;
+  border:1px solid rgba(151,181,210,.2)!important;
+  border-radius:9px!important;
+  background:var(--uc-surface-2)!important;
+  color:var(--uc-text)!important;
+  font:700 .84rem/1.15 var(--uc-font)!important;
+  padding:9px 12px!important;
+  box-shadow:none!important;
+  transform:none!important;
+  transition:border-color .15s ease,background .15s ease!important;
+}
+.button:hover,.text-button:hover{border-color:rgba(101,214,207,.4)!important;background:#14283e!important;transform:none!important}
+.button.primary{background:#1f7776!important;border-color:#2f9693!important;color:#fff!important}
+.button.primary:hover{background:#288986!important}
+.text-button{background:transparent!important;color:#9ec7ed!important;padding:7px 8px!important}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{
+  outline:2px solid rgba(101,214,207,.65)!important;
+  outline-offset:2px!important;
+}
+
+/* Progress */
+.progress-card{box-shadow:none!important}
+.progress-track{height:7px!important;background:#07111f!important;border:1px solid rgba(255,255,255,.05)!important}
+.progress-fill{background:linear-gradient(90deg,#4fbdb7,#6b96df)!important}
+.stat-grid{gap:8px!important}
+.stat-grid>div{background:rgba(255,255,255,.025)!important;border:1px solid rgba(255,255,255,.045)!important;border-radius:10px!important}
+
+/* Inputs and controls */
+input,select,textarea,output{
+  font-family:var(--uc-font)!important;
+}
+input[type="text"],input[type="number"],input[type="search"],select,textarea{
+  border:1px solid rgba(151,181,210,.2)!important;
+  border-radius:9px!important;
+  background:#081523!important;
+  color:var(--uc-text)!important;
+  box-shadow:none!important;
+}
+input[type="range"]{accent-color:var(--uc-accent-strong)}
+.field>span,label>span{color:#b9c9d8!important}
+.control-stack{gap:9px!important}
+
+/* Simulation and practical surfaces */
+.viewer-wrap,.three-shell-v5,.v11-stage,.sim-stage,.lab-stage{
+  border:1px solid var(--uc-line-soft)!important;
+  border-radius:14px!important;
+  background:#07131f!important;
+  box-shadow:none!important;
+  overflow:hidden!important;
+}
+.viewer-controls,.button-row,.hero-actions{gap:8px!important}
+.sim-tabs,.chunk-strip,.lesson-path,.scene-nav-v5,.v11-scene-nav,.lesson-journey{
+  gap:6px!important;
+  padding:5px!important;
+  border-radius:12px!important;
+  background:rgba(9,22,35,.78)!important;
+  border:1px solid var(--uc-line-soft)!important;
+  overflow-x:auto!important;
+}
+.sim-tabs button,.chunk-button,.lesson-stage-button,.scene-nav-v5 button,.v11-scene-nav button{
+  border-radius:8px!important;
+  border:1px solid transparent!important;
+  background:transparent!important;
+  color:#b9c8d7!important;
+  box-shadow:none!important;
+}
+.sim-tabs button.active,.chunk-button.active,.lesson-stage-button.active,.scene-nav-v5 button.active,.v11-scene-nav button.active{
+  background:rgba(101,214,207,.12)!important;
+  border-color:rgba(101,214,207,.24)!important;
+  color:#e7fbfa!important;
+}
+.equation,.worked,.worked-example,.practical-guidance,.feedback{
+  border-radius:10px!important;
+  border-color:rgba(151,181,210,.15)!important;
+  box-shadow:none!important;
+}
+
+/* Textbook and assessment readability */
+.textbook-sidebar{border-radius:12px!important;background:rgba(255,255,255,.018)!important}
+.textbook-article{padding:22px!important}
+.textbook-article h2,.textbook-article h3{scroll-margin-top:125px}
+.choice-list{gap:8px!important}
+.choice-list button,.mini-option{
+  border-radius:9px!important;
+  box-shadow:none!important;
+}
+.data-table,table{border-collapse:separate!important;border-spacing:0!important}
+th{background:#102236!important;color:#d9e7f4!important}
+td,th{border-color:rgba(151,181,210,.12)!important}
+.table-scroll{border-radius:10px!important;border:1px solid rgba(151,181,210,.12)!important}
+
+/* Reduce decorative noise that competes with learning content. */
+.drag-hint,.model-note{font-size:.78rem!important;color:#8297aa!important}
+.viewer-badges .pill{font-size:.7rem!important;padding:4px 7px!important}
+.modal-card{background:var(--uc-surface)!important;border:1px solid var(--uc-line)!important;border-radius:16px!important;box-shadow:0 24px 70px rgba(0,0,0,.45)!important}
+
+@media(max-width:900px){
+  .course-layout,.textbook-layout,.lab-layout,.formula-layout,.practical-grid,.quiz-layout,.extended-layout{grid-template-columns:1fr!important}
+  .course-list{display:flex!important;overflow-x:auto!important;max-width:100%!important;padding-bottom:4px!important}
+  .course-button{min-width:210px!important;flex:0 0 210px!important}
+  .section-head{flex-direction:column!important;gap:5px!important}
+  .section-head>p{max-width:none!important}
+}
+
+@media(max-width:650px){
+  .wrap{width:min(100% - 16px,1280px)!important}
+  .main{padding-top:8px!important}
+  .topbar-inner{min-height:52px!important;padding:7px 0!important}
+  .topbar .pills{display:none!important}
+  html.unified-course-embedded .main-nav{top:53px!important}
+  .main-nav{margin-bottom:12px!important;padding:5px!important;border-radius:11px!important}
+  .nav-button{min-height:36px!important;padding:7px 10px!important;font-size:.78rem!important}
+  .section-head h2{font-size:1.32rem!important}
+  .lesson-panel,.textbook-article,.pad{padding:15px!important}
+  .course-button{min-width:180px!important;flex-basis:180px!important}
+  .panel{border-radius:12px!important}
+  .button,.text-button{font-size:.8rem!important}
+  canvas,svg,img,video,iframe{max-width:100%!important}
+  pre,code{max-width:100%!important;overflow-wrap:anywhere!important;word-break:break-word!important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important}
+}
