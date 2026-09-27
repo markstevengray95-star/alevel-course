@@ -13,11 +13,11 @@ const count = await cards.count();
 
 for (let i=0;i<count;i++) {
   await page.locator('.topic-card').nth(i).click();
-  await page.waitForTimeout(750);
   const label = (await page.locator('#workspaceTitle').innerText()).trim();
   const frameHandle = await page.locator('#topicFrame').elementHandle();
   const frame = await frameHandle?.contentFrame();
   if (!frame) { failures.push(`${label}: embedded frame unavailable`); continue; }
+  await frame.waitForFunction(()=>document.documentElement.classList.contains('uc-embedded-ready'),null,{timeout:5500}).catch(()=>{});
 
   const result = await frame.evaluate(() => {
     const root=document.documentElement;
@@ -52,13 +52,15 @@ for (let i=0;i<count;i++) {
 }
 
 await page.locator('.topic-card').last().click();
-await page.waitForTimeout(650);
 const frameHandle = await page.locator('#topicFrame').elementHandle();
 const frame = await frameHandle?.contentFrame();
 if (frame) {
-  await frame.locator('.uc-exit-course').click();
-  await page.waitForTimeout(150);
-  if (!(await page.locator('#courseHome').isVisible())) failures.push('embedded Exit course did not return to home');
+  await frame.waitForFunction(()=>document.documentElement.classList.contains('uc-embedded-ready'),null,{timeout:5500}).catch(()=>{});
+  if(await frame.locator('.uc-exit-course').isVisible().catch(()=>false)){
+    await frame.locator('.uc-exit-course').click();
+    await page.waitForTimeout(150);
+    if (!(await page.locator('#courseHome').isVisible())) failures.push('embedded Exit course did not return to home');
+  } else failures.push('embedded Exit course was not ready for the exit test');
 }
 
 await page.setViewportSize({width:390,height:844});
