@@ -19,6 +19,16 @@ const failures = [];
 const warnings = new Set();
 const errorText = e => e?.stack || e?.message || String(e);
 
+async function installConsoleStackCapture(page) {
+  await page.addInitScript(() => {
+    const originalError = console.error.bind(console);
+    console.error = (...args) => {
+      const marker = new Error('console.error call stack');
+      originalError(...args, '\n__AUDIT_STACK__\n' + (marker.stack || 'stack unavailable'));
+    };
+  });
+}
+
 function attachDiagnostics(page, route, mode='desktop') {
   const localFailures = new Set();
   const pageErrors = new Set();
@@ -29,7 +39,11 @@ function attachDiagnostics(page, route, mode='desktop') {
   });
   page.on('requestfailed', req => {
     const url = req.url();
-    if (url.startsWith(base)) localFailures.add(`${req.method()} ${url} :: ${req.failure()?.errorText || 'failed'}`);
+    const reason = req.failure()?.errorText || 'failed';
+    // The course shell intentionally replaces iframe src while switching topics.
+    // Chromium reports still-loading resources from the previous frame as ERR_ABORTED.
+    if (mode === 'shell' && /ERR_ABORTED/i.test(reason)) return;
+    if (url.startsWith(base)) localFailures.add(`${req.method()} ${url} :: ${reason}`);
     else warnings.add(`${mode} ${route}: external request failed: ${url}`);
   });
   return {localFailures,pageErrors,consoleErrors};
@@ -44,6 +58,7 @@ function reportDiagnostics(route, mode, d) {
 const desktop = await browser.newContext({ viewport: { width: 1440, height: 1000 }, serviceWorkers: 'block' });
 for (const route of routes) {
   const page = await desktop.newPage();
+  await installConsoleStackCapture(page);
   const d = attachDiagnostics(page, route, 'desktop');
   try {
     const res = await page.goto(base + route, { waitUntil: 'domcontentloaded', timeout: 45000 });
@@ -80,6 +95,7 @@ for (const route of routes) {
 // Course-shell integration: all cards, iframe changes and progress persistence control.
 {
   const page = await desktop.newPage();
+  await installConsoleStackCapture(page);
   const d = attachDiagnostics(page, '/', 'shell');
   await page.goto(base + '/', { waitUntil: 'domcontentloaded', timeout: 45000 });
   await page.waitForTimeout(900);
@@ -107,6 +123,7 @@ await desktop.close();
 const mobile = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, serviceWorkers: 'block' });
 for (const route of routes) {
   const page = await mobile.newPage();
+  await installConsoleStackCapture(page);
   const d = attachDiagnostics(page, route, 'mobile');
   try {
     const res = await page.goto(base + route, { waitUntil: 'domcontentloaded', timeout: 45000 });
