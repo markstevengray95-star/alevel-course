@@ -77,10 +77,11 @@ node --check course-tools.js
 node --check mobile-mode.js
 node --check textbook-data.js
 node --check textbook.js
+node --check lesson-enrichment.js
 node --check api/physics-coach.js
 node --check shared/unified-topic-embedded.js
 
-for file in student-notebook.js student-notebook.css course-tools.js course-tools.css mobile-mode.js mobile-mode.css experience-polish.css textbook-data.js textbook.js textbook.css; do
+for file in student-notebook.js student-notebook.css course-tools.js course-tools.css mobile-mode.js mobile-mode.css experience-polish.css textbook-data.js textbook.js textbook.css lesson-enrichment.js lesson-enrichment.css; do
   if [[ ! -f "$file" ]]; then
     echo "Missing course-wide shell asset: $file" >&2
     exit 1
@@ -89,7 +90,7 @@ done
 
 rm -rf dist
 mkdir -p dist/tools
-cp index.html app.js student-notebook.js ai-coach.js course-tools.js mobile-mode.js textbook-data.js textbook.js styles.css course-enhancements.css focus-layout.css student-notebook.css course-tools.css mobile-mode.css experience-polish.css textbook.css manifest.webmanifest .nojekyll dist/
+cp index.html app.js student-notebook.js ai-coach.js course-tools.js mobile-mode.js textbook-data.js textbook.js lesson-enrichment.js styles.css course-enhancements.css focus-layout.css student-notebook.css course-tools.css mobile-mode.css experience-polish.css textbook.css lesson-enrichment.css manifest.webmanifest .nojekyll dist/
 cp -R topics dist/topics
 cp -R tools/practicals dist/tools/practicals
 
@@ -98,4 +99,4 @@ find dist/topics -type d -name node_modules -prune -exec rm -rf {} + 2>/dev/null
 find dist/tools -name .git -exec rm -rf {} + 2>/dev/null || true
 find dist/tools -type d -name node_modules -prune -exec rm -rf {} + 2>/dev/null || true
 
-echo "Unified A-Level Physics course assembled in dist/ with shared Learn, Practise and Assess navigation plus the full AQA textbook."
+echo "Unified A-Level Physics course assembled in dist/ with shared Learn, Practise and Assess navigation, the full AQA textbook and contextual lesson enrichment."
