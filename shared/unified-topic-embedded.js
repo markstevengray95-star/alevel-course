@@ -4,8 +4,43 @@
   const requestExit = () => window.parent.postMessage({type:'alevel-course-exit'}, '*');
   const cleanText = value => String(value || '').replace(/\s+/g,' ').trim();
   const applyMobileMode = enabled => document.documentElement.classList.toggle('unified-course-mobile', !!enabled);
+  let pendingRestoreIndex = null;
+  let activeButtons = [];
+  let activeSelect = null;
+
+  const getActiveIndex = buttons => Math.max(0, buttons.findIndex(button => button.classList.contains('active') || button.getAttribute('aria-current') === 'page'));
+  const emitSection = buttons => {
+    if (!buttons.length) return;
+    const index = getActiveIndex(buttons);
+    const button = buttons[index];
+    window.parent.postMessage({
+      type:'alevel-topic-section',
+      index,
+      label:cleanText(button?.textContent),
+      pageTitle:document.title
+    }, '*');
+  };
+  const applyRestore = () => {
+    if (!activeButtons.length || !Number.isInteger(pendingRestoreIndex)) return;
+    const index = Math.min(Math.max(pendingRestoreIndex,0),activeButtons.length-1);
+    pendingRestoreIndex = null;
+    const current = getActiveIndex(activeButtons);
+    if (index !== current) activeButtons[index]?.click();
+    window.setTimeout(() => {
+      if (activeSelect) activeSelect.value=String(getActiveIndex(activeButtons));
+      emitSection(activeButtons);
+    }, 30);
+  };
+
   window.addEventListener('message', event => {
     if (event.data?.type === 'alevel-mobile-mode') applyMobileMode(event.data.enabled);
+    if (event.data?.type === 'alevel-topic-restore-section') {
+      const index=Number(event.data.index);
+      if (Number.isInteger(index)) {
+        pendingRestoreIndex=index;
+        applyRestore();
+      }
+    }
   });
 
   const currentSection = (buttons) => {
@@ -22,7 +57,10 @@
   let bootstrapTimer=0;
   const ready = (attempt=0) => {
     document.documentElement.classList.add('unified-course-embedded');
-    if (document.querySelector('.uc-embedded-toolbar')) return;
+    if (document.querySelector('.uc-embedded-toolbar')) {
+      applyRestore();
+      return;
+    }
 
     const nav = document.querySelector('.main-nav');
     const buttons = nav ? [...nav.querySelectorAll('.nav-button')].filter(button => button.dataset.view || button.textContent.trim()) : [];
@@ -59,17 +97,18 @@
       select.appendChild(option);
     });
 
-    const sync = () => {
-      const activeIndex = Math.max(0, buttons.findIndex(button => button.classList.contains('active') || button.getAttribute('aria-current') === 'page'));
+    const sync = ({announce=true}={}) => {
+      const activeIndex = getActiveIndex(buttons);
       select.value = String(activeIndex);
+      if (announce) emitSection(buttons);
     };
 
     select.addEventListener('change', () => {
       const button = buttons[Number(select.value)];
       if (button) button.click();
-      window.setTimeout(sync, 0);
+      window.setTimeout(()=>sync(), 0);
     });
-    buttons.forEach(button => button.addEventListener('click', () => window.setTimeout(sync, 0)));
+    buttons.forEach(button => button.addEventListener('click', () => window.setTimeout(()=>sync(), 0)));
 
     let rememberedSelection='';
     const rememberSelection=()=>{const text=selectedText();if(text)rememberedSelection=text;};
@@ -103,13 +142,16 @@
       }
     });
 
-    const observer = new MutationObserver(sync);
+    const observer = new MutationObserver(()=>sync());
     buttons.forEach(button => observer.observe(button, {attributes:true,attributeFilter:['class','aria-current']}));
 
     pickerWrap.append(label, select);
     toolbar.append(exit, pickerWrap, notebook);
     nav.before(toolbar);
-    sync();
+    activeButtons=buttons;
+    activeSelect=select;
+    sync({announce:!Number.isInteger(pendingRestoreIndex)});
+    applyRestore();
     document.documentElement.classList.add('uc-embedded-ready');
 
     document.addEventListener('keydown', event => {
