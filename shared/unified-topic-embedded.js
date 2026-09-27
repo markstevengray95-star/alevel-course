@@ -2,6 +2,7 @@
   if (window.self === window.top) return;
 
   const requestExit = () => window.parent.postMessage({type:'alevel-course-exit'}, '*');
+  const requestTextbook = () => window.parent.postMessage({type:'alevel-textbook-open'}, '*');
   const cleanText = value => String(value || '').replace(/\s+/g,' ').trim();
   const applyMobileMode = enabled => document.documentElement.classList.toggle('unified-course-mobile', !!enabled);
   let pendingRestoreIndex = null;
@@ -114,6 +115,13 @@
     const rememberSelection=()=>{const text=selectedText();if(text)rememberedSelection=text;};
     document.addEventListener('selectionchange',rememberSelection);
 
+    const textbook = document.createElement('button');
+    textbook.type='button';
+    textbook.className='uc-textbook-button';
+    textbook.innerHTML='<span aria-hidden="true">▦</span><b>Textbook</b>';
+    textbook.title='Open the full textbook for this AQA topic';
+    textbook.addEventListener('click',requestTextbook);
+
     const notebook = document.createElement('button');
     notebook.type = 'button';
     notebook.className = 'uc-notebook-button';
@@ -146,7 +154,7 @@
     buttons.forEach(button => observer.observe(button, {attributes:true,attributeFilter:['class','aria-current']}));
 
     pickerWrap.append(label, select);
-    toolbar.append(exit, pickerWrap, notebook);
+    toolbar.append(exit, pickerWrap, textbook, notebook);
     nav.before(toolbar);
     activeButtons=buttons;
     activeSelect=select;
