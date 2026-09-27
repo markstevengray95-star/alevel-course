@@ -1,10 +1,16 @@
 (()=>{
   'use strict';
 
-  const frame=document.getElementById('topicFrame');
+  if(!document.querySelector('link[data-lesson-enrichment]')){
+    const link=document.createElement('link');
+    link.rel='stylesheet';
+    link.href='lesson-enrichment.css';
+    link.dataset.lessonEnrichment='true';
+    document.head.appendChild(link);
+  }
+
   let selectionButton=null;
   let selectedText='';
-  let selectedMeta=null;
 
   const clean=value=>String(value||'').replace(/\s+/g,' ').trim();
   const stopWords=new Set(['the','and','for','with','from','into','that','this','your','their','are','is','of','to','in','on','a','an','or','by','as','at','using','use','uses','how','what','why','when','through','physics','lesson','section','mode','course']);
@@ -107,7 +113,6 @@
         window.setTimeout(()=>{selectionButton.innerHTML='<span aria-hidden="true">▤</span> Save selection';},1000);
       }
       selectedText='';
-      selectedMeta=null;
       window.getSelection?.()?.removeAllRanges?.();
       window.setTimeout(()=>hideSelectionButton(),120);
     });
@@ -131,8 +136,6 @@
     const rect=range.getBoundingClientRect();
     if(!rect||(!rect.width&&!rect.height))return hideSelectionButton();
     selectedText=text;
-    const state=window.CourseTextbook?.getState?.()||{};
-    selectedMeta={topicId:state.topicId,chapterIndex:state.chapterIndex};
     const button=ensureSelectionButton();
     const width=150;
     const left=Math.min(Math.max(8,rect.left+rect.width/2-width/2),window.innerWidth-width-8);
