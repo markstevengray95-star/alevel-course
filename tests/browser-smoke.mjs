@@ -79,7 +79,7 @@ for (const route of routes) {
   if (await toolCards.count() !== 2) failures.push(`course tools: expected 2 tool cards, found ${await toolCards.count()}`);
   const markingUrl=await page.evaluate(()=>window.CourseTools?.tools?.marking?.url||'');
   if (!/alevel-marking/i.test(markingUrl)) failures.push(`course tools: marking deployment URL is not configured (${markingUrl||'empty'})`);
-  await page.locator('[data-course-tool="practicals"]').click();
+  await page.locator('.course-tool-card[data-course-tool="practicals"]').click();
   await page.waitForTimeout(900);
   if (!(await page.locator('#toolWorkspace').isVisible().catch(()=>false))) failures.push('course tools: Practical Lab workspace did not open');
   if (!/Required Practicals/i.test(await page.locator('#toolTitle').innerText().catch(()=>''))) failures.push('course tools: Practical Lab title missing');
@@ -187,8 +187,8 @@ for (const route of routes) {
     if (route === '/') {
       const autoMobile = await page.locator('body').evaluate(el=>el.classList.contains('mobile-ui')).catch(()=>false);
       if (!autoMobile) failures.push('mobile /: Mobile Mode did not auto-enable on phone viewport');
-      if (!(await page.locator('[data-course-tool="practicals"]').isVisible().catch(()=>false))) failures.push('mobile /: Practical Lab tool card missing');
-      if (!(await page.locator('[data-course-tool="marking"]').isVisible().catch(()=>false))) failures.push('mobile /: Marking tool card missing');
+      if (!(await page.locator('.course-tool-card[data-course-tool="practicals"]').isVisible().catch(()=>false))) failures.push('mobile /: Practical Lab tool card missing');
+      if (!(await page.locator('.course-tool-card[data-course-tool="marking"]').isVisible().catch(()=>false))) failures.push('mobile /: Marking tool card missing');
       await page.locator('.topic-card').first().click();
       await page.waitForTimeout(450);
       if (!(await page.locator('#mobileStudyDock').isVisible().catch(()=>false))) failures.push('mobile /: study dock not visible after opening a topic');
