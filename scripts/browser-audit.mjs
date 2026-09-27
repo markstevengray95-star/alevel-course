@@ -111,14 +111,23 @@ try {
   let embeddedFrame = shell.frames().find(f => f !== shell.mainFrame() && f.url().includes('/topics/'));
   if (embeddedFrame) {
     const selected = await embeddedFrame.evaluate(() => {
-      const candidates=[...document.querySelectorAll('p,li,h2,h3')];
-      const target=candidates.find(el=>(el.textContent||'').trim().length>12);
+      const toolbar=document.querySelector('.uc-embedded-toolbar');
+      const visible=el=>{if(!el||toolbar?.contains(el))return false;const style=getComputedStyle(el);return style.display!=='none'&&style.visibility!=='hidden'&&el.getClientRects().length>0;};
+      const preferred=[...document.querySelectorAll('.lesson-panel p,.lesson-panel li,.textbook-article p,.textbook-article li,.view:not([hidden]) p,.view:not([hidden]) li,.panel p,.panel li,p,li,h2,h3')];
+      let target=preferred.find(el=>visible(el)&&(el.textContent||'').replace(/\s+/g,' ').trim().length>12);
+      if(!target){
+        target=[...document.querySelectorAll('main *, .main *')].find(el=>visible(el)&&el.children.length===0&&(el.textContent||'').replace(/\s+/g,' ').trim().length>12);
+      }
       if(!target)return '';
-      const range=document.createRange();range.selectNodeContents(target);
+      const node=[...target.childNodes].find(n=>n.nodeType===Node.TEXT_NODE&&(n.textContent||'').trim().length>4)||target.firstChild;
+      if(!node)return '';
+      const range=document.createRange();
+      if(node.nodeType===Node.TEXT_NODE){range.setStart(node,0);range.setEnd(node,Math.min(node.textContent.length,240));}
+      else range.selectNodeContents(target);
       const selection=getSelection();selection.removeAllRanges();selection.addRange(range);
-      return selection.toString().trim();
+      return selection.toString().replace(/\s+/g,' ').trim();
     });
-    if(!selected) shellErrors.push('could not create a lesson text selection for notebook audit');
+    if(!selected) shellErrors.push('could not create a visible lesson text selection for notebook audit');
     else {
       await embeddedFrame.locator('.uc-notebook-button').click();
       await shell.waitForTimeout(180);
