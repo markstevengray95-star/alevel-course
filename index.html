@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="student-notebook.css">
   <link rel="stylesheet" href="course-tools.css">
   <link rel="stylesheet" href="mobile-mode.css">
+  <link rel="stylesheet" href="experience-polish.css">
 </head>
 <body class="home-mode">
 <header class="topbar">
@@ -20,6 +21,11 @@
       <span class="brand-mark">φ</span>
       <span><strong class="brand">A-Level Physics</strong><small>AQA 7408</small></span>
     </button>
+    <nav class="global-course-nav" aria-label="Course areas">
+      <button class="course-area-button" id="navLearn" type="button" data-area="learn" aria-current="page">Learn</button>
+      <button class="course-area-button" type="button" data-area="practicals" data-course-tool="practicals">Practicals</button>
+      <button class="course-area-button" type="button" data-area="marking" data-course-tool="marking">Marking</button>
+    </nav>
     <div class="header-progress" aria-label="Course progress">
       <span id="progressText">0 / 8 complete</span>
       <div class="progress-track compact"><div class="progress-fill" id="progressFill"></div></div>
@@ -38,6 +44,8 @@
     <div class="course-position" id="coursePosition" aria-live="polite">1 / 8</div>
     <button class="nav-square topic-step" id="nextCourse" type="button" aria-label="Next topic">→</button>
     <button class="button complete-action jump-complete" id="markComplete" type="button">Mark complete</button>
+    <button class="button area-tool-button" type="button" data-course-tool="practicals">⚗ Practicals</button>
+    <button class="button area-tool-button" type="button" data-course-tool="marking">✓ Marking</button>
     <button class="button notebook-button" id="notebookToggle" type="button" title="Open student notebook"><span>▤</span> Notebook</button>
     <button class="button ai-button" id="coachToggle" type="button"><span>✦</span> AI Coach</button>
     <details class="workspace-more shell-more">
@@ -59,7 +67,7 @@
       <div>
         <span class="eyebrow">AQA A-level Physics 7408</span>
         <h1>Your Physics course.</h1>
-        <p>Choose one topic and work through lessons, textbook content, simulations, practicals and assessment in one focused view.</p>
+        <p>Move smoothly from learning the physics, to practising it experimentally, to answering and marking exam questions.</p>
       </div>
       <div class="home-actions">
         <button class="button primary" id="continueBtn">Continue learning</button>
@@ -67,6 +75,18 @@
         <button class="button quiet" id="heroCoachBtn">✦ Ask AI</button>
         <button class="button quiet" id="homeMobileModeBtn" type="button" aria-pressed="false">▣ Mobile mode</button>
       </div>
+    </section>
+
+    <section class="study-cycle" aria-label="Course study cycle">
+      <button class="study-cycle-step" id="cycleLearn" type="button">
+        <span class="study-cycle-number">1</span><span class="study-cycle-copy"><strong>Learn</strong><span>Lessons · textbook · simulations</span></span><span class="study-cycle-arrow">→</span>
+      </button>
+      <button class="study-cycle-step" type="button" data-course-tool="practicals">
+        <span class="study-cycle-number">2</span><span class="study-cycle-copy"><strong>Practise</strong><span>12 required practicals · CPAC · data</span></span><span class="study-cycle-arrow">→</span>
+      </button>
+      <button class="study-cycle-step" type="button" data-course-tool="marking">
+        <span class="study-cycle-number">3</span><span class="study-cycle-copy"><strong>Assess</strong><span>Exam questions · marking · feedback</span></span><span class="study-cycle-arrow">→</span>
+      </button>
     </section>
 
     <section id="courseMap" class="course-map-block" aria-label="AQA core topics">
@@ -79,21 +99,21 @@
 
     <section id="courseTools" class="course-tools-block" aria-label="Course tools">
       <div class="home-section-head">
-        <strong>Course tools</strong>
-        <span>Practicals · exam practice · marking</span>
+        <strong>Practice and assessment</strong>
+        <span>Use these from any point in the course</span>
       </div>
       <div class="course-tool-grid">
         <button type="button" class="course-tool-card practicals" data-course-tool="practicals" aria-label="Open AQA Required Practicals">
-          <div class="course-tool-top"><span class="course-tool-icon" aria-hidden="true">⚗</span><span class="course-tool-status">Included in course</span></div>
+          <div class="course-tool-top"><span class="course-tool-icon" aria-hidden="true">⚗</span><span class="course-tool-status">Practise</span></div>
           <h3>AQA Required Practicals</h3>
-          <p>Open the full Practical Lab with all 12 required practicals, interactive apparatus, data collection, uncertainty, CPAC skills, graphs and practical exam practice.</p>
-          <div class="course-tool-footer"><span>Alevel-prac</span><strong>Open Practical Lab →</strong></div>
+          <p>All 12 required practicals with interactive apparatus, data collection, uncertainty, CPAC skills, graphs and practical exam practice.</p>
+          <div class="course-tool-footer"><span>Integrated Practical Lab</span><strong>Open Practical Lab →</strong></div>
         </button>
         <button type="button" class="course-tool-card marking" data-course-tool="marking" aria-label="Open A-Level Exam Practice and Marking">
-          <div class="course-tool-top"><span class="course-tool-icon" aria-hidden="true">✓</span><span class="course-tool-status">Full marking app</span></div>
+          <div class="course-tool-top"><span class="course-tool-icon" aria-hidden="true">✓</span><span class="course-tool-status">Assess</span></div>
           <h3>Exam Practice &amp; Marking</h3>
-          <p>Use the A-Level marking app for AQA-style questions, calculations, extended responses, examiner feedback, offline marking and AI-supported answer analysis.</p>
-          <div class="course-tool-footer"><span>alevel-marking-</span><strong>Open Marking →</strong></div>
+          <p>AQA-style questions, calculations, extended responses, examiner feedback, offline marking and AI-supported answer analysis.</p>
+          <div class="course-tool-footer"><span>Full marking app</span><strong>Open Marking →</strong></div>
         </button>
       </div>
     </section>
@@ -130,8 +150,14 @@
 
 <section class="tool-workspace" id="toolWorkspace" hidden aria-label="Course tool workspace">
   <div class="tool-bar">
-    <button class="tool-back" id="toolBack" type="button">← Course tools</button>
+    <button class="tool-back" id="toolBack" type="button">← Course home</button>
     <div class="tool-identity"><span id="toolEyebrow">AQA Physics 7408</span><strong id="toolTitle">Course tool</strong></div>
+    <div class="tool-area-switcher" role="group" aria-label="Course areas">
+      <button type="button" id="toolAreaLearn" data-tool-area="learn">Learn</button>
+      <button type="button" id="toolAreaPracticals" data-tool-area="practicals">Practicals</button>
+      <button type="button" id="toolAreaMarking" data-tool-area="marking">Marking</button>
+    </div>
+    <label class="practical-section-wrap" id="practicalSectionWrap" hidden><span>Section</span><select class="practical-section-picker" id="practicalSectionPicker" aria-label="Practical Lab section"><option value="home">Practicals</option><option value="skills">Skills hub</option><option value="quiz">Quiz studio</option><option value="equations">Equations</option><option value="circuit">Circuit lab</option></select></label>
     <button class="tool-action accent" id="toolNotebook" type="button" data-icon="▤" aria-label="Open notebook">Notebook</button>
     <button class="tool-action accent" id="toolAI" type="button" data-icon="✦" aria-label="Open AI Coach">AI Coach</button>
     <button class="tool-action" id="toolReload" type="button" data-icon="↻" aria-label="Reload tool">Reload</button>
@@ -140,6 +166,7 @@
   </div>
   <div class="tool-frame-wrap">
     <iframe class="tool-frame" id="toolFrame" title="Course tool" loading="eager" allow="clipboard-read; clipboard-write"></iframe>
+    <div class="tool-loading" id="toolLoading"><div class="tool-loading-inner"><span class="tool-spinner" aria-hidden="true"></span><strong id="toolLoadingText">Opening course tool…</strong></div></div>
     <div class="tool-external-note" id="toolExternalNote" hidden></div>
   </div>
 </section>
