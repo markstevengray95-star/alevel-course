@@ -2,6 +2,9 @@
 from pathlib import Path
 
 fixes = {
+    Path('topics/01-measurements/index.html'): [
+        ('<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/loaders/GLTFLoader.js"></script>', '<!-- Obsolete GLTFLoader dependency removed: current 3D lab uses procedural geometry. -->'),
+    ],
     Path('topics/04-mechanics-materials/mechanics/app.js'): [
         ("$('[data-practice-check]',$('#lessonPanel')).forEach", "$$('[data-practice-check]',$('#lessonPanel')).forEach"),
         ("$('.mini-option',$('#lessonPanel')).forEach", "$$('.mini-option',$('#lessonPanel')).forEach"),
