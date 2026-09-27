@@ -13,6 +13,11 @@ await page.waitForTimeout(350);
 if(await page.locator('.study-cycle-step').count()!==3)fail('home: expected Learn, Practise and Assess study-cycle controls');
 if(await page.locator('.global-course-nav .course-area-button').count()!==3)fail('home: global course-area navigation is incomplete');
 if(!(await page.locator('#navLearn').getAttribute('aria-current')).includes('page'))fail('home: Learn area is not active initially');
+if(!(await page.locator('#homeLearningDashboard').isVisible().catch(()=>false)))fail('home: learning overview dashboard is missing');
+if(!(await page.locator('#homeResumeCard').isVisible().catch(()=>false)))fail('home: resume learning card is missing');
+if(await page.locator('.course-stage').count()!==2)fail('home: expected Year 12 and Year 13 course stages');
+if((await page.locator('#homeYear12Stat').innerText().catch(()=>''))!=='0 / 5')fail('home: Year 12 progress summary is incorrect initially');
+if((await page.locator('#homeYear13Stat').innerText().catch(()=>''))!=='0 / 3')fail('home: Year 13 progress summary is incorrect initially');
 
 await page.locator('.topic-card[data-id="electricity"]').click();
 await page.waitForTimeout(650);
@@ -74,10 +79,23 @@ if(!(await page.locator('#workspaceCode').innerText()).includes('3.5'))fail('int
 topicFrame=page.frames().find(frame=>frame!==page.mainFrame()&&frame.url().includes('/topics/05-electricity/'));
 if(topicFrame&&(await topicFrame.locator('.uc-view-picker select').inputValue().catch(()=>''))!=='1')fail('integration: returning from Practicals lost the remembered Electricity section');
 
+await page.locator('#markComplete').click();
+await page.waitForTimeout(40);
 await page.locator('#exitCourse').click();
-await page.waitForTimeout(120);
+await page.waitForTimeout(150);
 const focusedTopic=await page.evaluate(()=>document.activeElement?.classList?.contains('topic-card')?document.activeElement.dataset.id:'');
 if(focusedTopic!=='electricity')fail(`accessibility: exiting a topic should restore focus to its Course Home card (got ${focusedTopic||'none'})`);
+if((await page.locator('#homeYear12Stat').innerText().catch(()=>''))!=='1 / 5')fail('home: Year 12 progress did not update after completing Electricity');
+if(!/Electricity/i.test(await page.locator('#homeResumeTitle').innerText().catch(()=>'')))fail('home: resume card did not retain the last studied topic');
+if(!/AQA 3\.5/i.test(await page.locator('#homeResumeDetail').innerText().catch(()=>'')))fail('home: resume card is missing AQA topic context');
+
+await page.locator('#homeResumeCard').click();
+await page.waitForTimeout(650);
+if(!(await page.locator('#workspaceCode').innerText()).includes('3.5'))fail('home: resume card did not reopen Electricity');
+topicFrame=page.frames().find(frame=>frame!==page.mainFrame()&&frame.url().includes('/topics/05-electricity/'));
+if(topicFrame&&(await topicFrame.locator('.uc-view-picker select').inputValue().catch(()=>''))!=='1')fail('home: resume card did not restore the remembered Electricity section');
+await page.locator('#exitCourse').click();
+await page.waitForTimeout(120);
 
 await page.locator('.course-tool-card[data-course-tool="practicals"]').click();
 await page.waitForTimeout(500);
@@ -90,7 +108,9 @@ await page.setViewportSize({width:390,height:844});
 const dims=await page.evaluate(()=>({scrollWidth:document.documentElement.scrollWidth,clientWidth:document.documentElement.clientWidth}));
 if(dims.scrollWidth>dims.clientWidth+20)fail(`mobile home: horizontal overflow ${dims.scrollWidth}px > ${dims.clientWidth}px`);
 if(!(await page.locator('.global-course-nav').isVisible().catch(()=>false)))fail('mobile home: compact course-area navigation is missing');
+if(!(await page.locator('#homeResumeCard').isVisible().catch(()=>false)))fail('mobile home: resume card is not visible');
+if(!(await page.locator('#courseStageStrip').isVisible().catch(()=>false)))fail('mobile home: Year 12/Year 13 stage strip is not visible');
 
 await browser.close();
 if(failures.length){console.error(`\nEXPERIENCE FLOW FAILED (${failures.length})`);failures.forEach(item=>console.error(' -',item));process.exit(1);}
-console.log('PASS: Learn → Practise → Assess navigation, remembered topic sections, loading feedback, focus return and compact mobile shell work together.');
+console.log('PASS: premium Course Home, Learn → Practise → Assess navigation, remembered topic sections, loading feedback, focus return and compact mobile shell work together.');
