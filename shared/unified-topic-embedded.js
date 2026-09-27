@@ -142,7 +142,7 @@
       }
     });
 
-    const observer = new MutationObserver(()=>sync());
+    const observer = new MutationObserver(()=>sync({announce:false}));
     buttons.forEach(button => observer.observe(button, {attributes:true,attributeFilter:['class','aria-current']}));
 
     pickerWrap.append(label, select);
@@ -150,7 +150,7 @@
     nav.before(toolbar);
     activeButtons=buttons;
     activeSelect=select;
-    sync({announce:!Number.isInteger(pendingRestoreIndex)});
+    sync({announce:false});
     applyRestore();
     document.documentElement.classList.add('uc-embedded-ready');
 
