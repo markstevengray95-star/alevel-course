@@ -7,7 +7,7 @@ html.unified-course-embedded body{background:#08111d!important}
 html.unified-course-embedded .main{padding:4px 0 22px!important}
 html.unified-course-embedded .main-nav{display:none!important}
 
-/* Compact section switcher: one quiet control row, not another app header. */
+/* Compact section switcher shared by every specialist topic. */
 .uc-embedded-toolbar{
   position:sticky;top:0;z-index:140;
   display:flex;align-items:center;gap:6px;
@@ -15,12 +15,13 @@ html.unified-course-embedded .main-nav{display:none!important}
   background:rgba(8,17,29,.985);border-bottom:1px solid rgba(151,181,210,.1);
   box-shadow:none;backdrop-filter:blur(14px)
 }
-.uc-exit-course{
+.uc-exit-course,.uc-notebook-button{
   appearance:none;border:1px solid rgba(151,181,210,.14);border-radius:8px;
   background:transparent;color:#b9c9d8;padding:7px 9px;font:800 .7rem/1 system-ui,sans-serif;
-  cursor:pointer;white-space:nowrap
+  cursor:pointer;white-space:nowrap;min-height:32px
 }
-.uc-exit-course:hover{background:rgba(255,255,255,.035);border-color:rgba(101,214,207,.3);color:#eef8f7}
+.uc-exit-course:hover,.uc-notebook-button:hover{background:rgba(255,255,255,.035);border-color:rgba(101,214,207,.3);color:#eef8f7}
+.uc-notebook-button{display:flex;align-items:center;gap:5px;color:#a7dcd7}.uc-notebook-button span{font-size:.78rem}.uc-notebook-button b{font:inherit}.uc-notebook-button.saved{background:rgba(82,166,111,.12);border-color:rgba(125,226,166,.3);color:#c8f3d7}
 .uc-view-picker{display:flex;align-items:center;min-width:0;flex:1;margin:0!important}
 .uc-view-picker>span{display:none!important}
 .uc-view-picker select{
@@ -29,11 +30,20 @@ html.unified-course-embedded .main-nav{display:none!important}
   background:#0b1826!important;color:#e4edf5!important;font:750 .76rem/1.1 system-ui,sans-serif!important
 }
 
+/* Normalise the learning canvas across all topic apps. */
 html.unified-course-embedded .section-head{margin:0 0 8px!important}
 html.unified-course-embedded .section-head>p{display:none!important}
 html.unified-course-embedded .section-head .eyebrow{display:none!important}
 html.unified-course-embedded .section-head h2{font-size:1.25rem!important;margin:0!important}
 html.unified-course-embedded .view{padding-top:0!important}
+html.unified-course-embedded .view>.section-head,
+html.unified-course-embedded .view>.panel,
+html.unified-course-embedded .view>.course-layout,
+html.unified-course-embedded .view>.textbook-layout,
+html.unified-course-embedded .view>.lab-layout,
+html.unified-course-embedded .view>.formula-layout,
+html.unified-course-embedded .view>.quiz-layout,
+html.unified-course-embedded .view>.extended-layout{width:100%!important;max-width:1280px!important;margin-left:auto!important;margin-right:auto!important}
 html.unified-course-embedded .panel{box-shadow:none!important}
 html.unified-course-embedded .course-layout{grid-template-columns:minmax(185px,225px) minmax(0,1fr)!important;gap:9px!important}
 html.unified-course-embedded .course-list{gap:5px!important}
@@ -55,6 +65,7 @@ html.unified-course-embedded .extended-layout{gap:9px!important}
   .uc-embedded-toolbar{min-height:39px;padding:3px 5px;gap:4px}
   .uc-exit-course{width:32px;height:32px;padding:0;font-size:0}
   .uc-exit-course::after{content:'←';font-size:.8rem}
+  .uc-notebook-button{width:34px;height:32px;padding:0;display:grid;place-items:center;font-size:0}.uc-notebook-button span{font-size:.8rem}.uc-notebook-button b{display:none}
   .uc-view-picker select{width:100%;min-height:32px;font-size:.72rem!important;padding:5px 7px!important}
   html.unified-course-embedded .wrap{width:min(100% - 10px,1280px)!important}
   html.unified-course-embedded .section-head h2{font-size:1.13rem!important}
