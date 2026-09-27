@@ -2,11 +2,17 @@
   if (window.self === window.top) return;
 
   const requestExit = () => window.parent.postMessage({type:'alevel-course-exit'}, '*');
+  const cleanText = value => String(value || '').replace(/\s+/g,' ').trim();
   const currentSection = (buttons) => {
-    const active = buttons.find(button => button.classList.contains('active') || button.getAttribute('aria-current') === 'page');
-    return active?.textContent.trim() || document.querySelector('.view:not([hidden]) .section-head h2,.view:not([hidden]) h2,.lesson-panel h2,h1')?.textContent?.trim() || document.title;
+    const activeNav = buttons.find(button => button.classList.contains('active') || button.getAttribute('aria-current') === 'page');
+    const activeLesson = document.querySelector('.course-button.active,.lesson-path-step.active,.chapter-button.active,.textbook-sidebar button.active,.lesson-stage-button.active,.chunk-button.active');
+    const visibleHeading = [...document.querySelectorAll('.lesson-panel h2,.lesson-panel h3,.view:not([hidden]) .section-head h2,.view:not([hidden]) h2')].find(el => {
+      const style=getComputedStyle(el);return style.display!=='none'&&style.visibility!=='hidden'&&el.getClientRects().length>0&&cleanText(el.textContent);
+    });
+    const parts=[cleanText(activeNav?.textContent),cleanText(activeLesson?.textContent)||cleanText(visibleHeading?.textContent)].filter(Boolean);
+    return [...new Set(parts)].join(' · ') || document.title;
   };
-  const selectedText = () => String(window.getSelection?.()?.toString() || '').replace(/\s+/g,' ').trim().slice(0,5000);
+  const selectedText = () => cleanText(window.getSelection?.()?.toString()).slice(0,5000);
 
   const ready = () => {
     document.documentElement.classList.add('unified-course-embedded');
@@ -53,13 +59,19 @@
     });
     buttons.forEach(button => button.addEventListener('click', () => window.setTimeout(sync, 0)));
 
+    let rememberedSelection='';
+    const rememberSelection=()=>{const text=selectedText();if(text)rememberedSelection=text;};
+    document.addEventListener('selectionchange',rememberSelection);
+
     const notebook = document.createElement('button');
     notebook.type = 'button';
     notebook.className = 'uc-notebook-button';
     notebook.innerHTML = '<span aria-hidden="true">▤</span><b>Save note</b>';
     notebook.title = 'Select lesson text to save it, or open the course notebook';
+    notebook.addEventListener('pointerdown',rememberSelection);
+    notebook.addEventListener('mousedown',rememberSelection);
     notebook.addEventListener('click', () => {
-      const text = selectedText();
+      const text = rememberedSelection || selectedText();
       const payload = {
         type: text ? 'alevel-notebook-save' : 'alevel-notebook-open',
         text,
@@ -69,6 +81,7 @@
       };
       window.parent.postMessage(payload, '*');
       if (text) {
+        rememberedSelection='';
         notebook.classList.add('saved');
         const original = notebook.querySelector('b')?.textContent || 'Save note';
         const labelEl = notebook.querySelector('b');
