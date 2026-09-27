@@ -16,6 +16,10 @@ fixes = {
     Path('topics/07-fields/app.js'): [
         ("$('[data-quiz-choice]').forEach", "$$('[data-quiz-choice]').forEach"),
     ],
+    Path('topics/07-fields/sim-runtime-v9.js'): [
+        ("['#view-lab','#view-advanced','#view-practical'].map($).filter(Boolean)", "['#view-lab','#view-advanced','#view-practical'].map(s=>$(s)).filter(Boolean)"),
+        ("['#view-lab','#view-advanced'].map($).filter(Boolean)", "['#view-lab','#view-advanced'].map(s=>$(s)).filter(Boolean)"),
+    ],
 }
 
 changed = 0
@@ -27,7 +31,6 @@ for path, replacements in fixes.items():
     for old, new in replacements:
         count = text.count(old)
         if count == 0:
-            # The source may already contain the upstream fix; accept that state.
             if new not in text:
                 raise SystemExit(f'Expected integration pattern not found in {path}: {old}')
             continue
