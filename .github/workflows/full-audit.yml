@@ -39,6 +39,9 @@ jobs:
           sleep 2
           curl --fail --silent http://127.0.0.1:4173/ > /dev/null
 
+      - name: Diagnose mobile overflow
+        run: node tests/mobile-overflow.mjs
+
       - name: Run browser/runtime audit
         run: node tests/browser-smoke.mjs
 
