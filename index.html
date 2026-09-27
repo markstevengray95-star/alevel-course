@@ -5,11 +5,12 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#08111d">
   <title>AQA A-level Physics Course</title>
-  <meta name="description" content="Unified AQA A-level Physics 7408 course with lessons, simulations, practicals, assessments, a student notebook and an AI study coach.">
+  <meta name="description" content="Unified AQA A-level Physics 7408 course with lessons, simulations, required practicals, exam marking, a student notebook and an AI study coach.">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="course-enhancements.css">
   <link rel="stylesheet" href="focus-layout.css">
   <link rel="stylesheet" href="student-notebook.css">
+  <link rel="stylesheet" href="course-tools.css">
   <link rel="stylesheet" href="mobile-mode.css">
 </head>
 <body class="home-mode">
@@ -76,6 +77,27 @@
       <div class="topic-grid" id="topicGrid"></div>
     </section>
 
+    <section id="courseTools" class="course-tools-block" aria-label="Course tools">
+      <div class="home-section-head">
+        <strong>Course tools</strong>
+        <span>Practicals · exam practice · marking</span>
+      </div>
+      <div class="course-tool-grid">
+        <button type="button" class="course-tool-card practicals" data-course-tool="practicals" aria-label="Open AQA Required Practicals">
+          <div class="course-tool-top"><span class="course-tool-icon" aria-hidden="true">⚗</span><span class="course-tool-status">Included in course</span></div>
+          <h3>AQA Required Practicals</h3>
+          <p>Open the full Practical Lab with all 12 required practicals, interactive apparatus, data collection, uncertainty, CPAC skills, graphs and practical exam practice.</p>
+          <div class="course-tool-footer"><span>Alevel-prac</span><strong>Open Practical Lab →</strong></div>
+        </button>
+        <button type="button" class="course-tool-card marking" data-course-tool="marking" aria-label="Open A-Level Exam Practice and Marking">
+          <div class="course-tool-top"><span class="course-tool-icon" aria-hidden="true">✓</span><span class="course-tool-status">Full marking app</span></div>
+          <h3>Exam Practice &amp; Marking</h3>
+          <p>Use the A-Level marking app for AQA-style questions, calculations, extended responses, examiner feedback, offline marking and AI-supported answer analysis.</p>
+          <div class="course-tool-footer"><span>alevel-marking-</span><strong>Open Marking →</strong></div>
+        </button>
+      </div>
+    </section>
+
     <div class="home-footer-tools">
       <span>Progress, notebook notes, Mobile Mode and your last position are saved on this device.</span>
       <button class="text-button danger-subtle" id="resetProgress">Reset progress</button>
@@ -106,9 +128,26 @@
   </section>
 </main>
 
+<section class="tool-workspace" id="toolWorkspace" hidden aria-label="Course tool workspace">
+  <div class="tool-bar">
+    <button class="tool-back" id="toolBack" type="button">← Course tools</button>
+    <div class="tool-identity"><span id="toolEyebrow">AQA Physics 7408</span><strong id="toolTitle">Course tool</strong></div>
+    <button class="tool-action accent" id="toolNotebook" type="button" data-icon="▤" aria-label="Open notebook">Notebook</button>
+    <button class="tool-action accent" id="toolAI" type="button" data-icon="✦" aria-label="Open AI Coach">AI Coach</button>
+    <button class="tool-action" id="toolReload" type="button" data-icon="↻" aria-label="Reload tool">Reload</button>
+    <a class="tool-action tool-open-full" id="toolOpenFull" target="_blank" rel="noopener">Open full app ↗</a>
+    <a class="tool-action" id="toolSource" target="_blank" rel="noopener" data-icon="⌘" aria-label="Open source repository">Source</a>
+  </div>
+  <div class="tool-frame-wrap">
+    <iframe class="tool-frame" id="toolFrame" title="Course tool" loading="eager" allow="clipboard-read; clipboard-write"></iframe>
+    <div class="tool-external-note" id="toolExternalNote" hidden></div>
+  </div>
+</section>
+
 <nav class="mobile-study-dock" id="mobileStudyDock" aria-label="Mobile study controls" hidden>
   <button class="mobile-dock-button" id="mobileDockHome" type="button" aria-label="Course home"><span>⌂</span><b>Home</b></button>
   <button class="mobile-dock-button" id="mobileDockTopic" type="button" aria-label="Change topic"><span>☰</span><b>Topic</b></button>
+  <button class="mobile-dock-button" id="mobileDockTools" type="button" aria-label="Course tools"><span>▦</span><b>Tools</b></button>
   <button class="mobile-dock-button primary-mobile" id="mobileDockNotebook" type="button" aria-label="Open notebook"><span>▤</span><b>Notes</b></button>
   <button class="mobile-dock-button primary-mobile" id="mobileDockAI" type="button" aria-label="Open AI Coach"><span>✦</span><b>AI</b></button>
   <button class="mobile-dock-button" id="mobileDockComplete" type="button" aria-label="Mark topic complete"><span>✓</span><b>Done</b></button>
@@ -161,6 +200,7 @@
 <script src="app.js"></script>
 <script src="student-notebook.js"></script>
 <script src="ai-coach.js"></script>
+<script src="course-tools.js"></script>
 <script src="mobile-mode.js"></script>
 </body>
 </html>
