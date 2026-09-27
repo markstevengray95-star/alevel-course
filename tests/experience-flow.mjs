@@ -20,9 +20,10 @@ if(await page.locator('.course-stage').count()!==2)fail('home: expected Year 12 
 if((await page.locator('#homeYear12Stat').innerText().catch(()=>''))!=='0 / 5')fail('home: Year 12 progress summary is incorrect initially');
 if((await page.locator('#homeYear13Stat').innerText().catch(()=>''))!=='0 / 3')fail('home: Year 13 progress summary is incorrect initially');
 if(!(await page.locator('#homeTextbookBtn').isVisible().catch(()=>false)))fail('textbook: Course Home textbook entry is missing');
-const textbookShape=await page.evaluate(()=>({topics:Object.keys(window.CourseTextbook?.data||{}).length,chapters:Object.values(window.CourseTextbook?.data||{}).reduce((n,t)=>n+(t.chapters?.length||0),0)}));
+const textbookShape=await page.evaluate(()=>({topics:Object.keys(window.CourseTextbook?.data||{}).length,chapters:Object.values(window.CourseTextbook?.data||{}).reduce((n,t)=>n+(t.chapters?.length||0),0),terms:Object.keys(window.CourseTextbook?.terms||{}).length}));
 if(textbookShape.topics!==8)fail(`textbook: expected 8 core topic books, found ${textbookShape.topics}`);
 if(textbookShape.chapters<34)fail(`textbook: expected at least 34 full chapters, found ${textbookShape.chapters}`);
+if(textbookShape.terms<50)fail(`textbook: expected a substantial interactive terminology library, found ${textbookShape.terms}`);
 
 await page.locator('.topic-card[data-id="electricity"]').click();
 await page.waitForTimeout(650);
@@ -56,6 +57,18 @@ else{
       await page.locator('#textbookChapterList .textbook-chapter-button').nth(1).click({timeout:4000});
       await page.waitForTimeout(80);
       if(!/Resistance/i.test(await page.locator('#textbookArticle h1').innerText().catch(()=>'')))fail('textbook: chapter switching did not render Electricity resistance chapter');
+      if(!(await page.locator('.textbook-diagram svg').isVisible().catch(()=>false)))fail('textbook: relevant chapter diagram is missing');
+      const termCards=await page.locator('.textbook-term-card').count();
+      if(termCards<4)fail(`textbook: expected at least 4 key terminology cards in the chapter, found ${termCards}`);
+      if(await page.locator('.textbook-term-link').count()<1)fail('textbook: chapter text does not expose clickable terminology');
+      if(termCards){
+        await page.locator('.textbook-term-card').first().click({timeout:4000});
+        if(!(await page.locator('#textbookTermLayer').isVisible().catch(()=>false)))fail('textbook: terminology detail panel did not open');
+        if(!(await page.locator('#textbookTermDefinition').innerText().catch(()=>'')))fail('textbook: terminology detail panel has no definition');
+        if(!(await page.locator('#textbookTermMore').innerText().catch(()=>'')))fail('textbook: terminology detail panel is missing deeper explanation');
+        await page.locator('#textbookTermClose').click({timeout:4000});
+        if(await page.locator('#textbookTermLayer').isVisible().catch(()=>false))fail('textbook: terminology detail panel did not close');
+      }
       const beforeNotes=await page.evaluate(()=>window.CourseNotebook?.getNotes?.().length||0);
       await page.locator('#textbookSaveSummary').click({timeout:4000});
       await page.waitForTimeout(60);
@@ -64,6 +77,24 @@ else{
       await page.locator('#textbookMarkRead').click({timeout:4000});
       if(!(await page.locator('#textbookChapterList .textbook-chapter-button').nth(1).innerText().catch(()=>'' )).includes('✓'))fail('textbook: mark-as-read state did not update chapter navigation');
     }
+
+    const enrichmentCoverage=await page.evaluate(()=>{
+      const problems=[];const api=window.CourseTextbook;const topicIds=Object.keys(api?.data||{});
+      for(const topicId of topicIds){
+        api.setTopic(topicId);
+        const chapters=api.data[topicId]?.chapters||[];
+        for(let i=0;i<chapters.length;i++){
+          api.setChapter(i);
+          const diagrams=document.querySelectorAll('.textbook-diagram svg').length;
+          const terms=document.querySelectorAll('.textbook-term-card').length;
+          if(diagrams<1||terms<4)problems.push(`${topicId}:${i+1} diagram=${diagrams} terms=${terms}`);
+        }
+      }
+      api.setTopic('electricity');api.setChapter(1);
+      return problems;
+    });
+    if(enrichmentCoverage.length)fail(`textbook: diagram/terminology coverage missing for ${enrichmentCoverage.join(', ')}`);
+
     await page.locator('#textbookBack').click({timeout:4000});
     await page.waitForTimeout(80);
     if(!(await page.locator('#workspaceSection').isVisible().catch(()=>false)))fail('textbook: closing reader did not return to active lesson workspace');
@@ -150,7 +181,14 @@ if(!(await page.locator('#textbookWorkspace').isVisible().catch(()=>false)))fail
 const textbookDims=await page.locator('#textbookWorkspace').evaluate(el=>({scrollWidth:el.scrollWidth,clientWidth:el.clientWidth})).catch(()=>({scrollWidth:999,clientWidth:0}));
 if(textbookDims.scrollWidth>textbookDims.clientWidth+10)fail(`mobile textbook: horizontal overflow ${textbookDims.scrollWidth}px > ${textbookDims.clientWidth}px`);
 if(!(await page.locator('#textbookMobileChapter').isVisible().catch(()=>false)))fail('mobile textbook: compact chapter picker is missing');
+if(!(await page.locator('.textbook-diagram svg').isVisible().catch(()=>false)))fail('mobile textbook: chapter diagram is missing');
+if(await page.locator('.textbook-term-card').count()<4)fail('mobile textbook: key terminology cards are missing');
+await page.locator('.textbook-term-card').first().click({timeout:4000});
+if(!(await page.locator('#textbookTermLayer').isVisible().catch(()=>false)))fail('mobile textbook: terminology detail panel did not open');
+const termPanelDims=await page.locator('.textbook-term-panel').evaluate(el=>({scrollWidth:el.scrollWidth,clientWidth:el.clientWidth})).catch(()=>({scrollWidth:999,clientWidth:0}));
+if(termPanelDims.scrollWidth>termPanelDims.clientWidth+10)fail(`mobile textbook: terminology panel horizontal overflow ${termPanelDims.scrollWidth}px > ${termPanelDims.clientWidth}px`);
+await page.locator('#textbookTermClose').click({timeout:4000});
 
 await browser.close();
 if(failures.length){console.error(`\nEXPERIENCE FLOW FAILED (${failures.length})`);failures.forEach(item=>console.error(' -',item));process.exit(1);}
-console.log('PASS: full textbook, premium Course Home, Learn → Practise → Assess navigation, remembered topic sections, notebook saving, focus return and compact mobile shell work together.');
+console.log('PASS: full textbook diagrams, interactive terminology, premium Course Home, Learn → Practise → Assess navigation, remembered topic sections, notebook saving, focus return and compact mobile shell work together.');
