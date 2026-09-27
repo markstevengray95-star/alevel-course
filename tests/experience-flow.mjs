@@ -44,21 +44,27 @@ else{
   if(!(await topicFrame.locator('.uc-textbook-button').isVisible().catch(()=>false)))fail('textbook: embedded Electricity toolbar is missing Textbook access');
   else{
     await topicFrame.locator('.uc-textbook-button').click();
-    await page.waitForTimeout(180);
+    await page.waitForFunction(()=>{
+      const workspace=document.getElementById('textbookWorkspace');
+      return !!workspace&&!workspace.hidden&&document.querySelectorAll('#textbookChapterList .textbook-chapter-button').length>=4;
+    },null,{timeout:4000}).catch(()=>fail('textbook: reader did not finish rendering Electricity chapters'));
     if(!(await page.locator('#textbookWorkspace').isVisible().catch(()=>false)))fail('textbook: embedded toolbar did not open textbook workspace');
     if((await page.locator('#textbookTopicSelect').inputValue().catch(()=>''))!=='electricity')fail('textbook: reader did not open the active Electricity book');
-    if(await page.locator('#textbookChapterList .textbook-chapter-button').count()<4)fail('textbook: Electricity book is missing full chapter navigation');
-    await page.locator('#textbookChapterList .textbook-chapter-button').nth(1).click();
-    await page.waitForTimeout(80);
-    if(!/Resistance/i.test(await page.locator('#textbookArticle h1').innerText().catch(()=>'')))fail('textbook: chapter switching did not render Electricity resistance chapter');
-    const beforeNotes=await page.evaluate(()=>window.CourseNotebook?.getNotes?.().length||0);
-    await page.locator('#textbookSaveSummary').click();
-    await page.waitForTimeout(60);
-    const afterNotes=await page.evaluate(()=>window.CourseNotebook?.getNotes?.().length||0);
-    if(afterNotes!==beforeNotes+1)fail('textbook: chapter summary did not save into Student Notebook');
-    await page.locator('#textbookMarkRead').click();
-    if(!(await page.locator('#textbookChapterList .textbook-chapter-button').nth(1).innerText().catch(()=>'' )).includes('✓'))fail('textbook: mark-as-read state did not update chapter navigation');
-    await page.locator('#textbookBack').click();
+    const chapterCount=await page.locator('#textbookChapterList .textbook-chapter-button').count();
+    if(chapterCount<4)fail('textbook: Electricity book is missing full chapter navigation');
+    if(chapterCount>=2){
+      await page.locator('#textbookChapterList .textbook-chapter-button').nth(1).click({timeout:4000});
+      await page.waitForTimeout(80);
+      if(!/Resistance/i.test(await page.locator('#textbookArticle h1').innerText().catch(()=>'')))fail('textbook: chapter switching did not render Electricity resistance chapter');
+      const beforeNotes=await page.evaluate(()=>window.CourseNotebook?.getNotes?.().length||0);
+      await page.locator('#textbookSaveSummary').click({timeout:4000});
+      await page.waitForTimeout(60);
+      const afterNotes=await page.evaluate(()=>window.CourseNotebook?.getNotes?.().length||0);
+      if(afterNotes!==beforeNotes+1)fail('textbook: chapter summary did not save into Student Notebook');
+      await page.locator('#textbookMarkRead').click({timeout:4000});
+      if(!(await page.locator('#textbookChapterList .textbook-chapter-button').nth(1).innerText().catch(()=>'' )).includes('✓'))fail('textbook: mark-as-read state did not update chapter navigation');
+    }
+    await page.locator('#textbookBack').click({timeout:4000});
     await page.waitForTimeout(80);
     if(!(await page.locator('#workspaceSection').isVisible().catch(()=>false)))fail('textbook: closing reader did not return to active lesson workspace');
   }
@@ -139,7 +145,7 @@ if(!(await page.locator('.global-course-nav').isVisible().catch(()=>false)))fail
 if(!(await page.locator('#homeResumeCard').isVisible().catch(()=>false)))fail('mobile home: resume card is not visible');
 if(!(await page.locator('#courseStageStrip').isVisible().catch(()=>false)))fail('mobile home: Year 12/Year 13 stage strip is not visible');
 await page.locator('#homeTextbookBtn').click();
-await page.waitForTimeout(100);
+await page.waitForFunction(()=>{const w=document.getElementById('textbookWorkspace');return !!w&&!w.hidden&&document.querySelectorAll('#textbookMobileChapter option').length>0;},null,{timeout:4000}).catch(()=>fail('mobile textbook: reader did not finish rendering'));
 if(!(await page.locator('#textbookWorkspace').isVisible().catch(()=>false)))fail('mobile textbook: reader did not open');
 const textbookDims=await page.locator('#textbookWorkspace').evaluate(el=>({scrollWidth:el.scrollWidth,clientWidth:el.clientWidth})).catch(()=>({scrollWidth:999,clientWidth:0}));
 if(textbookDims.scrollWidth>textbookDims.clientWidth+10)fail(`mobile textbook: horizontal overflow ${textbookDims.scrollWidth}px > ${textbookDims.clientWidth}px`);
