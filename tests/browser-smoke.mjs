@@ -3,6 +3,7 @@ import { chromium } from 'playwright';
 const base = process.env.AUDIT_BASE_URL || 'http://127.0.0.1:4173';
 const routes = [
   '/',
+  '/tools/practicals/index.html',
   '/topics/01-measurements/index.html',
   '/topics/02-particles-radiation/index.html',
   '/topics/03-waves/index.html',
@@ -47,7 +48,7 @@ for (const route of routes) {
     if (!res || res.status() >= 400) failures.push(`desktop ${route}: HTTP ${res?.status() ?? 'no response'}`);
     const textLen = await page.locator('body').innerText().then(t=>t.trim().length).catch(()=>0);
     if (textLen < 40) failures.push(`desktop ${route}: too little visible content (${textLen} chars)`);
-    if (route !== '/') {
+    if (route.startsWith('/topics/')) {
       const nav = page.locator('.main-nav .nav-button');
       const count = Math.min(await nav.count(),16);
       for (let i=0;i<count;i++) if (await nav.nth(i).isVisible().catch(()=>false)) {
@@ -74,6 +75,25 @@ for (const route of routes) {
   if (!(await page.locator('#homeNotebookBtn').isVisible())) failures.push('shell: notebook button missing on Course Home');
   if (!(await page.locator('#homeMobileModeBtn').isVisible())) failures.push('shell: mobile mode button missing on Course Home');
 
+  const toolCards=page.locator('.course-tool-card');
+  if (await toolCards.count() !== 2) failures.push(`course tools: expected 2 tool cards, found ${await toolCards.count()}`);
+  const markingUrl=await page.evaluate(()=>window.CourseTools?.tools?.marking?.url||'');
+  if (!/alevel-marking/i.test(markingUrl)) failures.push(`course tools: marking deployment URL is not configured (${markingUrl||'empty'})`);
+  await page.locator('[data-course-tool="practicals"]').click();
+  await page.waitForTimeout(900);
+  if (!(await page.locator('#toolWorkspace').isVisible().catch(()=>false))) failures.push('course tools: Practical Lab workspace did not open');
+  if (!/Required Practicals/i.test(await page.locator('#toolTitle').innerText().catch(()=>''))) failures.push('course tools: Practical Lab title missing');
+  const practicalFrame=page.frames().find(f=>f!==page.mainFrame()&&f.url().includes('/tools/practicals/index.html'));
+  if (!practicalFrame) failures.push('course tools: bundled Practical Lab iframe did not load');
+  else {
+    const practicalText=await practicalFrame.locator('body').innerText().catch(()=> '');
+    if (!/Required practicals 1.?12|PRACTICAL LIBRARY/i.test(practicalText)) failures.push('course tools: Practical Lab content was not available inside the course');
+  }
+  await page.locator('#toolBack').click();
+  await page.waitForTimeout(160);
+  if (!(await page.locator('#courseHome').isVisible())) failures.push('course tools: returning from Practical Lab did not restore Course Home');
+  if (await page.locator('#toolWorkspace').isVisible().catch(()=>false)) failures.push('course tools: tool workspace remained visible after exit');
+
   // Explicit Mobile Mode on a wide screen must switch both shell and embedded topic UI.
   await page.locator('#homeMobileModeBtn').click();
   if (!(await page.locator('body').evaluate(el=>el.classList.contains('mobile-ui')))) failures.push('mobile mode: enabling did not add mobile-ui shell state');
@@ -81,6 +101,7 @@ for (const route of routes) {
   await cards.first().click();
   await page.waitForTimeout(750);
   if (!(await page.locator('#mobileStudyDock').isVisible().catch(()=>false))) failures.push('mobile mode: study dock missing in focused topic mode');
+  if (!(await page.locator('#mobileDockTools').isVisible().catch(()=>false))) failures.push('mobile mode: Course Tools shortcut missing');
   let mobileFrame = page.frames().find(f=>f!==page.mainFrame()&&f.url().includes('/topics/01-measurements'));
   if (!mobileFrame) failures.push('mobile mode: embedded Measurements frame did not load');
   else if (!(await mobileFrame.locator('html').evaluate(el=>el.classList.contains('unified-course-mobile')).catch(()=>false))) failures.push('mobile mode: state was not forwarded into embedded topic');
@@ -166,9 +187,16 @@ for (const route of routes) {
     if (route === '/') {
       const autoMobile = await page.locator('body').evaluate(el=>el.classList.contains('mobile-ui')).catch(()=>false);
       if (!autoMobile) failures.push('mobile /: Mobile Mode did not auto-enable on phone viewport');
+      if (!(await page.locator('[data-course-tool="practicals"]').isVisible().catch(()=>false))) failures.push('mobile /: Practical Lab tool card missing');
+      if (!(await page.locator('[data-course-tool="marking"]').isVisible().catch(()=>false))) failures.push('mobile /: Marking tool card missing');
       await page.locator('.topic-card').first().click();
       await page.waitForTimeout(450);
       if (!(await page.locator('#mobileStudyDock').isVisible().catch(()=>false))) failures.push('mobile /: study dock not visible after opening a topic');
+      if (!(await page.locator('#mobileDockTools').isVisible().catch(()=>false))) failures.push('mobile /: Tools shortcut not visible in study dock');
+      await page.locator('#mobileDockTools').click();
+      await page.waitForTimeout(180);
+      if (!(await page.locator('#courseHome').isVisible().catch(()=>false))) failures.push('mobile /: Tools shortcut did not return to Course Home');
+      if (!(await page.locator('#courseTools').isVisible().catch(()=>false))) failures.push('mobile /: Course Tools section not visible after using Tools shortcut');
     }
     reportDiagnostics(route,'mobile',d);
   } catch(e) { failures.push(`mobile ${route}: navigation failed: ${errorText(e)}`); }
@@ -179,4 +207,4 @@ await browser.close();
 
 if (warnings.size) { console.log(`\nWarnings (${warnings.size}):`); for (const w of [...warnings].slice(0,30)) console.log(' -',w); }
 if (failures.length) { console.error(`\nBROWSER AUDIT FAILED (${failures.length}):`); failures.forEach(f=>console.error(' -',f)); process.exit(1); }
-console.log('\nPASS: focused course flow, explicit/automatic Mobile Mode, shared notebook, AI coach, dropdown topic switching and mobile runtime checks passed.');
+console.log('\nPASS: focused course flow, Practical Lab + Marking tools, explicit/automatic Mobile Mode, shared notebook, AI coach, dropdown topic switching and mobile runtime checks passed.');
