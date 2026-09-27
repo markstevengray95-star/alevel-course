@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="course-enhancements.css">
   <link rel="stylesheet" href="focus-layout.css">
   <link rel="stylesheet" href="student-notebook.css">
+  <link rel="stylesheet" href="mobile-mode.css">
 </head>
 <body class="home-mode">
 <header class="topbar">
@@ -41,6 +42,7 @@
     <details class="workspace-more shell-more">
       <summary aria-label="More topic actions">•••</summary>
       <div class="workspace-menu">
+        <button class="menu-action" id="mobileModeToggle" type="button" aria-pressed="false">Turn on mobile mode</button>
         <button class="menu-action" id="reloadFrame" type="button">Reload topic</button>
         <a class="menu-action" id="openModule" target="_blank" rel="noopener">Open full page ↗</a>
         <a class="menu-action" id="sourceLink" target="_blank" rel="noopener">Source repository ↗</a>
@@ -62,6 +64,7 @@
         <button class="button primary" id="continueBtn">Continue learning</button>
         <button class="button quiet" id="homeNotebookBtn">▤ Notebook</button>
         <button class="button quiet" id="heroCoachBtn">✦ Ask AI</button>
+        <button class="button quiet" id="homeMobileModeBtn" type="button" aria-pressed="false">▣ Mobile mode</button>
       </div>
     </section>
 
@@ -74,7 +77,7 @@
     </section>
 
     <div class="home-footer-tools">
-      <span>Progress, notebook notes and your last position are saved on this device.</span>
+      <span>Progress, notebook notes, Mobile Mode and your last position are saved on this device.</span>
       <button class="text-button danger-subtle" id="resetProgress">Reset progress</button>
     </div>
   </div>
@@ -102,6 +105,14 @@
     </div>
   </section>
 </main>
+
+<nav class="mobile-study-dock" id="mobileStudyDock" aria-label="Mobile study controls" hidden>
+  <button class="mobile-dock-button" id="mobileDockHome" type="button" aria-label="Course home"><span>⌂</span><b>Home</b></button>
+  <button class="mobile-dock-button" id="mobileDockTopic" type="button" aria-label="Change topic"><span>☰</span><b>Topic</b></button>
+  <button class="mobile-dock-button primary-mobile" id="mobileDockNotebook" type="button" aria-label="Open notebook"><span>▤</span><b>Notes</b></button>
+  <button class="mobile-dock-button primary-mobile" id="mobileDockAI" type="button" aria-label="Open AI Coach"><span>✦</span><b>AI</b></button>
+  <button class="mobile-dock-button" id="mobileDockComplete" type="button" aria-label="Mark topic complete"><span>✓</span><b>Done</b></button>
+</nav>
 
 <div class="notebook-backdrop" id="notebookBackdrop" hidden></div>
 <aside class="notebook-panel" id="notebookPanel" aria-hidden="true" aria-label="Student notebook">
@@ -150,5 +161,6 @@
 <script src="app.js"></script>
 <script src="student-notebook.js"></script>
 <script src="ai-coach.js"></script>
+<script src="mobile-mode.js"></script>
 </body>
 </html>
