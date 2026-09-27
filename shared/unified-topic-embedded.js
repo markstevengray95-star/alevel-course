@@ -10,6 +10,8 @@
   let activeButtons = [];
   let activeSelect = null;
   let enrichmentPanel = null;
+  let enrichmentRequestVersion = 0;
+  let enrichmentDebounce = 0;
   let selectionAction = null;
   let selectionActionText = '';
 
@@ -17,23 +19,45 @@
 
   const currentSection = (buttons) => {
     const activeNav = buttons.find(button => button.classList.contains('active') || button.getAttribute('aria-current') === 'page');
-    const activeLesson = document.querySelector('.course-button.active,.lesson-path-step.active,.chapter-button.active,.textbook-sidebar button.active,.lesson-stage-button.active,.chunk-button.active');
-    const visibleHeading = [...document.querySelectorAll('.lesson-panel h2,.lesson-panel h3,.view:not([hidden]) .section-head h2,.view:not([hidden]) h2')].find(el => {
+    const activeLesson = document.querySelector('.course-button.active,.lesson-path-step.active,.chapter-button.active,.textbook-sidebar button.active,.lesson-stage-button.active,.chunk-button.active,[data-lesson].active,[data-chapter].active,[data-chunk].active');
+    const visibleHeading = [...document.querySelectorAll('.lesson-panel h1,.lesson-panel h2,.lesson-panel h3,.view:not([hidden]) .section-head h2,.view:not([hidden]) h2,.view:not([hidden]) h3')].find(el => {
       const style=getComputedStyle(el);return style.display!=='none'&&style.visibility!=='hidden'&&el.getClientRects().length>0&&cleanText(el.textContent);
     });
     const parts=[cleanText(activeNav?.textContent),cleanText(activeLesson?.textContent)||cleanText(visibleHeading?.textContent)].filter(Boolean);
     return [...new Set(parts)].join(' · ') || document.title;
   };
 
-  const requestEnrichment = buttons => {
+  function ensureEnrichmentPanel(){
+    if(enrichmentPanel)return enrichmentPanel;
+    enrichmentPanel=document.createElement('details');
+    enrichmentPanel.className='uc-lesson-essentials';
+    enrichmentPanel.open=!window.matchMedia('(max-width:650px)').matches;
+    enrichmentPanel.innerHTML='<summary><span><small>Lesson support</small><strong>Lesson essentials</strong></span><span class="uc-essential-toggle">Details</span></summary><div class="uc-essential-body"><p class="uc-essential-loading">Matching this lesson to the full AQA textbook…</p></div>';
+    const toolbar=document.querySelector('.uc-embedded-toolbar');
+    toolbar?.after(enrichmentPanel);
+    return enrichmentPanel;
+  }
+
+  const requestEnrichment = (buttons,{retry=true}={}) => {
     if (!buttons.length) return;
+    const panel=ensureEnrichmentPanel();
     const index=getActiveIndex(buttons);
-    window.parent.postMessage({
+    const label=currentSection(buttons);
+    const version=++enrichmentRequestVersion;
+    panel.dataset.ready='false';
+    const send=()=>window.parent.postMessage({
       type:'alevel-lesson-enrichment-request',
       index,
-      label:currentSection(buttons),
+      label,
       pageTitle:document.title
     }, '*');
+    send();
+    if(retry){
+      [250,700,1500,2800].forEach(delay=>window.setTimeout(()=>{
+        if(version!==enrichmentRequestVersion||panel.dataset.ready==='true')return;
+        send();
+      },delay));
+    }
   };
 
   const emitSection = buttons => {
@@ -49,6 +73,11 @@
     requestEnrichment(buttons);
   };
 
+  const scheduleLessonRefresh=(buttons,delay=90)=>{
+    clearTimeout(enrichmentDebounce);
+    enrichmentDebounce=window.setTimeout(()=>requestEnrichment(buttons),delay);
+  };
+
   const applyRestore = () => {
     if (!activeButtons.length || !Number.isInteger(pendingRestoreIndex)) return;
     const index = Math.min(Math.max(pendingRestoreIndex,0),activeButtons.length-1);
@@ -60,17 +89,6 @@
       emitSection(activeButtons);
     }, 30);
   };
-
-  function ensureEnrichmentPanel(){
-    if(enrichmentPanel)return enrichmentPanel;
-    enrichmentPanel=document.createElement('details');
-    enrichmentPanel.className='uc-lesson-essentials';
-    enrichmentPanel.open=!window.matchMedia('(max-width:650px)').matches;
-    enrichmentPanel.innerHTML='<summary><span><small>Lesson support</small><strong>Lesson essentials</strong></span><span class="uc-essential-toggle">Details</span></summary><div class="uc-essential-body"><p class="uc-essential-loading">Matching this lesson to the full AQA textbook…</p></div>';
-    const toolbar=document.querySelector('.uc-embedded-toolbar');
-    toolbar?.after(enrichmentPanel);
-    return enrichmentPanel;
-  }
 
   function renderEnrichment(data){
     const panel=ensureEnrichmentPanel();
@@ -197,6 +215,15 @@
       window.setTimeout(()=>sync(), 0);
     });
     buttons.forEach(button => button.addEventListener('click', () => window.setTimeout(()=>sync(), 0)));
+
+    const lessonControlSelector='.course-button,.lesson-path-step,.chapter-button,.lesson-stage-button,.chunk-button,[data-lesson],[data-chapter],[data-chunk]';
+    document.addEventListener('click',event=>{
+      if(event.target.closest?.(lessonControlSelector))scheduleLessonRefresh(buttons,100);
+    },true);
+    document.addEventListener('change',event=>{
+      const el=event.target;
+      if(el?.matches?.('.lesson-select,.chapter-select,[data-lesson-select],[data-chapter-select]'))scheduleLessonRefresh(buttons,80);
+    },true);
 
     let rememberedSelection='';
     const rememberSelection=()=>{const text=selectedText();if(text)rememberedSelection=text;};
