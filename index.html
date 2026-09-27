@@ -106,12 +106,17 @@
 <div class="notebook-backdrop" id="notebookBackdrop" hidden></div>
 <aside class="notebook-panel" id="notebookPanel" aria-hidden="true" aria-label="Student notebook">
   <div class="notebook-head">
-    <div><span class="eyebrow">Across the whole course</span><h2>Student Notebook</h2><p>Save key ideas, lesson text and AI explanations from any AQA topic.</p></div>
+    <div><span class="eyebrow">Across the whole course</span><h2>Student Notebook</h2><p>Save, organise and revise key ideas, lesson text and AI explanations from any AQA topic.</p></div>
     <button class="nav-square" id="notebookClose" type="button" aria-label="Close notebook">×</button>
   </div>
   <div class="notebook-context">
     <strong id="notebookContextLabel">AQA 3.1 · Measurements and their errors</strong>
     <select id="notebookFilter" aria-label="Filter notebook notes by topic"><option value="all">All topics</option></select>
+  </div>
+  <div class="notebook-tools">
+    <label class="notebook-search"><span class="sr-only">Search notebook</span><input id="notebookSearch" type="search" maxlength="120" autocomplete="off" placeholder="Search notes, lessons or topics…"></label>
+    <span class="notebook-count" id="notebookCount" aria-live="polite">0 notes</span>
+    <button class="text-button notebook-export" id="notebookExport" type="button">Export .md</button>
   </div>
   <div class="notebook-compose">
     <label><span>Add your own note</span><textarea id="notebookInput" maxlength="5000" placeholder="Write a key idea, method, definition or reminder…"></textarea></label>
