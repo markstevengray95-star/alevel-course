@@ -33,5 +33,27 @@ jobs:
           test -f dist/topics/07-fields/index.html
           test -f dist/topics/08-nuclear/index.html
 
+      - name: Run comprehensive static audit
+        run: node scripts/full-audit.mjs dist
+
+      - name: Install browser audit dependency
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Start production-like static server
+        run: |
+          python3 -m http.server 4173 --directory dist > /tmp/alevel-course-http.log 2>&1 &
+          echo $! > /tmp/alevel-course-http.pid
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/alevel-course-http.log
+          exit 1
+
+      - name: Run browser runtime audit
+        run: node scripts/browser-audit.mjs dist
+
       - name: Report assembled size
         run: du -sh dist
