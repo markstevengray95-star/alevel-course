@@ -3,8 +3,10 @@ html.unified-course-embedded .topbar,
 html.unified-course-embedded .hero,
 html.unified-course-embedded .progress-card:not(.quiz-stats){display:none!important}
 
-html.unified-course-embedded body{background:#08111d!important}
-html.unified-course-embedded .main{padding:4px 0 28px!important}
+html.unified-course-embedded{max-width:100%;overflow-x:hidden!important}
+html.unified-course-embedded *,html.unified-course-embedded *::before,html.unified-course-embedded *::after{box-sizing:border-box}
+html.unified-course-embedded body{background:#08111d!important;max-width:100%!important;overflow-x:hidden!important}
+html.unified-course-embedded .main{padding:4px 0 28px!important;min-width:0!important;max-width:100%!important;overflow-x:clip!important}
 html.unified-course-embedded .main-nav{display:none!important}
 
 /* One compact toolbar across every specialist topic. */
@@ -12,6 +14,7 @@ html.unified-course-embedded .main-nav{display:none!important}
   position:sticky;top:0;z-index:140;
   display:flex;align-items:center;gap:6px;
   min-height:42px;padding:4px max(8px,calc((100vw - 1120px)/2));
+  max-width:100%;overflow:hidden;
   background:rgba(8,17,29,.985);border-bottom:1px solid rgba(151,181,210,.1);
   box-shadow:none;backdrop-filter:blur(14px)
 }
@@ -25,27 +28,27 @@ html.unified-course-embedded .main-nav{display:none!important}
 .uc-view-picker{display:flex;align-items:center;min-width:0;flex:1;margin:0!important}
 .uc-view-picker>span{display:none!important}
 .uc-view-picker select{
-  width:min(360px,100%);min-height:32px;margin:0!important;padding:5px 9px!important;
+  width:min(360px,100%);min-width:0;min-height:32px;margin:0!important;padding:5px 9px!important;
   border:1px solid rgba(151,181,210,.14)!important;border-radius:8px!important;
   background:#0b1826!important;color:#e4edf5!important;font:750 .76rem/1.1 system-ui,sans-serif!important
 }
 
 /* Lesson essentials: detailed enough to teach, compact enough not to dominate. */
 .uc-lesson-essentials{
-  width:min(1100px,calc(100% - 16px));margin:10px auto 8px;
+  width:min(1100px,calc(100% - 16px));max-width:calc(100% - 16px);min-width:0;margin:10px auto 8px;
   border:1px solid rgba(101,214,207,.13);border-radius:12px;background:rgba(12,27,42,.82);overflow:hidden
 }
-.uc-lesson-essentials>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;cursor:pointer;user-select:none}
+.uc-lesson-essentials>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;cursor:pointer;user-select:none;min-width:0}
 .uc-lesson-essentials>summary::-webkit-details-marker{display:none}
-.uc-lesson-essentials>summary span:first-child{display:grid;gap:1px}.uc-lesson-essentials>summary small{font:850 .58rem/1 system-ui,sans-serif;text-transform:uppercase;letter-spacing:.08em;color:#66d9d0}.uc-lesson-essentials>summary strong{font:850 .82rem/1.15 system-ui,sans-serif;color:#edf6fc}
-.uc-essential-toggle{font:800 .64rem/1 system-ui,sans-serif;color:#8299ae}.uc-lesson-essentials[open] .uc-essential-toggle::after{content:' ︿'}.uc-lesson-essentials:not([open]) .uc-essential-toggle::after{content:' ﹀'}
-.uc-essential-body{display:grid;gap:12px;padding:0 12px 12px;border-top:1px solid rgba(151,181,210,.08)}
+.uc-lesson-essentials>summary span:first-child{display:grid;gap:1px;min-width:0}.uc-lesson-essentials>summary small{font:850 .58rem/1 system-ui,sans-serif;text-transform:uppercase;letter-spacing:.08em;color:#66d9d0}.uc-lesson-essentials>summary strong{font:850 .82rem/1.15 system-ui,sans-serif;color:#edf6fc;overflow-wrap:anywhere}
+.uc-essential-toggle{font:800 .64rem/1 system-ui,sans-serif;color:#8299ae;flex:0 0 auto}.uc-lesson-essentials[open] .uc-essential-toggle::after{content:' ︿'}.uc-lesson-essentials:not([open]) .uc-essential-toggle::after{content:' ﹀'}
+.uc-essential-body{display:grid;gap:12px;padding:0 12px 12px;border-top:1px solid rgba(151,181,210,.08);min-width:0}
 .uc-essential-loading{margin:12px 0 0;color:#8298aa;font-size:.76rem}
-.uc-essential-intro{padding-top:11px}.uc-essential-intro>span{display:block;color:#77a8c1;font-size:.61rem;font-weight:850;text-transform:uppercase;letter-spacing:.06em}.uc-essential-intro>strong{display:block;margin-top:3px;color:#f1f6fb;font-size:.95rem}.uc-essential-intro>p{margin:5px 0 0!important;color:#aebfce!important;line-height:1.55!important;font-size:.81rem!important}
-.uc-essential-section{display:grid;gap:6px}.uc-essential-label{font:900 .61rem/1 system-ui,sans-serif;text-transform:uppercase;letter-spacing:.07em;color:#78cfc8}
-.uc-essential-section ul{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;list-style:none;margin:0!important;padding:0!important}.uc-essential-section li{margin:0!important;padding:9px 10px!important;border:1px solid rgba(151,181,210,.1);border-radius:9px;background:rgba(255,255,255,.018);font-size:.75rem!important;line-height:1.45!important}.uc-essential-section li strong{display:block;margin-bottom:3px;color:#e7f1f8;font-size:.73rem}.uc-essential-section li span{color:#9fb1c0}
-.uc-essential-equations{display:flex;gap:6px;flex-wrap:wrap}.uc-essential-equation{display:grid;grid-template-columns:auto auto auto;align-items:center;gap:6px;padding:7px 9px;border:1px solid rgba(126,170,247,.12);border-radius:8px;background:rgba(126,170,247,.04)}.uc-essential-equation span{font-size:.66rem;color:#8da2b4}.uc-essential-equation code{font:800 .75rem/1.1 ui-monospace,SFMono-Regular,Menlo,monospace;color:#eef5fb}.uc-essential-equation small{font-size:.58rem;color:#70869a}
-.uc-essential-example{padding:9px 10px;border-left:3px solid rgba(102,217,208,.55);background:rgba(102,217,208,.045);border-radius:0 8px 8px 0}.uc-essential-example>span{font-size:.6rem;text-transform:uppercase;letter-spacing:.06em;font-weight:900;color:#77cbc4}.uc-essential-example p{margin:3px 0!important;font-size:.75rem!important;line-height:1.45!important;color:#b9c8d5!important}.uc-essential-example strong{font-size:.72rem;color:#e6f7f4}
+.uc-essential-intro{padding-top:11px;min-width:0}.uc-essential-intro>span{display:block;color:#77a8c1;font-size:.61rem;font-weight:850;text-transform:uppercase;letter-spacing:.06em}.uc-essential-intro>strong{display:block;margin-top:3px;color:#f1f6fb;font-size:.95rem;overflow-wrap:anywhere}.uc-essential-intro>p{margin:5px 0 0!important;color:#aebfce!important;line-height:1.55!important;font-size:.81rem!important;overflow-wrap:anywhere}
+.uc-essential-section{display:grid;gap:6px;min-width:0}.uc-essential-label{font:900 .61rem/1 system-ui,sans-serif;text-transform:uppercase;letter-spacing:.07em;color:#78cfc8}
+.uc-essential-section ul{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;list-style:none;margin:0!important;padding:0!important;min-width:0}.uc-essential-section li{min-width:0;margin:0!important;padding:9px 10px!important;border:1px solid rgba(151,181,210,.1);border-radius:9px;background:rgba(255,255,255,.018);font-size:.75rem!important;line-height:1.45!important;overflow-wrap:anywhere}.uc-essential-section li strong{display:block;margin-bottom:3px;color:#e7f1f8;font-size:.73rem}.uc-essential-section li span{color:#9fb1c0}
+.uc-essential-equations{display:flex;gap:6px;flex-wrap:wrap;min-width:0}.uc-essential-equation{display:grid;grid-template-columns:auto auto auto;align-items:center;gap:6px;min-width:0;max-width:100%;padding:7px 9px;border:1px solid rgba(126,170,247,.12);border-radius:8px;background:rgba(126,170,247,.04)}.uc-essential-equation span{font-size:.66rem;color:#8da2b4}.uc-essential-equation code{font:800 .75rem/1.1 ui-monospace,SFMono-Regular,Menlo,monospace;color:#eef5fb;white-space:normal;overflow-wrap:anywhere}.uc-essential-equation small{font-size:.58rem;color:#70869a}
+.uc-essential-example{min-width:0;padding:9px 10px;border-left:3px solid rgba(102,217,208,.55);background:rgba(102,217,208,.045);border-radius:0 8px 8px 0}.uc-essential-example>span{font-size:.6rem;text-transform:uppercase;letter-spacing:.06em;font-weight:900;color:#77cbc4}.uc-essential-example p{margin:3px 0!important;font-size:.75rem!important;line-height:1.45!important;color:#b9c8d5!important;overflow-wrap:anywhere}.uc-essential-example strong{font-size:.72rem;color:#e6f7f4;overflow-wrap:anywhere}
 .uc-essential-actions{display:flex;justify-content:flex-end}.uc-essential-textbook{appearance:none;border:0;background:transparent;color:#87c7ed;font:800 .7rem/1 system-ui,sans-serif;cursor:pointer;padding:4px 0}.uc-essential-textbook:hover{color:#cdeaff}
 
 /* Selection-to-notebook action appears beside highlighted lesson text. */
@@ -56,11 +59,11 @@ html.unified-course-embedded .main-nav{display:none!important}
 .uc-selection-save[hidden]{display:none!important}.uc-selection-save span{margin-right:4px}
 
 /* Simple, consistent lesson canvas across all topic apps. */
-html.unified-course-embedded .section-head{margin:0 0 8px!important}
+html.unified-course-embedded .section-head{margin:0 0 8px!important;min-width:0!important;max-width:100%!important}
 html.unified-course-embedded .section-head>p{display:none!important}
 html.unified-course-embedded .section-head .eyebrow{display:none!important}
-html.unified-course-embedded .section-head h2{font-size:1.2rem!important;margin:0!important}
-html.unified-course-embedded .view{padding-top:0!important}
+html.unified-course-embedded .section-head h2{font-size:1.2rem!important;margin:0!important;overflow-wrap:anywhere}
+html.unified-course-embedded .view{padding-top:0!important;min-width:0!important;max-width:100%!important;overflow-x:hidden!important}
 html.unified-course-embedded .view>.section-head,
 html.unified-course-embedded .view>.panel,
 html.unified-course-embedded .view>.course-layout,
@@ -68,14 +71,14 @@ html.unified-course-embedded .view>.textbook-layout,
 html.unified-course-embedded .view>.lab-layout,
 html.unified-course-embedded .view>.formula-layout,
 html.unified-course-embedded .view>.quiz-layout,
-html.unified-course-embedded .view>.extended-layout{width:100%!important;max-width:1120px!important;margin-left:auto!important;margin-right:auto!important}
-html.unified-course-embedded .panel{box-shadow:none!important}
+html.unified-course-embedded .view>.extended-layout{width:100%!important;max-width:1120px!important;min-width:0!important;margin-left:auto!important;margin-right:auto!important}
+html.unified-course-embedded .panel{box-shadow:none!important;min-width:0!important;max-width:100%!important}
 
 /* Use one horizontal lesson strip everywhere instead of mixed sidebars. */
-html.unified-course-embedded .course-layout{display:grid!important;grid-template-columns:1fr!important;gap:8px!important}
-html.unified-course-embedded .course-list{display:flex!important;gap:6px!important;overflow-x:auto!important;overscroll-behavior-inline:contain;scroll-snap-type:x proximity;padding:0 0 5px!important;max-width:1120px!important;margin:0 auto!important}
-html.unified-course-embedded .course-button{min-width:180px!important;flex:0 0 180px!important;padding:8px 9px!important;font-size:.74rem!important;scroll-snap-align:start}
-html.unified-course-embedded .lesson-panel{width:100%!important;max-width:1040px!important;margin:0 auto!important;padding:18px 20px!important}
+html.unified-course-embedded .course-layout{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:8px!important;width:100%!important;max-width:100%!important;min-width:0!important;overflow:hidden!important}
+html.unified-course-embedded .course-list{display:flex!important;width:100%!important;max-width:100%!important;min-width:0!important;gap:6px!important;overflow-x:auto!important;overflow-y:hidden!important;overscroll-behavior-inline:contain;scroll-snap-type:x proximity;padding:0 0 5px!important;margin:0 auto!important}
+html.unified-course-embedded .course-button{min-width:180px!important;max-width:180px!important;flex:0 0 180px!important;padding:8px 9px!important;font-size:.74rem!important;scroll-snap-align:start}
+html.unified-course-embedded .lesson-panel{width:100%!important;max-width:1040px!important;min-width:0!important;margin:0 auto!important;padding:18px 20px!important;overflow-wrap:anywhere}
 html.unified-course-embedded .lesson-panel>p,
 html.unified-course-embedded .lesson-panel>ul,
 html.unified-course-embedded .lesson-panel>ol{max-width:82ch}
@@ -84,7 +87,7 @@ html.unified-course-embedded .textbook-layout,
 html.unified-course-embedded .formula-layout,
 html.unified-course-embedded .practical-grid,
 html.unified-course-embedded .quiz-layout,
-html.unified-course-embedded .extended-layout{gap:8px!important}
+html.unified-course-embedded .extended-layout{gap:8px!important;min-width:0!important;max-width:100%!important}
 
 /* Explicit Mobile Mode can be forced from the course shell, even on a wider screen. */
 html.unified-course-mobile .uc-embedded-toolbar{min-height:39px;padding:3px 5px;gap:4px}
@@ -93,9 +96,9 @@ html.unified-course-mobile .uc-exit-course::after{content:'←';font-size:.8rem}
 html.unified-course-mobile .uc-textbook-button,html.unified-course-mobile .uc-notebook-button{width:34px;height:32px;padding:0;display:grid;place-items:center;font-size:0}
 html.unified-course-mobile .uc-textbook-button span,html.unified-course-mobile .uc-notebook-button span{font-size:.8rem}
 html.unified-course-mobile .uc-textbook-button b,html.unified-course-mobile .uc-notebook-button b{display:none}
-html.unified-course-mobile .uc-view-picker select{width:100%;min-height:32px;font-size:.72rem!important;padding:5px 7px!important}
-html.unified-course-mobile .wrap{width:min(100% - 10px,1120px)!important}
-html.unified-course-mobile .course-button{min-width:155px!important;flex:0 0 155px!important;min-height:40px!important}
+html.unified-course-mobile .uc-view-picker select{width:100%;min-width:0;min-height:32px;font-size:.72rem!important;padding:5px 7px!important}
+html.unified-course-mobile .wrap{width:calc(100% - 10px)!important;max-width:100%!important;min-width:0!important}
+html.unified-course-mobile .course-button{min-width:155px!important;max-width:155px!important;flex:0 0 155px!important;min-height:40px!important}
 html.unified-course-mobile .lesson-panel{padding:12px!important}
 html.unified-course-mobile .panel{border-radius:9px!important}
 html.unified-course-mobile .section-head h2{font-size:1.08rem!important}
@@ -106,15 +109,17 @@ html.unified-course-mobile .formula-layout,
 html.unified-course-mobile .practical-grid,
 html.unified-course-mobile .quiz-layout,
 html.unified-course-mobile .extended-layout{gap:7px!important}
-html.unified-course-mobile .uc-essential-section ul{grid-template-columns:1fr!important}
+html.unified-course-mobile .uc-essential-section ul{grid-template-columns:minmax(0,1fr)!important}
 
 @media(max-width:700px){
-  .uc-embedded-toolbar{min-height:39px;padding:3px 5px;gap:4px}
+  html.unified-course-embedded body,html.unified-course-embedded .main,html.unified-course-embedded .view{width:100%!important;max-width:100%!important;min-width:0!important;overflow-x:hidden!important}
+  .uc-embedded-toolbar{min-height:39px;padding:3px 5px;gap:4px;width:100%;max-width:100%}
   .uc-exit-course{width:32px;height:32px;padding:0;font-size:0}
   .uc-exit-course::after{content:'←';font-size:.8rem}
   .uc-textbook-button,.uc-notebook-button{width:34px;height:32px;padding:0;display:grid;place-items:center;font-size:0}.uc-textbook-button span,.uc-notebook-button span{font-size:.8rem}.uc-textbook-button b,.uc-notebook-button b{display:none}
-  .uc-view-picker select{width:100%;min-height:32px;font-size:.72rem!important;padding:5px 7px!important}
-  html.unified-course-embedded .wrap{width:min(100% - 10px,1120px)!important}
+  .uc-view-picker select{width:100%;min-width:0;min-height:32px;font-size:.72rem!important;padding:5px 7px!important}
+  html.unified-course-embedded .wrap{width:calc(100% - 10px)!important;max-width:100%!important;min-width:0!important}
   html.unified-course-embedded .section-head h2{font-size:1.1rem!important}
-  .uc-lesson-essentials{margin:7px auto 6px}.uc-lesson-essentials>summary{padding:9px 10px}.uc-essential-body{padding:0 10px 10px}.uc-essential-section ul{grid-template-columns:1fr}.uc-essential-equation{grid-template-columns:1fr}.uc-essential-equation small{display:block}.uc-essential-actions{justify-content:flex-start}
+  html.unified-course-embedded .course-layout,html.unified-course-embedded .lesson-panel,html.unified-course-embedded .lab-layout,html.unified-course-embedded .textbook-layout,html.unified-course-embedded .formula-layout,html.unified-course-embedded .practical-grid,html.unified-course-embedded .quiz-layout,html.unified-course-embedded .extended-layout{width:100%!important;max-width:100%!important;min-width:0!important}
+  .uc-lesson-essentials{width:calc(100% - 10px);max-width:calc(100% - 10px);margin:7px auto 6px}.uc-lesson-essentials>summary{padding:9px 10px}.uc-essential-body{padding:0 10px 10px}.uc-essential-section ul{grid-template-columns:minmax(0,1fr)}.uc-essential-equation{grid-template-columns:minmax(0,1fr);width:100%}.uc-essential-equation small{display:block}.uc-essential-actions{justify-content:flex-start}
 }
