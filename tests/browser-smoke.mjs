@@ -15,57 +15,80 @@ const routes = [
 ];
 
 const browser = await chromium.launch({headless:true});
-const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, serviceWorkers: 'block' });
 const failures = [];
-const warnings = [];
+const warnings = new Set();
 const errorText = e => e?.stack || e?.message || String(e);
 
-for (const route of routes) {
-  const page = await context.newPage();
-  const localFailures = [];
-  const pageErrors = [];
-  const consoleErrors = [];
-  page.on('pageerror', e => pageErrors.push(errorText(e)));
-  page.on('console', msg => { if (msg.type() === 'error') consoleErrors.push(msg.text()); });
+function attachDiagnostics(page, route, mode='desktop') {
+  const localFailures = new Set();
+  const pageErrors = new Set();
+  const consoleErrors = new Set();
+  page.on('pageerror', e => pageErrors.add(errorText(e)));
+  page.on('console', msg => {
+    if (msg.type() === 'error' && !/favicon\.ico/i.test(msg.text())) consoleErrors.add(msg.text());
+  });
   page.on('requestfailed', req => {
     const url = req.url();
-    if (url.startsWith(base)) localFailures.push(`${req.method()} ${url} :: ${req.failure()?.errorText || 'failed'}`);
-    else warnings.push(`${route}: external request failed: ${url}`);
+    if (url.startsWith(base)) localFailures.add(`${req.method()} ${url} :: ${req.failure()?.errorText || 'failed'}`);
+    else warnings.add(`${mode} ${route}: external request failed: ${url}`);
   });
+  return {localFailures,pageErrors,consoleErrors};
+}
+
+function reportDiagnostics(route, mode, d) {
+  if (d.localFailures.size) failures.push(`${mode} ${route}: ${d.localFailures.size} local network failure(s):\n  ${[...d.localFailures].join('\n  ')}`);
+  if (d.pageErrors.size) failures.push(`${mode} ${route}: page error(s):\n  ${[...d.pageErrors].join('\n  ')}`);
+  if (d.consoleErrors.size) failures.push(`${mode} ${route}: console error(s):\n  ${[...d.consoleErrors].join('\n  ')}`);
+}
+
+const desktop = await browser.newContext({ viewport: { width: 1440, height: 1000 }, serviceWorkers: 'block' });
+for (const route of routes) {
+  const page = await desktop.newPage();
+  const d = attachDiagnostics(page, route, 'desktop');
   try {
     const res = await page.goto(base + route, { waitUntil: 'domcontentloaded', timeout: 45000 });
-    await page.waitForTimeout(1800);
-    if (!res || res.status() >= 400) failures.push(`${route}: HTTP ${res?.status() ?? 'no response'}`);
+    await page.waitForTimeout(1500);
+    if (!res || res.status() >= 400) failures.push(`desktop ${route}: HTTP ${res?.status() ?? 'no response'}`);
     const textLen = await page.locator('body').innerText().then(t => t.trim().length).catch(() => 0);
-    if (textLen < 40) failures.push(`${route}: page rendered too little visible content (${textLen} chars)`);
+    if (textLen < 40) failures.push(`desktop ${route}: page rendered too little visible content (${textLen} chars)`);
     const overlay = await page.locator('[data-nextjs-dialog], .vite-error-overlay, #webpack-dev-server-client-overlay').count().catch(() => 0);
-    if (overlay) failures.push(`${route}: framework error overlay detected`);
-    if (localFailures.length) failures.push(`${route}: ${localFailures.length} local network failure(s):\n  ${localFailures.join('\n  ')}`);
-    if (pageErrors.length) failures.push(`${route}: page error(s):\n  ${pageErrors.join('\n  ')}`);
-    if (consoleErrors.length) {
-      const real = consoleErrors.filter(x => !/favicon\.ico/i.test(x));
-      if (real.length) failures.push(`${route}: console error(s):\n  ${real.join('\n  ')}`);
+    if (overlay) failures.push(`desktop ${route}: framework error overlay detected`);
+
+    // Exercise each main app view so lazy textbook/simulation/practical/assessment code also runs.
+    if (route !== '/') {
+      const nav = page.locator('.main-nav .nav-button');
+      const navCount = Math.min(await nav.count(), 16);
+      for (let i = 0; i < navCount; i++) {
+        const button = nav.nth(i);
+        if (await button.isVisible().catch(() => false)) {
+          const label = (await button.innerText().catch(() => '')).trim();
+          await button.click({timeout:5000}).catch(e => failures.push(`desktop ${route}: could not open nav view '${label || i+1}': ${errorText(e)}`));
+          await page.waitForTimeout(350);
+        }
+      }
     }
-    console.log(`Checked ${route} (${textLen} visible chars)`);
+
+    reportDiagnostics(route, 'desktop', d);
+    console.log(`Desktop checked ${route} (${textLen} visible chars)`);
   } catch (e) {
-    failures.push(`${route}: navigation failed: ${errorText(e)}`);
+    failures.push(`desktop ${route}: navigation failed: ${errorText(e)}`);
   } finally {
     await page.close();
   }
 }
 
+// Course-shell integration: all cards, iframe changes and progress persistence control.
 {
-  const page = await context.newPage();
-  const pageErrors = [];
-  page.on('pageerror', e => pageErrors.push(errorText(e)));
+  const page = await desktop.newPage();
+  const d = attachDiagnostics(page, '/', 'shell');
   await page.goto(base + '/', { waitUntil: 'domcontentloaded', timeout: 45000 });
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(900);
   const cards = page.locator('.topic-card');
   const cardCount = await cards.count();
   if (cardCount !== 8) failures.push(`course shell: expected 8 topic cards, found ${cardCount}`);
   for (let i = 0; i < cardCount; i++) {
     await cards.nth(i).click();
-    await page.waitForTimeout(700);
+    await page.waitForTimeout(550);
     const src = await page.locator('#topicFrame').getAttribute('src');
     if (!src) failures.push(`course shell topic ${i+1}: iframe src missing after click`);
     const frame = page.frames().find(f => f !== page.mainFrame() && f.url().includes('/topics/'));
@@ -75,19 +98,40 @@ for (const route of routes) {
   await page.locator('#markComplete').click();
   const after = await page.locator('#progressText').innerText();
   if (before === after) failures.push('course shell: Mark topic complete did not update overall progress');
-  if (pageErrors.length) failures.push(`course shell interaction errors:\n${pageErrors.join('\n---\n')}`);
+  reportDiagnostics('/', 'shell', d);
   await page.close();
 }
+await desktop.close();
 
+// Mobile smoke pass: catches viewport-specific runtime failures and flags page-level horizontal overflow.
+const mobile = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, serviceWorkers: 'block' });
+for (const route of routes) {
+  const page = await mobile.newPage();
+  const d = attachDiagnostics(page, route, 'mobile');
+  try {
+    const res = await page.goto(base + route, { waitUntil: 'domcontentloaded', timeout: 45000 });
+    await page.waitForTimeout(900);
+    if (!res || res.status() >= 400) failures.push(`mobile ${route}: HTTP ${res?.status() ?? 'no response'}`);
+    const dims = await page.evaluate(() => ({scrollWidth:document.documentElement.scrollWidth, clientWidth:document.documentElement.clientWidth}));
+    if (dims.scrollWidth > dims.clientWidth + 24) warnings.add(`mobile ${route}: page-level horizontal overflow ${dims.scrollWidth}px > ${dims.clientWidth}px`);
+    reportDiagnostics(route, 'mobile', d);
+    console.log(`Mobile checked ${route}`);
+  } catch (e) {
+    failures.push(`mobile ${route}: navigation failed: ${errorText(e)}`);
+  } finally {
+    await page.close();
+  }
+}
+await mobile.close();
 await browser.close();
 
-if (warnings.length) {
-  console.log(`\nWarnings (${warnings.length}):`);
-  for (const w of warnings.slice(0, 30)) console.log(' -', w);
+if (warnings.size) {
+  console.log(`\nWarnings (${warnings.size}):`);
+  for (const w of [...warnings].slice(0, 50)) console.log(' -', w);
 }
 if (failures.length) {
   console.error(`\nBROWSER AUDIT FAILED (${failures.length}):`);
   for (const f of failures) console.error(' -', f);
   process.exit(1);
 }
-console.log('\nPASS: browser/runtime checks passed for the course shell and every topic module.');
+console.log('\nPASS: desktop navigation, embedded-course integration and mobile runtime checks passed for every topic module.');
