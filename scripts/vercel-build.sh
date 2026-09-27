@@ -24,12 +24,33 @@ for file in "${required[@]}"; do
   fi
 done
 
+echo "Applying verified integration compatibility fixes..."
+python3 scripts/apply-integration-fixes.py
+
+materials_dir="topics/04-mechanics-materials/materials"
+if [[ ! -f "$materials_dir/vendor/three.module.min.js" || ! -f "$materials_dir/vendor/xlsx.full.min.js" ]]; then
+  echo "Generating Materials local vendor assets for embedded deployment..."
+  npm install --prefix "$materials_dir" --ignore-scripts --no-audit --no-fund
+  npm --prefix "$materials_dir" run vendor
+fi
+
+for file in \
+  "$materials_dir/three-performance-v10.js" \
+  "$materials_dir/vendor/three.module.min.js" \
+  "$materials_dir/vendor/xlsx.full.min.js"; do
+  if [[ ! -f "$file" ]]; then
+    echo "Missing generated Materials runtime dependency: $file" >&2
+    exit 1
+  fi
+done
+
 rm -rf dist
 mkdir -p dist
 cp index.html app.js styles.css manifest.webmanifest .nojekyll dist/
 cp -R topics dist/topics
 
-# Submodule Git metadata is not required in the deployed static output.
+# Submodule Git metadata and package-manager install folders are not required in the deployed static output.
 find dist/topics -name .git -exec rm -rf {} + 2>/dev/null || true
+find dist/topics -type d -name node_modules -prune -exec rm -rf {} + 2>/dev/null || true
 
 echo "Unified A-Level Physics course assembled in dist/."
