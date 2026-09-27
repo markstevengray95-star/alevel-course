@@ -53,6 +53,7 @@ function setCourseMode(open,{scroll=true,updateUrl=true}={}){
   courseOpen=!!open;
   document.body.classList.toggle('course-mode',courseOpen);
   document.body.classList.toggle('home-mode',!courseOpen);
+  document.body.classList.toggle('multi-module-topic',courseOpen&&activeTopic.modules.length>1);
   courseHome.hidden=courseOpen;
   workspace.hidden=!courseOpen;
   jumpbar.hidden=!courseOpen;
@@ -65,6 +66,16 @@ function setCourseMode(open,{scroll=true,updateUrl=true}={}){
   }
 }
 
+function renderHomeSummary(){
+  const done=topics.filter(t=>progress[t.id]).length;
+  const summary=document.getElementById('homeProgressSummary');
+  if(summary)summary.textContent=done?`${done} of ${topics.length} complete · AQA 3.1–3.8`:`${topics.length} topics · AQA 3.1–3.8`;
+  const stored=safeJson(localStorage.getItem(locationKey),{});
+  const resume=topics.find(t=>t.id===stored.topic)||topics.find(t=>!progress[t.id])||topics[0];
+  const continueBtn=document.getElementById('continueBtn');
+  if(continueBtn)continueBtn.textContent=done===topics.length?`Review ${resume.short}`:`Continue ${resume.short}`;
+}
+
 function renderProgress(){
  const done=topics.filter(t=>progress[t.id]).length;
  document.getElementById('progressText').textContent=`${done} / ${topics.length} complete`;
@@ -73,10 +84,14 @@ function renderProgress(){
  document.getElementById('markComplete').classList.toggle('complete-button',!!progress[activeTopic.id]);
  [...grid.children].forEach((el,i)=>el.classList.toggle('complete',!!progress[topics[i].id]));
  courseRail?.querySelectorAll('[data-topic-id]').forEach(btn=>btn.classList.toggle('complete',!!progress[btn.dataset.topicId]));
+ renderHomeSummary();
 }
 
 function renderGrid(){
- grid.innerHTML=topics.map((t,i)=>`<article class="topic-card ${t.id===activeTopic.id?'active':''} ${progress[t.id]?'complete':''}" data-id="${t.id}" tabindex="0" role="button" aria-label="Open ${t.title}"><span class="topic-index">${t.code}</span><h3>${t.title}</h3><p>${t.description}</p><div class="topic-footer"><span>${t.year}</span><span>Open →</span></div></article>`).join('');
+ grid.innerHTML=topics.map((t)=>{
+   const status=progress[t.id]?'Completed ✓':(t.id===activeTopic.id?'Continue →':'Open →');
+   return `<article class="topic-card ${t.id===activeTopic.id?'active':''} ${progress[t.id]?'complete':''}" data-id="${t.id}" tabindex="0" role="button" aria-label="Open ${t.title}"><span class="topic-index">${t.code}</span><h3>${t.title}</h3><p>${t.description}</p><div class="topic-footer"><span>${t.year}</span><span>${status}</span></div></article>`;
+ }).join('');
  grid.querySelectorAll('.topic-card').forEach(card=>{
    const open=()=>openTopic(card.dataset.id,true,0);
    card.addEventListener('click',open);
@@ -88,7 +103,7 @@ function renderQuickNavigation(){
  quickSelect.innerHTML=topics.map((t,i)=>`<option value="${t.id}">${i+1}. ${t.code.replace('AQA ','')} · ${t.title}</option>`).join('');
  quickSelect.value=activeTopic.id;
  const i=topicIndex();
- document.getElementById('coursePosition').textContent=`${i+1} of ${topics.length}`;
+ document.getElementById('coursePosition').textContent=`${i+1} / ${topics.length}`;
  document.getElementById('prevCourse').disabled=i===0;
  document.getElementById('nextCourse').disabled=i===topics.length-1;
  document.getElementById('workspacePrev').disabled=i===0;
@@ -100,6 +115,7 @@ function updateWorkspaceMetadata(){
  document.getElementById('workspaceTitle').textContent=activeTopic.title;
  document.getElementById('workspaceDescription').textContent=activeTopic.description;
  document.getElementById('workspaceYear').textContent=activeTopic.year;
+ document.body.classList.toggle('multi-module-topic',courseOpen&&activeTopic.modules.length>1);
  renderTabs();
  renderQuickNavigation();
  renderGrid();
@@ -120,7 +136,10 @@ function openTopic(id,scroll=false,moduleIndex=0,{historyMode='auto'}={}){
 }
 
 function exitCourse({scroll=true,updateUrl=true}={}){
+ document.querySelector('.shell-more[open]')?.removeAttribute('open');
  setCourseMode(false,{scroll,updateUrl});
+ renderGrid();
+ renderHomeSummary();
  dispatchContext();
 }
 
@@ -138,7 +157,8 @@ function renderTabs(){
  document.getElementById('moduleNext').hidden=count<2;
  if(count<2){tabs.classList.add('hidden');tabs.innerHTML='';return;}
  tabs.classList.remove('hidden');
- tabs.innerHTML=activeTopic.modules.map((m,i)=>`<button type="button" class="${i===activeModule?'active':''}" data-index="${i}">${m.label}</button>`).join('');
+ tabs.setAttribute('aria-label','Mechanics and materials modules');
+ tabs.innerHTML=activeTopic.modules.map((m,i)=>`<button type="button" class="${i===activeModule?'active':''}" data-index="${i}" aria-pressed="${i===activeModule}">${m.label}</button>`).join('');
  tabs.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>changeModule(Number(b.dataset.index))));
 }
 
@@ -189,7 +209,7 @@ function restoreLocation(){
 
 document.getElementById('markComplete').addEventListener('click',()=>{progress[activeTopic.id]=!progress[activeTopic.id];saveProgress();renderProgress();renderGrid();});
 document.getElementById('resetProgress').addEventListener('click',()=>{progress={};saveProgress();renderProgress();renderGrid();});
-document.getElementById('reloadFrame').addEventListener('click',()=>{frame.src=moduleUrl();});
+document.getElementById('reloadFrame').addEventListener('click',()=>{frame.src=moduleUrl();document.querySelector('.shell-more[open]')?.removeAttribute('open');});
 document.getElementById('continueBtn').addEventListener('click',()=>{const stored=safeJson(localStorage.getItem(locationKey),{});const next=topics.find(t=>t.id===stored.topic)||topics.find(t=>!progress[t.id])||topics[0];openTopic(next.id,true,stored.module||0);});
 quickSelect.addEventListener('change',()=>openTopic(quickSelect.value,true,0));
 document.getElementById('prevCourse').addEventListener('click',previousTopic);
@@ -208,6 +228,12 @@ window.addEventListener('popstate',()=>{
  else exitCourse({scroll:false,updateUrl:false});
 });
 document.addEventListener('keydown',e=>{
+ const typing=['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName||'');
+ if(e.key==='Escape'&&!typing){
+   const openMenu=document.querySelector('.shell-more[open]');
+   if(openMenu){openMenu.removeAttribute('open');return;}
+   if(courseOpen&&!document.getElementById('coachPanel')?.classList.contains('open')){e.preventDefault();exitCourse();return;}
+ }
  if(!courseOpen)return;
  if(e.altKey&&e.key==='ArrowLeft'){e.preventDefault();previousTopic();}
  if(e.altKey&&e.key==='ArrowRight'){e.preventDefault();nextTopic();}
