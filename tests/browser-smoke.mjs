@@ -71,26 +71,29 @@ for (const route of routes) {
   if (await page.locator('#workspaceSection').isVisible()) failures.push('shell: workspace should be hidden initially');
   const cards = page.locator('.topic-card');
   if (await cards.count() !== 8) failures.push(`shell: expected 8 topic cards, found ${await cards.count()}`);
+  if (!(await page.locator('#homeNotebookBtn').isVisible())) failures.push('shell: notebook button missing on Course Home');
 
   await cards.nth(4).click();
   await page.waitForTimeout(700);
   if (!(await page.locator('#workspaceSection').isVisible())) failures.push('shell: opening Electricity did not enter focused topic mode');
-  if (!(await page.locator('#exitCourse').isVisible())) failures.push('shell: Exit course is not visible in focused mode');
+  if (!(await page.locator('#exitCourse').isVisible())) failures.push('shell: Course home control is not visible in focused mode');
+  if (!(await page.locator('#notebookToggle').isVisible())) failures.push('shell: notebook control is not visible in focused mode');
   if (!(await page.locator('#workspaceCode').innerText()).includes('3.5')) failures.push('shell: Electricity did not become active');
 
   let frame = page.frames().find(f=>f!==page.mainFrame()&&f.url().includes('/topics/05-electricity'));
   if (!frame) failures.push('shell: Electricity embedded frame did not load');
   else {
     if (!(await frame.locator('.uc-embedded-toolbar').isVisible().catch(()=>false))) failures.push('shell: compact embedded toolbar missing');
-    if (!(await frame.locator('.uc-exit-course').isVisible().catch(()=>false))) failures.push('shell: embedded Exit course button missing');
+    if (!(await frame.locator('.uc-exit-course').isVisible().catch(()=>false))) failures.push('shell: embedded Home button missing');
     if (!(await frame.locator('.uc-view-picker select').isVisible().catch(()=>false))) failures.push('shell: embedded section picker missing');
+    if (!(await frame.locator('.uc-notebook-button').isVisible().catch(()=>false))) failures.push('shell: embedded Save note button missing');
     const internalNavVisible = await frame.locator('.main-nav').isVisible().catch(()=>false);
     if (internalNavVisible) failures.push('shell: old internal tab bar is still visible in embedded mode');
   }
 
-  await page.locator('#nextCourse').click();
+  await page.locator('#quickCourseSelect').selectOption('further-mechanics');
   await page.waitForTimeout(500);
-  if (!(await page.locator('#workspaceCode').innerText()).includes('3.6')) failures.push('shell: next topic control failed');
+  if (!(await page.locator('#workspaceCode').innerText()).includes('3.6')) failures.push('shell: topic dropdown navigation failed');
   await page.keyboard.press('Alt+ArrowLeft');
   await page.waitForTimeout(350);
   if (!(await page.locator('#workspaceCode').innerText()).includes('3.5')) failures.push('shell: keyboard topic navigation failed');
@@ -100,6 +103,7 @@ for (const route of routes) {
   await page.locator('#coachInput').fill('Give me a hint for the current topic.');
   await page.locator('#coachSend').click();
   await page.waitForFunction(()=>/Use V = IR as a starting relationship/i.test(document.querySelector('#coachMessages')?.innerText||''),null,{timeout:8000}).catch(e=>failures.push(`AI coach: response missing: ${errorText(e)}`));
+  if (!(await page.locator('.coach-save-note').last().isVisible().catch(()=>false))) failures.push('AI coach: Save explanation to notebook action missing');
   await page.locator('#coachClose').click();
 
   const before = await page.locator('#progressText').innerText();
@@ -110,14 +114,14 @@ for (const route of routes) {
   if (frame) {
     await frame.locator('.uc-exit-course').click();
     await page.waitForTimeout(200);
-    if (!(await page.locator('#courseHome').isVisible())) failures.push('shell: embedded Exit course did not return home');
+    if (!(await page.locator('#courseHome').isVisible())) failures.push('shell: embedded Home did not return home');
   }
 
   await page.locator('.topic-card').first().click();
   await page.waitForTimeout(450);
   await page.locator('#exitCourse').click();
   await page.waitForTimeout(150);
-  if (!(await page.locator('#courseHome').isVisible())) failures.push('shell: outer Exit course did not return home');
+  if (!(await page.locator('#courseHome').isVisible())) failures.push('shell: outer Course home control did not return home');
   if (await page.locator('#workspaceSection').isVisible()) failures.push('shell: workspace remained visible after exit');
   reportDiagnostics('/','shell',d);
   await page.close();
@@ -143,4 +147,4 @@ await browser.close();
 
 if (warnings.size) { console.log(`\nWarnings (${warnings.size}):`); for (const w of [...warnings].slice(0,30)) console.log(' -',w); }
 if (failures.length) { console.error(`\nBROWSER AUDIT FAILED (${failures.length}):`); failures.forEach(f=>console.error(' -',f)); process.exit(1); }
-console.log('\nPASS: focused home/topic flow, both exit controls, AI coach, topic switching and mobile runtime checks passed.');
+console.log('\nPASS: focused home/topic flow, shared notebook controls, AI coach, dropdown topic switching and mobile runtime checks passed.');
