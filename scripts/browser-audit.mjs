@@ -105,22 +105,32 @@ try {
   await shell.locator('#notebookClose').click();
   await shell.locator('#exitCourse').click();
 
-  // Selected lesson text can be captured directly from an embedded topic.
+  // Selected lesson text can be captured directly without losing the browser selection on button focus.
   await shell.locator('.topic-card').first().click();
   await shell.waitForTimeout(450);
   let embeddedFrame = shell.frames().find(f => f !== shell.mainFrame() && f.url().includes('/topics/'));
   if (embeddedFrame) {
-    await embeddedFrame.evaluate(() => {
-      const target=document.querySelector('p,li,h2,h3');
-      if(!target)return;
+    const selected = await embeddedFrame.evaluate(() => {
+      const candidates=[...document.querySelectorAll('p,li,h2,h3')];
+      const target=candidates.find(el=>(el.textContent||'').trim().length>12);
+      if(!target)return '';
       const range=document.createRange();range.selectNodeContents(target);
       const selection=getSelection();selection.removeAllRanges();selection.addRange(range);
+      return selection.toString().trim();
     });
-    await embeddedFrame.locator('.uc-notebook-button').click();
-    await shell.waitForTimeout(120);
-    const savedCount=await shell.evaluate(() => {try{return JSON.parse(localStorage.getItem('alevel-physics-student-notebook-v1')||'[]').length}catch{return 0}});
-    if(savedCount < 2) shellErrors.push('selected lesson text was not saved into the course notebook');
+    if(!selected) shellErrors.push('could not create a lesson text selection for notebook audit');
+    else {
+      await embeddedFrame.locator('.uc-notebook-button').click();
+      await shell.waitForTimeout(180);
+      const saved=await shell.evaluate(() => {try{return JSON.parse(localStorage.getItem('alevel-physics-student-notebook-v1')||'[]')}catch{return []}});
+      if(saved.length < 2) shellErrors.push('selected lesson text was not saved into the course notebook');
+      else {
+        const latest=saved[saved.length-1];
+        if(!latest.sectionTitle) shellErrors.push('saved lesson selection was not tagged with lesson/section context');
+      }
+    }
   }
+  if(await shell.locator('#notebookPanel').evaluate(el=>el.classList.contains('open')).catch(()=>false)) await shell.locator('#notebookClose').click();
   await shell.locator('#exitCourse').click();
 
   // Mechanics and materials is the only core section with two linked modules.
@@ -174,4 +184,4 @@ if (failures.length) {
   for (const item of failures) { console.error(`\n${item.route}`); for (const error of item.errors) console.error(`  - ${error}`); }
   process.exit(1);
 }
-console.log('Browser audit passed: consistent topic layout, course-wide notebook persistence, module switching and exit paths work.');
+console.log('Browser audit passed: consistent topic layout, course-wide notebook persistence, lesson tagging, module switching and exit paths work.');
