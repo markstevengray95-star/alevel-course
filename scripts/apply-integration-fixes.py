@@ -50,4 +50,35 @@ for path, replacements in fixes.items():
     if text != original:
         path.write_text(text, 'utf-8')
 
+mobile_css = r'''
+
+/* unified-course-mobile-containment */
+@media (max-width:650px){
+  html,body{width:100%;max-width:100%;overflow-x:clip}
+  .wrap,.main,.view,.panel,.hero,.grid,.course-layout,.lesson-grid,.lab-layout,.lab-side,
+  .formula-layout,.practical-grid,.quiz-layout,.extended-layout,.textbook-layout,.section-head,
+  .viewer-wrap,.three-shell-v5,.three-stage-v5,.v11-sim-grid,.v11-stage{min-width:0!important;max-width:100%!important}
+  canvas,svg,img,video,iframe{max-width:100%!important;width:auto}
+  canvas{width:100%!important}
+  .main-nav,.sim-tabs,.chunk-strip,.scene-nav-v5,.v11-scene-nav,.table-scroll,
+  .button-row,.viewer-controls,.hero-actions{max-width:100%!important;overflow-x:auto}
+  table{max-width:100%}
+  pre,code{overflow-wrap:anywhere;word-break:break-word}
+}
+'''
+mobile_targets = [
+    Path('topics/03-waves/styles.css'),
+    Path('topics/04-mechanics-materials/mechanics/styles.css'),
+    Path('topics/05-electricity/styles.css'),
+    Path('topics/06-further-mechanics-thermal/styles.css'),
+]
+for path in mobile_targets:
+    if not path.exists():
+        raise SystemExit(f'Missing mobile integration stylesheet: {path}')
+    text = path.read_text('utf-8')
+    if 'unified-course-mobile-containment' not in text:
+        path.write_text(text + mobile_css, 'utf-8')
+        changed += 1
+        print(f'Added mobile containment to {path}')
+
 print(f'Applied {changed} integration compatibility replacement(s).')
