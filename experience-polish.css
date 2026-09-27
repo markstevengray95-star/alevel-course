@@ -17,12 +17,32 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible,te
 .course-area-button:hover,.course-area-button[aria-current="page"]{background:rgba(102,217,208,.08);color:#e7fbf9}
 .course-area-button[aria-current="page"]{box-shadow:inset 0 0 0 1px rgba(102,217,208,.15)}
 
+/* Course Home resume dashboard: useful information without another permanent toolbar. */
+.home-learning-dashboard{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(360px,.85fr);gap:10px;margin:14px 0 2px}
+.home-resume-card{appearance:none;width:100%;min-width:0;border:1px solid rgba(102,217,208,.2);border-radius:16px;background:radial-gradient(circle at 90% 20%,rgba(102,217,208,.1),transparent 34%),linear-gradient(145deg,#102132,#0b1825 62%,#0a1521);color:var(--text);padding:16px 18px;text-align:left;cursor:pointer;display:grid;gap:7px;box-shadow:0 14px 34px rgba(0,0,0,.12)}
+.home-resume-card:hover,.home-resume-card:focus-visible{border-color:rgba(102,217,208,.42);transform:translateY(-1px);box-shadow:0 18px 42px rgba(0,0,0,.18)}
+.home-resume-kicker{font:850 .59rem/1 system-ui,sans-serif;letter-spacing:.095em;text-transform:uppercase;color:#75cfc8}
+.home-resume-main{display:flex;align-items:center;gap:14px;min-width:0}.home-resume-main strong{font-size:1rem;letter-spacing:-.012em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.home-resume-main span{margin-left:auto;white-space:nowrap;font:850 .7rem/1 system-ui,sans-serif;color:#c4f2ee}
+.home-resume-detail{font-size:.69rem;color:#8fa5b9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.home-resume-progress{height:3px;background:rgba(151,181,210,.1);border-radius:999px;overflow:hidden;margin-top:3px}.home-resume-progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,#66d9d0,#79a9ef);border-radius:inherit;transition:width .25s var(--shell-ease)}
+.home-overview-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.home-overview-stat{border:1px solid rgba(151,181,210,.09);border-radius:13px;background:linear-gradient(145deg,rgba(13,23,36,.84),rgba(10,20,31,.8));padding:12px 11px;display:grid;align-content:center;gap:3px;min-width:0}
+.home-overview-stat span{font:800 .58rem/1 system-ui,sans-serif;text-transform:uppercase;letter-spacing:.07em;color:#75899d}.home-overview-stat strong{font-size:1.05rem;color:#e3edf6}.home-overview-stat small{font-size:.58rem;color:#72879a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
 /* Home becomes a clear learning cycle rather than disconnected blocks. */
 .study-cycle{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:14px 0 2px}
 .study-cycle-step{appearance:none;border:1px solid var(--line-soft);border-radius:13px;background:linear-gradient(145deg,rgba(13,23,36,.92),rgba(10,20,31,.92));color:var(--text);padding:12px 13px;text-align:left;cursor:pointer;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;min-height:70px}
 .study-cycle-step:hover,.study-cycle-step:focus-visible{border-color:rgba(102,217,208,.3);background:linear-gradient(145deg,rgba(16,31,46,.98),rgba(11,24,36,.98));transform:translateY(-1px)}
 .study-cycle-number{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:rgba(102,217,208,.08);border:1px solid rgba(102,217,208,.15);color:#bdf3ee;font:900 .72rem/1 system-ui,sans-serif}
 .study-cycle-copy{min-width:0;display:grid;gap:2px}.study-cycle-copy strong{font-size:.82rem}.study-cycle-copy span{font-size:.65rem;color:#8197aa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.study-cycle-arrow{color:#78b7b4;font-size:.84rem}
+
+/* The AQA sequence reads as two deliberate stages without changing the topic-card DOM. */
+.course-stage-strip{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:stretch;gap:8px;margin:10px 0 13px}
+.course-stage{border:1px solid rgba(151,181,210,.09);border-radius:12px;background:rgba(10,20,31,.58);padding:9px 11px;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:9px;min-width:0}
+.course-stage-number{width:29px;height:29px;border-radius:8px;display:grid;place-items:center;background:rgba(121,169,239,.07);border:1px solid rgba(121,169,239,.12);color:#9abbe9;font:900 .6rem/1 system-ui,sans-serif}
+.course-stage>span:nth-child(2){display:grid;gap:2px;min-width:0}.course-stage small{font:800 .54rem/1 system-ui,sans-serif;color:#6f8397;text-transform:uppercase;letter-spacing:.07em}.course-stage strong{font-size:.72rem;color:#cedce8}.course-stage em{font-style:normal;font-size:.58rem;color:#708599;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.course-stage b{font:850 .64rem/1 system-ui,sans-serif;color:#91a8bc;white-space:nowrap}
+.course-stage.complete{border-color:rgba(102,217,208,.2);background:rgba(102,217,208,.04)}.course-stage.complete .course-stage-number{color:#bdf3ee;border-color:rgba(102,217,208,.2);background:rgba(102,217,208,.07)}.course-stage.complete b{color:#9be4dd}
+.course-stage-connector{align-self:center;color:#526b7d;font-size:.82rem;padding-inline:1px}
 
 /* Topic cards and course tools share the same density and interaction language. */
 .topic-card,.course-tool-card{border-color:rgba(151,181,210,.1)!important;background:linear-gradient(150deg,#0d1724,#0b1521)!important}
@@ -72,16 +92,21 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible,te
   .global-course-nav{margin-left:auto}.header-progress{width:150px}
   .area-tool-button{display:none!important}
   .tool-area-switcher button{padding-inline:7px}
+  .home-learning-dashboard{grid-template-columns:1fr}.home-overview-stats{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
 @media(max-width:760px){
   .topbar-inner{gap:7px!important}.header-progress{display:none!important}.brand-block{margin-right:auto}
   .global-course-nav{gap:2px;padding:2px}.course-area-button{min-height:32px;padding:6px 7px;font-size:.62rem}
+  .home-learning-dashboard{margin-top:10px;gap:7px}.home-resume-card{padding:14px 13px;border-radius:14px}.home-resume-main strong{font-size:.9rem}.home-overview-stat{padding:10px 8px}.home-overview-stat strong{font-size:.92rem}
   .study-cycle{gap:6px}.study-cycle-step{grid-template-columns:auto 1fr;padding:10px;min-height:64px}.study-cycle-arrow{display:none}.study-cycle-copy span{font-size:.6rem}
+  .course-stage-strip{gap:6px}.course-stage{padding:8px;gap:7px}.course-stage-number{display:none}.course-stage em{font-size:.55rem}.course-stage b{font-size:.59rem}
   .tool-bar{height:50px!important;flex-basis:50px!important}.tool-identity{display:none!important}.tool-area-switcher{margin-right:auto}.tool-area-switcher button{font-size:.6rem;height:32px;padding:0 7px}.practical-section-wrap span{display:none}.practical-section-picker{max-width:118px;height:34px;font-size:.61rem}
   .tool-action.accent{display:none!important}
 }
 @media(max-width:520px){
+  .home-overview-stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.home-overview-stat small{font-size:.52rem}.home-resume-detail{font-size:.62rem}.home-resume-main{gap:8px}.home-resume-main span{font-size:.63rem}
   .study-cycle{grid-template-columns:1fr}.study-cycle-step{min-height:58px}.study-cycle-copy span{white-space:normal}
+  .course-stage-strip{grid-template-columns:1fr}.course-stage-connector{display:none}.course-stage{min-height:52px}.course-stage em{white-space:normal}
   .course-area-button{font-size:0;width:34px;padding:0}.course-area-button::before{font-size:.86rem}.course-area-button[data-area="learn"]::before{content:'◫'}.course-area-button[data-area="practicals"]::before{content:'⚗'}.course-area-button[data-area="marking"]::before{content:'✓'}
   .tool-area-switcher button{width:34px;font-size:0;padding:0}.tool-area-switcher button::before{font-size:.82rem}.tool-area-switcher [data-tool-area="learn"]::before{content:'◫'}.tool-area-switcher [data-tool-area="practicals"]::before{content:'⚗'}.tool-area-switcher [data-tool-area="marking"]::before{content:'✓'}
   .practical-section-picker{max-width:105px}
