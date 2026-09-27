@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#07111f">
   <title>AQA A-level Physics Course</title>
-  <meta name="description" content="Unified AQA A-level Physics 7408 course hub with topic learning apps, simulations, textbook material, practical work and assessments.">
+  <meta name="description" content="Unified AQA A-level Physics 7408 course hub with topic learning apps, simulations, textbook material, practical work, assessments and an AI study coach.">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -17,21 +17,36 @@
     </div>
     <div class="pills">
       <span class="pill">8 AQA core topics</span>
-      <span class="pill">Original topic apps retained</span>
-      <span class="pill">One course dashboard</span>
+      <span class="pill">9 linked modules</span>
+      <span class="pill">AI study coach</span>
     </div>
   </div>
 </header>
+
+<nav class="course-jumpbar" aria-label="Course navigation">
+  <div class="wrap course-jump-inner">
+    <button class="nav-square" id="prevCourse" type="button" aria-label="Previous course">←</button>
+    <div class="course-picker-wrap">
+      <span class="course-picker-label">Jump to course</span>
+      <select id="quickCourseSelect" class="course-picker" aria-label="Jump to course"></select>
+    </div>
+    <button class="nav-square" id="nextCourse" type="button" aria-label="Next course">→</button>
+    <div class="course-position" id="coursePosition" aria-live="polite">1 of 8</div>
+    <div class="course-rail" id="courseRail" aria-label="Course shortcuts"></div>
+    <button class="button ai-button" id="coachToggle" type="button">✦ AI Physics Coach</button>
+  </div>
+</nav>
 
 <main class="wrap main">
   <section class="hero-grid">
     <article class="panel hero-copy">
       <span class="eyebrow">Complete core course</span>
       <h1>One place for the full AQA A-level Physics core.</h1>
-      <p>The existing specialist apps are organised into the official AQA sequence. Open any topic inside the course workspace, keep its original lessons, textbook sections, simulations, calculations, practicals and assessment tools, then return to the course map without losing your place.</p>
+      <p>The specialist apps are organised into the official AQA sequence. Move directly between topics with the persistent course switcher, keep each app's original lessons, textbook sections, simulations, calculations, practicals and assessments, and use the course-aware AI coach whenever you need support.</p>
       <div class="button-row">
         <button class="button primary" id="continueBtn">Continue learning</button>
         <button class="button" id="courseMapBtn">View course map</button>
+        <button class="button" id="heroCoachBtn">Ask the AI coach</button>
       </div>
     </article>
     <aside class="panel progress-panel">
@@ -63,7 +78,9 @@
         <p class="muted" id="workspaceDescription"></p>
       </div>
       <div class="workspace-actions">
-        <button class="button" id="markComplete">Mark topic complete</button>
+        <button class="button" id="workspacePrev" type="button">← Previous</button>
+        <button class="button" id="workspaceNext" type="button">Next →</button>
+        <button class="button" id="markComplete" type="button">Mark topic complete</button>
         <a class="button" id="sourceLink" target="_blank" rel="noopener">Source repository</a>
       </div>
     </div>
@@ -72,15 +89,18 @@
 
     <div class="workspace-shell panel">
       <div class="workspace-toolbar">
-        <div><strong id="moduleLabel">Topic app</strong><span class="muted small">Original specialist project</span></div>
+        <div><strong id="moduleLabel">Topic app</strong><span class="muted small" id="modulePosition">Original specialist project</span></div>
         <div class="toolbar-actions">
-          <button class="text-button" id="reloadFrame">Reload</button>
+          <button class="text-button" id="modulePrev" type="button">Previous module</button>
+          <button class="text-button" id="moduleNext" type="button">Next module</button>
+          <button class="text-button" id="reloadFrame" type="button">Reload</button>
+          <button class="text-button coach-inline" id="workspaceCoachBtn" type="button">✦ Ask AI</button>
           <a class="text-button" id="openModule" target="_blank" rel="noopener">Open full page ↗</a>
         </div>
       </div>
       <iframe id="topicFrame" title="A-level Physics topic app" loading="lazy"></iframe>
       <div class="frame-help">
-        <strong>Deployment note:</strong> this course uses the topic repositories as Git submodules so their complete apps remain intact. Deploy/clone the course with submodules enabled for the embedded workspace to load locally.
+        <strong>Tip:</strong> use the sticky course switcher above, Previous/Next controls, or <strong>Alt + ← / Alt + →</strong> to move between course topics without returning to the map.
       </div>
     </div>
   </section>
@@ -92,6 +112,57 @@
   </section>
 </main>
 
+<button class="coach-fab" id="coachFab" type="button" aria-label="Open AI Physics Coach">✦ <span>AI Coach</span></button>
+<div class="coach-backdrop" id="coachBackdrop" hidden></div>
+<aside class="coach-panel" id="coachPanel" aria-hidden="true" aria-label="AI Physics Coach">
+  <div class="coach-head">
+    <div>
+      <span class="eyebrow">Course-aware support</span>
+      <h2>AI Physics Coach</h2>
+      <p class="muted small" id="coachContextLabel">AQA 3.1 · Measurements and their errors</p>
+    </div>
+    <button class="nav-square" id="coachClose" type="button" aria-label="Close AI coach">×</button>
+  </div>
+
+  <div class="coach-controls">
+    <label>
+      <span>Coach mode</span>
+      <select id="coachMode">
+        <option value="explain">Explain clearly</option>
+        <option value="hint">Hint-first help</option>
+        <option value="quiz">Quiz me</option>
+        <option value="worked">Worked example</option>
+        <option value="exam">Exam-answer feedback</option>
+      </select>
+    </label>
+    <div class="coach-status" id="coachStatus"><span class="status-dot"></span><span>Ready</span></div>
+  </div>
+
+  <div class="coach-quick" aria-label="Quick AI prompts">
+    <button type="button" data-coach-prompt="Explain the most important idea on the current page in simple steps.">Explain this page</button>
+    <button type="button" data-coach-prompt="Give me one AQA-style retrieval question from this topic. Do not give the answer until I respond.">Quiz me</button>
+    <button type="button" data-coach-prompt="What are the most common exam mistakes students make in this topic?">Exam mistakes</button>
+    <button type="button" data-coach-prompt="Give me a calculation to practise from this topic, with a hint available but not the final answer yet.">Calculation practice</button>
+  </div>
+
+  <div class="coach-messages" id="coachMessages" aria-live="polite">
+    <div class="coach-message assistant">
+      <strong>Physics Coach</strong>
+      <p>I follow the course you are currently studying. Ask for an explanation, a hint, a calculation, an AQA-style question, or feedback on an answer.</p>
+    </div>
+  </div>
+
+  <form class="coach-compose" id="coachForm">
+    <textarea id="coachInput" rows="3" maxlength="3000" placeholder="Ask about the current topic…"></textarea>
+    <div class="coach-compose-row">
+      <button class="text-button" id="coachClear" type="button">Clear chat</button>
+      <button class="button primary" id="coachSend" type="submit">Send</button>
+    </div>
+  </form>
+  <p class="coach-note">The coach uses the active AQA topic and, when available, the visible lesson text inside the current topic app. If live AI is unavailable it automatically falls back to the built-in course coach.</p>
+</aside>
+
 <script src="app.js"></script>
+<script src="ai-coach.js"></script>
 </body>
 </html>
