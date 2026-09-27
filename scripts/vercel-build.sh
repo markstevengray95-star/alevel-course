@@ -52,9 +52,14 @@ for file in \
   fi
 done
 
+# Catch shell/coach syntax regressions before packaging the static output.
+node --check app.js
+node --check ai-coach.js
+node --check api/physics-coach.js
+
 rm -rf dist
 mkdir -p dist
-cp index.html app.js styles.css manifest.webmanifest .nojekyll dist/
+cp index.html app.js ai-coach.js styles.css course-enhancements.css manifest.webmanifest .nojekyll dist/
 cp -R topics dist/topics
 
 # Submodule Git metadata and package-manager install folders are not required in the deployed static output.
