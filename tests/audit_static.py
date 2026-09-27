@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import json, re, subprocess, sys, tempfile
+import json, re, subprocess, sys
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
@@ -71,7 +71,6 @@ def check_html(path: Path):
         if count > 1:
             errors.append(f"{path.relative_to(ROOT)}: duplicate id '{ident}' appears {count} times")
     for tag,attr,raw in parser.refs:
-        # Stylesheet anchors and normal page links are also checked when local.
         check_target(path, tag, attr, raw)
 
 CSS_URL = re.compile(r"url\(([^)]+)\)", re.I)
@@ -80,7 +79,6 @@ CSS_IMPORT = re.compile(r"@import\s+(?:url\()?['\"]?([^'\"\s);]+)", re.I)
 def check_css(path: Path):
     text = path.read_text("utf-8", errors="replace")
     cleaned = re.sub(r"/\*.*?\*/", "", text, flags=re.S)
-    # Lightweight structural check outside comments.
     if cleaned.count("{") != cleaned.count("}"):
         errors.append(f"{path.relative_to(ROOT)}: unbalanced CSS braces")
     refs = []
@@ -97,13 +95,28 @@ def check_json(path: Path):
     except Exception as e:
         errors.append(f"{path.relative_to(ROOT)}: invalid JSON: {e}")
 
+# Covers static import/export, side-effect imports and string-literal dynamic imports.
+JS_MODULE_REF = re.compile(
+    r"(?:\b(?:import|export)\s+(?:[^'\"\n;]+?\s+from\s+)?|\bimport\s*\()"
+    r"['\"]([^'\"]+)['\"]",
+    re.M,
+)
+
+def check_js_module_refs(path: Path, text: str):
+    for match in JS_MODULE_REF.finditer(text):
+        ref = match.group(1).strip()
+        if ref.startswith(("./", "../", "/")):
+            check_target(path, "js-module", "import", ref)
+
 def check_js(path: Path):
+    text = path.read_text("utf-8", errors="replace")
+    check_js_module_refs(path, text)
     cmd = ["node", "--check", str(path)]
     p = subprocess.run(cmd, text=True, capture_output=True)
     if p.returncode == 0:
         return
     # ESM source can fail under CJS interpretation; retry as module through stdin.
-    p2 = subprocess.run(["node","--input-type=module","--check"], input=path.read_text("utf-8", errors="replace"), text=True, capture_output=True)
+    p2 = subprocess.run(["node","--input-type=module","--check"], input=text, text=True, capture_output=True)
     if p2.returncode != 0:
         msg = (p2.stderr or p.stderr).strip().splitlines()[-1] if (p2.stderr or p.stderr).strip() else "unknown syntax error"
         errors.append(f"{path.relative_to(ROOT)}: JavaScript syntax failure: {msg}")
@@ -143,4 +156,4 @@ if errors:
     print(f"\nFAILED with {len(errors)} issue(s):")
     for e in errors: print(" -", e)
     raise SystemExit(1)
-print("PASS: static resource, syntax, manifest and DOM-ID checks found no blocking issues.")
+print("PASS: static resource, module-import, syntax, manifest and DOM-ID checks found no blocking issues.")
