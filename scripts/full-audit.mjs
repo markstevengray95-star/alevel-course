@@ -1,7 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(process.argv[2] || 'dist');
 const failures = [];
@@ -44,6 +43,12 @@ function checkRef(fromFile, raw, kind) {
   const target = resolveLocal(fromFile, value);
   if (!existsAsWebTarget(target)) fail(`${rel(fromFile)}: missing ${kind} reference '${raw}'`);
 }
+function markupOnly(html) {
+  return html
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, '')
+    .replace(/<!--([\s\S]*?)-->/g, '');
+}
 
 if (!fs.existsSync(root)) {
   console.error(`Audit root does not exist: ${root}`);
@@ -68,15 +73,16 @@ for (const file of files) {
 
   if (ext === '.html') {
     stats.html++;
-    const ids = [...text.matchAll(/\bid\s*=\s*["']([^"']+)["']/gi)].map(m => m[1]);
+    const markup = markupOnly(text);
+    const ids = [...markup.matchAll(/\bid\s*=\s*["']([^"']+)["']/gi)].map(m => m[1]);
     const seen = new Set();
     for (const id of ids) {
       if (seen.has(id)) fail(`${rel(file)}: duplicate HTML id '${id}'`);
       seen.add(id);
     }
 
-    for (const m of text.matchAll(/\b(?:src|href|poster)\s*=\s*["']([^"']+)["']/gi)) checkRef(file, m[1], 'HTML');
-    for (const m of text.matchAll(/\bsrcset\s*=\s*["']([^"']+)["']/gi)) {
+    for (const m of markup.matchAll(/\b(?:src|href|poster)\s*=\s*["']([^"']+)["']/gi)) checkRef(file, m[1], 'HTML');
+    for (const m of markup.matchAll(/\bsrcset\s*=\s*["']([^"']+)["']/gi)) {
       for (const item of m[1].split(',')) checkRef(file, item.trim().split(/\s+/)[0], 'srcset');
     }
     if (!/<title>[\s\S]*?<\/title>/i.test(text)) warn(`${rel(file)}: missing <title>`);
