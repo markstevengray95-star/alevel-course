@@ -60,7 +60,10 @@ try {
     await shell.locator('.topic-card').nth(i).click();
     await shell.waitForTimeout(400);
     if (!(await shell.locator('#workspaceSection').isVisible())) shellErrors.push(`topic ${i + 1}: workspace did not open`);
-    if (!(await shell.locator('#exitCourse').isVisible())) shellErrors.push(`topic ${i + 1}: Exit course control is not visible`);
+    if (!(await shell.locator('#exitCourse').isVisible())) shellErrors.push(`topic ${i + 1}: Course home control is not visible`);
+    if (!(await shell.locator('#markComplete').isVisible())) shellErrors.push(`topic ${i + 1}: completion control missing from main course bar`);
+    if (await shell.locator('body > .topbar').isVisible()) shellErrors.push(`topic ${i + 1}: duplicate site header is visible in focused mode`);
+    if (await shell.locator('.workspace-toolbar').count()) shellErrors.push(`topic ${i + 1}: legacy workspace toolbar returned`);
     const src = await shell.locator('#topicFrame').getAttribute('src');
     if (!src) shellErrors.push(`topic ${i + 1}: iframe src missing`);
 
@@ -69,8 +72,9 @@ try {
     else {
       const embeddedExit = frame.locator('.uc-exit-course');
       const navSelect = frame.locator('.uc-view-picker select');
-      await embeddedExit.waitFor({state:'visible',timeout:3500}).catch(()=>shellErrors.push(`topic ${i + 1}: embedded Exit course button missing`));
+      await embeddedExit.waitFor({state:'visible',timeout:3500}).catch(()=>shellErrors.push(`topic ${i + 1}: embedded Home button missing`));
       await navSelect.waitFor({state:'visible',timeout:3500}).catch(()=>shellErrors.push(`topic ${i + 1}: compact embedded section picker missing`));
+      if (await frame.locator('.main-nav').isVisible().catch(()=>false)) shellErrors.push(`topic ${i + 1}: original internal navigation is still visible`);
     }
 
     await shell.locator('#exitCourse').click();
@@ -79,15 +83,39 @@ try {
     if (await shell.locator('#workspaceSection').isVisible()) shellErrors.push(`topic ${i + 1}: workspace remained visible after exit`);
   }
 
+  // Mechanics and materials is the only core section with two linked modules.
+  await shell.locator('.topic-card[data-id="mechanics-materials"]').click();
+  await shell.waitForTimeout(450);
+  const moduleButtons = shell.locator('#moduleTabs button');
+  if (await moduleButtons.count() !== 2) shellErrors.push('Mechanics and materials should expose exactly two module tabs');
+  else {
+    await moduleButtons.nth(1).click();
+    await shell.waitForTimeout(250);
+    const materialsSrc = await shell.locator('#topicFrame').getAttribute('src');
+    if (!materialsSrc?.includes('/materials/')) shellErrors.push('Materials module tab did not switch the embedded app');
+  }
+  await shell.locator('#exitCourse').click();
+
+  // Embedded Home button path.
   await shell.locator('.topic-card').first().click();
   await shell.waitForTimeout(400);
-  const embeddedFrame = shell.frames().find(f => f !== shell.mainFrame() && f.url().includes('/topics/'));
+  let embeddedFrame = shell.frames().find(f => f !== shell.mainFrame() && f.url().includes('/topics/'));
   if (embeddedFrame) {
     const embeddedExit = embeddedFrame.locator('.uc-exit-course');
     await embeddedExit.waitFor({state:'visible',timeout:3500});
     await embeddedExit.click();
     await shell.waitForTimeout(150);
-    if (!(await shell.locator('#courseHome').isVisible())) shellErrors.push('embedded Exit course button did not return to home');
+    if (!(await shell.locator('#courseHome').isVisible())) shellErrors.push('embedded Home button did not return to Course Home');
+  }
+
+  // Escape should also work while keyboard focus is inside an embedded topic.
+  await shell.locator('.topic-card').first().click();
+  await shell.waitForTimeout(400);
+  embeddedFrame = shell.frames().find(f => f !== shell.mainFrame() && f.url().includes('/topics/'));
+  if (embeddedFrame) {
+    await embeddedFrame.locator('body').press('Escape');
+    await shell.waitForTimeout(150);
+    if (!(await shell.locator('#courseHome').isVisible())) shellErrors.push('Escape from embedded topic did not return to Course Home');
   }
 
   await shell.locator('#continueBtn').click();
@@ -106,4 +134,4 @@ if (failures.length) {
   for (const item of failures) { console.error(`\n${item.route}`); for (const error of item.errors) console.error(`  - ${error}`); }
   process.exit(1);
 }
-console.log('Browser audit passed: home/focus mode, topic navigation and both exit paths work.');
+console.log('Browser audit passed: clean home/focus layout, module switching and all exit paths work.');
