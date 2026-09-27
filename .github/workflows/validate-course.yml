@@ -23,6 +23,8 @@ jobs:
           test -f dist/index.html
           test -f dist/app.js
           test -f dist/styles.css
+          test -f dist/experience-polish.css
+          test -f dist/tools/practicals/index.html
           test -f dist/topics/01-measurements/index.html
           test -f dist/topics/02-particles-radiation/index.html
           test -f dist/topics/03-waves/index.html
@@ -54,6 +56,9 @@ jobs:
 
       - name: Verify unified topic UI
         run: node tests/theme-smoke.mjs
+
+      - name: Verify integrated study flow
+        run: node tests/experience-flow.mjs
 
       - name: Run browser runtime audit
         run: node scripts/browser-audit.mjs dist
