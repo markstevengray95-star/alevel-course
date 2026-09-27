@@ -52,6 +52,9 @@ jobs:
           cat /tmp/alevel-course-http.log
           exit 1
 
+      - name: Verify unified topic UI
+        run: node tests/theme-smoke.mjs
+
       - name: Run browser runtime audit
         run: node scripts/browser-audit.mjs dist
 
