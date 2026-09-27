@@ -28,7 +28,3 @@
 [submodule "tools/practicals"]
 	path = tools/practicals
 	url = https://github.com/markstevengray95-star/Alevel-prac.git
-[submodule "tools/marking-source"]
-	path = tools/marking-source
-	url = https://github.com/markstevengray95-star/alevel-marking-.git
-	branch = feat/aqa-physics-app-1951306872872728612
