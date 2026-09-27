@@ -274,7 +274,7 @@
     activeSelect=select;
     ensureEnrichmentPanel();
     sync({announce:false});
-    emitSection(buttons);
+    requestEnrichment(buttons);
     applyRestore();
     document.documentElement.classList.add('uc-embedded-ready');
 
