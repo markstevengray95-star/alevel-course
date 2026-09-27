@@ -3,23 +3,25 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#07111f">
+  <meta name="theme-color" content="#08111d">
   <title>AQA A-level Physics Course</title>
-  <meta name="description" content="Unified AQA A-level Physics 7408 course hub with topic learning apps, simulations, textbook material, practical work, assessments and an AI study coach.">
+  <meta name="description" content="Unified AQA A-level Physics 7408 course with topic learning apps, simulations, textbook material, practical work, assessments and an AI study coach.">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="course-enhancements.css">
 </head>
 <body>
 <header class="topbar">
   <div class="wrap topbar-inner">
-    <div>
-      <div class="brand">A-Level Physics Course</div>
-      <div class="muted small">AQA Physics 7408 · Core sections 3.1–3.8</div>
-    </div>
-    <div class="pills">
-      <span class="pill">8 AQA core topics</span>
-      <span class="pill">9 linked modules</span>
-      <span class="pill">AI study coach</span>
+    <a class="brand-block" href="#workspaceSection" aria-label="A-Level Physics home">
+      <span class="brand-mark">φ</span>
+      <span>
+        <strong class="brand">A-Level Physics</strong>
+        <small>AQA 7408 · Core course</small>
+      </span>
+    </a>
+    <div class="header-progress" aria-label="Course progress">
+      <span id="progressText">0 / 8 complete</span>
+      <div class="progress-track compact"><div class="progress-fill" id="progressFill"></div></div>
     </div>
   </div>
 </header>
@@ -28,61 +30,44 @@
   <div class="wrap course-jump-inner">
     <button class="nav-square" id="prevCourse" type="button" aria-label="Previous course">←</button>
     <div class="course-picker-wrap">
-      <span class="course-picker-label">Jump to course</span>
+      <span class="course-picker-label">Current topic</span>
       <select id="quickCourseSelect" class="course-picker" aria-label="Jump to course"></select>
     </div>
-    <button class="nav-square" id="nextCourse" type="button" aria-label="Next course">→</button>
     <div class="course-position" id="coursePosition" aria-live="polite">1 of 8</div>
+    <button class="nav-square" id="nextCourse" type="button" aria-label="Next course">→</button>
     <div class="course-rail" id="courseRail" aria-label="Course shortcuts"></div>
-    <button class="button ai-button" id="coachToggle" type="button">✦ AI Physics Coach</button>
+    <button class="button ai-button" id="coachToggle" type="button"><span>✦</span> AI Coach</button>
   </div>
 </nav>
 
 <main class="wrap main">
-  <section class="hero-grid">
-    <article class="panel hero-copy">
-      <span class="eyebrow">Complete core course</span>
-      <h1>One place for the full AQA A-level Physics core.</h1>
-      <p>The specialist apps are organised into the official AQA sequence. Move directly between topics with the persistent course switcher, keep each app's original lessons, textbook sections, simulations, calculations, practicals and assessments, and use the course-aware AI coach whenever you need support.</p>
-      <div class="button-row">
-        <button class="button primary" id="continueBtn">Continue learning</button>
-        <button class="button" id="courseMapBtn">View course map</button>
-        <button class="button" id="heroCoachBtn">Ask the AI coach</button>
-      </div>
-    </article>
-    <aside class="panel progress-panel">
-      <div class="progress-head"><strong>Core course progress</strong><span id="progressText">0 / 8 complete</span></div>
-      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
-      <div class="stat-grid">
-        <div><strong>3.1–3.5</strong><span>Year 12 core</span></div>
-        <div><strong>3.6–3.8</strong><span>Year 13 core</span></div>
-        <div><strong>9</strong><span>linked topic modules</span></div>
-        <div><strong>1</strong><span>course workspace</span></div>
-      </div>
-      <button class="text-button" id="resetProgress">Reset progress</button>
-    </aside>
-  </section>
-
-  <section id="courseMap" class="section-block">
-    <div class="section-head">
-      <div><span class="eyebrow">AQA specification order</span><h2>Course map</h2></div>
-      <p class="muted">Sections 3.1–3.5 form the first-year/AS content. Sections 3.6–3.8 complete the A-level core.</p>
+  <section class="overview-strip" aria-label="Course overview">
+    <div>
+      <span class="eyebrow">AQA core 3.1–3.8</span>
+      <h1>Learn the full A-Level Physics core in one place.</h1>
+      <p>Lessons, textbook content, simulations, practicals, calculations and assessment — without leaving the course.</p>
     </div>
-    <div class="topic-grid" id="topicGrid"></div>
+    <div class="overview-actions">
+      <button class="button primary" id="continueBtn">Continue learning</button>
+      <button class="button quiet" id="courseMapBtn">Course map</button>
+      <button class="button quiet" id="heroCoachBtn">Ask AI</button>
+    </div>
   </section>
 
   <section class="workspace-section" id="workspaceSection">
     <div class="workspace-head">
-      <div>
-        <span class="eyebrow" id="workspaceCode">AQA 3.1</span>
+      <div class="workspace-heading">
+        <div class="workspace-kicker">
+          <span class="eyebrow" id="workspaceCode">AQA 3.1</span>
+          <span class="workspace-year" id="workspaceYear">Core topic</span>
+        </div>
         <h2 id="workspaceTitle">Measurements and their errors</h2>
         <p class="muted" id="workspaceDescription"></p>
       </div>
       <div class="workspace-actions">
-        <button class="button" id="workspacePrev" type="button">← Previous</button>
-        <button class="button" id="workspaceNext" type="button">Next →</button>
-        <button class="button" id="markComplete" type="button">Mark topic complete</button>
-        <a class="button" id="sourceLink" target="_blank" rel="noopener">Source repository</a>
+        <button class="icon-label-button" id="workspacePrev" type="button" aria-label="Previous topic"><span>←</span><small>Previous</small></button>
+        <button class="icon-label-button" id="workspaceNext" type="button" aria-label="Next topic"><small>Next</small><span>→</span></button>
+        <button class="button complete-action" id="markComplete" type="button">Mark complete</button>
       </div>
     </div>
 
@@ -90,26 +75,60 @@
 
     <div class="workspace-shell panel">
       <div class="workspace-toolbar">
-        <div><strong id="moduleLabel">Topic app</strong><span class="muted small" id="modulePosition">Original specialist project</span></div>
+        <div class="module-identity">
+          <strong id="moduleLabel">Topic app</strong>
+          <span class="muted small" id="modulePosition">Original specialist project</span>
+        </div>
         <div class="toolbar-actions">
-          <button class="text-button" id="modulePrev" type="button">Previous module</button>
-          <button class="text-button" id="moduleNext" type="button">Next module</button>
-          <button class="text-button" id="reloadFrame" type="button">Reload</button>
+          <button class="text-button" id="modulePrev" type="button">← Module</button>
+          <button class="text-button" id="moduleNext" type="button">Module →</button>
           <button class="text-button coach-inline" id="workspaceCoachBtn" type="button">✦ Ask AI</button>
-          <a class="text-button" id="openModule" target="_blank" rel="noopener">Open full page ↗</a>
+          <details class="workspace-more">
+            <summary aria-label="More workspace actions">•••</summary>
+            <div class="workspace-menu">
+              <button class="menu-action" id="reloadFrame" type="button">Reload topic</button>
+              <a class="menu-action" id="openModule" target="_blank" rel="noopener">Open full page ↗</a>
+              <a class="menu-action" id="sourceLink" target="_blank" rel="noopener">Source repository ↗</a>
+            </div>
+          </details>
         </div>
       </div>
       <iframe id="topicFrame" title="A-level Physics topic app" loading="lazy"></iframe>
-      <div class="frame-help">
-        <strong>Tip:</strong> use the sticky course switcher above, Previous/Next controls, or <strong>Alt + ← / Alt + →</strong> to move between course topics without returning to the map.
-      </div>
+      <div class="frame-help"><span>Tip</span> Switch topic from the bar above at any time. Keyboard: <kbd>Alt</kbd> + <kbd>←</kbd>/<kbd>→</kbd>.</div>
     </div>
   </section>
 
-  <section class="panel option-note">
-    <span class="eyebrow">AQA Paper 3 option</span>
-    <h2>Optional topic slot</h2>
-    <p>The repositories supplied cover the full AQA core (3.1–3.8). A Paper 3 option such as Astrophysics, Medical Physics, Engineering Physics, Turning Points or Electronics can be added later as a ninth course section without changing the core navigation.</p>
+  <section id="courseMap" class="section-block course-map-block">
+    <div class="section-head compact-head">
+      <div>
+        <span class="eyebrow">Course map</span>
+        <h2>All core topics</h2>
+      </div>
+      <div class="map-meta">
+        <span>Year 12 · 3.1–3.5</span>
+        <span>Year 13 · 3.6–3.8</span>
+      </div>
+    </div>
+    <div class="topic-grid" id="topicGrid"></div>
+  </section>
+
+  <section class="course-tools-row" aria-label="Course tools">
+    <div class="progress-card panel">
+      <div>
+        <span class="eyebrow">Progress</span>
+        <strong>Keep your place automatically</strong>
+        <p>Your completed topics are stored on this device.</p>
+      </div>
+      <button class="text-button danger-subtle" id="resetProgress">Reset progress</button>
+    </div>
+
+    <details class="panel option-note">
+      <summary>
+        <span><span class="eyebrow">Paper 3</span><strong>Optional topic</strong></span>
+        <span>View options +</span>
+      </summary>
+      <p>The supplied repositories cover the AQA core (3.1–3.8). Astrophysics, Medical Physics, Engineering Physics, Turning Points or Electronics can be added later as an optional section.</p>
+    </details>
   </section>
 </main>
 
@@ -127,7 +146,7 @@
 
   <div class="coach-controls">
     <label>
-      <span>Coach mode</span>
+      <span>Mode</span>
       <select id="coachMode">
         <option value="explain">Explain clearly</option>
         <option value="hint">Hint-first help</option>
@@ -140,27 +159,27 @@
   </div>
 
   <div class="coach-quick" aria-label="Quick AI prompts">
-    <button type="button" data-coach-prompt="Explain the most important idea on the current page in simple steps.">Explain this page</button>
+    <button type="button" data-coach-prompt="Explain the most important idea on the current page in simple steps.">Explain page</button>
     <button type="button" data-coach-prompt="Give me one AQA-style retrieval question from this topic. Do not give the answer until I respond.">Quiz me</button>
     <button type="button" data-coach-prompt="What are the most common exam mistakes students make in this topic?">Exam mistakes</button>
-    <button type="button" data-coach-prompt="Give me a calculation to practise from this topic, with a hint available but not the final answer yet.">Calculation practice</button>
+    <button type="button" data-coach-prompt="Give me a calculation to practise from this topic, with a hint available but not the final answer yet.">Calculation</button>
   </div>
 
   <div class="coach-messages" id="coachMessages" aria-live="polite">
     <div class="coach-message assistant">
       <strong>Physics Coach</strong>
-      <p>I follow the course you are currently studying. Ask for an explanation, a hint, a calculation, an AQA-style question, or feedback on an answer.</p>
+      <p>I follow the topic you are studying. Ask for an explanation, hint, calculation, AQA-style question or feedback.</p>
     </div>
   </div>
 
   <form class="coach-compose" id="coachForm">
-    <textarea id="coachInput" rows="3" maxlength="3000" placeholder="Ask about the current topic…"></textarea>
+    <textarea id="coachInput" rows="3" maxlength="3000" placeholder="Ask about this topic…"></textarea>
     <div class="coach-compose-row">
-      <button class="text-button" id="coachClear" type="button">Clear chat</button>
+      <button class="text-button" id="coachClear" type="button">Clear</button>
       <button class="button primary" id="coachSend" type="submit">Send</button>
     </div>
   </form>
-  <p class="coach-note">The coach uses the active AQA topic and, when available, the visible lesson text inside the current topic app. If live AI is unavailable it automatically falls back to the built-in course coach.</p>
+  <p class="coach-note">Uses the active AQA topic and visible lesson content when available. Falls back to the built-in course coach if live AI is unavailable.</p>
 </aside>
 
 <script src="app.js"></script>
