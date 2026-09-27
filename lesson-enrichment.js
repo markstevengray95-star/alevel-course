@@ -135,11 +135,14 @@
     const range=selection.getRangeAt(0);
     const rect=range.getBoundingClientRect();
     if(!rect||(!rect.width&&!rect.height))return hideSelectionButton();
+    if(rect.bottom<0||rect.top>window.innerHeight||rect.right<0||rect.left>window.innerWidth)return hideSelectionButton();
     selectedText=text;
     const button=ensureSelectionButton();
     const width=150;
-    const left=Math.min(Math.max(8,rect.left+rect.width/2-width/2),window.innerWidth-width-8);
-    const top=Math.max(8,rect.top-44);
+    const height=40;
+    const left=Math.min(Math.max(8,rect.left+rect.width/2-width/2),Math.max(8,window.innerWidth-width-8));
+    const preferredTop=rect.top>=52?rect.top-44:rect.bottom+8;
+    const top=Math.min(Math.max(8,preferredTop),Math.max(8,window.innerHeight-height-8));
     button.style.left=`${left}px`;
     button.style.top=`${top}px`;
     button.hidden=false;
