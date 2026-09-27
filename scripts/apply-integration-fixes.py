@@ -54,16 +54,24 @@ mobile_css = r'''
 
 /* unified-course-mobile-containment */
 @media (max-width:650px){
-  html,body{width:100%;max-width:100%;overflow-x:clip}
-  .wrap,.main,.view,.panel,.hero,.grid,.course-layout,.lesson-grid,.lab-layout,.lab-side,
-  .formula-layout,.practical-grid,.quiz-layout,.extended-layout,.textbook-layout,.section-head,
-  .viewer-wrap,.three-shell-v5,.three-stage-v5,.v11-sim-grid,.v11-stage{min-width:0!important;max-width:100%!important}
-  canvas,svg,img,video,iframe{max-width:100%!important;width:auto}
+  .wrap,.main,.view,.panel,.hero,.grid,.course-layout,.course-list,.lesson-panel,.lesson-grid,
+  .lab-layout,.lab-side,.formula-layout,.practical-grid,.quiz-layout,.extended-layout,.textbook-layout,
+  .section-head,.viewer-wrap,.three-shell-v5,.three-stage-v5,.v11-sim-grid,.v11-stage{
+    min-width:0!important;max-width:100%!important
+  }
+  .course-layout>*{min-width:0!important;max-width:100%!important}
+  .course-list{width:100%!important;grid-template-columns:minmax(0,1fr)!important}
+  .course-button{min-width:0!important;max-width:100%!important;white-space:normal!important;overflow-wrap:anywhere}
+  canvas,svg,img,video,iframe{max-width:100%!important}
   canvas{width:100%!important}
-  .main-nav,.sim-tabs,.chunk-strip,.scene-nav-v5,.v11-scene-nav,.table-scroll,
+  .main-nav,.sim-tabs,.chunk-strip,.scene-nav-v5,.v11-scene-nav,.lesson-journey,.lesson-path,.table-scroll,
   .button-row,.viewer-controls,.hero-actions{max-width:100%!important;overflow-x:auto}
   table{max-width:100%}
   pre,code{overflow-wrap:anywhere;word-break:break-word}
+  /* The Waves equation drawer used to sit translated beyond the viewport while closed,
+     increasing the document width. Keep it at the viewport edge but hidden until opened. */
+  .eq-coach-v6:not(.open){visibility:hidden!important;transform:none!important;pointer-events:none!important}
+  .eq-coach-v6.open{visibility:visible!important;transform:none!important}
 }
 '''
 mobile_targets = [
@@ -76,9 +84,11 @@ for path in mobile_targets:
     if not path.exists():
         raise SystemExit(f'Missing mobile integration stylesheet: {path}')
     text = path.read_text('utf-8')
-    if 'unified-course-mobile-containment' not in text:
-        path.write_text(text + mobile_css, 'utf-8')
-        changed += 1
-        print(f'Added mobile containment to {path}')
+    marker = '/* unified-course-mobile-containment */'
+    if marker in text:
+        text = text[:text.index(marker)].rstrip() + '\n'
+    path.write_text(text + mobile_css, 'utf-8')
+    changed += 1
+    print(f'Applied targeted mobile containment to {path}')
 
 print(f'Applied {changed} integration compatibility replacement(s).')
