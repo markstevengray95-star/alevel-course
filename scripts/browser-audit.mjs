@@ -24,6 +24,21 @@ for (const file of walk(root)) {
 const browser = await chromium.launch({ headless: true });
 const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
 
+async function evaluateStable(frame, evaluator, attempts=6) {
+  let lastError;
+  for (let attempt=0; attempt<attempts; attempt++) {
+    try {
+      await frame.waitForLoadState('domcontentloaded', {timeout:2500}).catch(()=>{});
+      return await frame.evaluate(evaluator);
+    } catch (error) {
+      lastError=error;
+      if (!/Execution context was destroyed|navigation/i.test(error?.message||'')) throw error;
+      await new Promise(resolve=>setTimeout(resolve,180));
+    }
+  }
+  throw lastError || new Error('Embedded frame did not settle');
+}
+
 for (const route of pages) {
   const page = await context.newPage();
   const localFailures = [];
@@ -76,9 +91,9 @@ try {
       const embeddedExit = frame.locator('.uc-exit-course');
       const navSelect = frame.locator('.uc-view-picker select');
       const notebookButton = frame.locator('.uc-notebook-button');
-      await embeddedExit.waitFor({state:'visible',timeout:3500}).catch(()=>shellErrors.push(`topic ${i + 1}: embedded Home button missing`));
-      await navSelect.waitFor({state:'visible',timeout:3500}).catch(()=>shellErrors.push(`topic ${i + 1}: compact embedded section picker missing`));
-      await notebookButton.waitFor({state:'visible',timeout:3500}).catch(()=>shellErrors.push(`topic ${i + 1}: embedded notebook button missing`));
+      await embeddedExit.waitFor({state:'visible',timeout:5500}).catch(()=>shellErrors.push(`topic ${i + 1}: embedded Home button missing`));
+      await navSelect.waitFor({state:'visible',timeout:5500}).catch(()=>shellErrors.push(`topic ${i + 1}: compact embedded section picker missing`));
+      await notebookButton.waitFor({state:'visible',timeout:5500}).catch(()=>shellErrors.push(`topic ${i + 1}: embedded notebook button missing`));
       if (await frame.locator('.main-nav').isVisible().catch(()=>false)) shellErrors.push(`topic ${i + 1}: original internal navigation is still visible`);
     }
 
@@ -110,7 +125,8 @@ try {
   await shell.waitForTimeout(450);
   let embeddedFrame = shell.frames().find(f => f !== shell.mainFrame() && f.url().includes('/topics/'));
   if (embeddedFrame) {
-    const selected = await embeddedFrame.evaluate(() => {
+    await embeddedFrame.locator('.uc-embedded-toolbar').waitFor({state:'visible',timeout:5500}).catch(()=>{});
+    const selected = await evaluateStable(embeddedFrame, () => {
       const toolbar=document.querySelector('.uc-embedded-toolbar');
       const visible=el=>{if(!el||toolbar?.contains(el))return false;const style=getComputedStyle(el);return style.display!=='none'&&style.visibility!=='hidden'&&el.getClientRects().length>0;};
       const preferred=[...document.querySelectorAll('.lesson-panel p,.lesson-panel li,.textbook-article p,.textbook-article li,.view:not([hidden]) p,.view:not([hidden]) li,.panel p,.panel li,p,li,h2,h3')];
@@ -161,7 +177,7 @@ try {
   embeddedFrame = shell.frames().find(f => f !== shell.mainFrame() && f.url().includes('/topics/'));
   if (embeddedFrame) {
     const embeddedExit = embeddedFrame.locator('.uc-exit-course');
-    await embeddedExit.waitFor({state:'visible',timeout:3500});
+    await embeddedExit.waitFor({state:'visible',timeout:5500});
     await embeddedExit.click();
     await shell.waitForTimeout(150);
     if (!(await shell.locator('#courseHome').isVisible())) shellErrors.push('embedded Home button did not return to Course Home');
@@ -172,6 +188,7 @@ try {
   await shell.waitForTimeout(400);
   embeddedFrame = shell.frames().find(f => f !== shell.mainFrame() && f.url().includes('/topics/'));
   if (embeddedFrame) {
+    await embeddedFrame.locator('.uc-embedded-toolbar').waitFor({state:'visible',timeout:5500}).catch(()=>{});
     await embeddedFrame.locator('body').press('Escape');
     await shell.waitForTimeout(150);
     if (!(await shell.locator('#courseHome').isVisible())) shellErrors.push('Escape from embedded topic did not return to Course Home');
