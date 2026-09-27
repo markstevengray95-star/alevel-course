@@ -48,7 +48,7 @@ else{
     if(!(await page.locator('#textbookWorkspace').isVisible().catch(()=>false)))fail('textbook: embedded toolbar did not open textbook workspace');
     if((await page.locator('#textbookTopicSelect').inputValue().catch(()=>''))!=='electricity')fail('textbook: reader did not open the active Electricity book');
     if(await page.locator('#textbookChapterList .textbook-chapter-button').count()<4)fail('textbook: Electricity book is missing full chapter navigation');
-    await page.locator('#textbookMobileChapter').selectOption('1');
+    await page.locator('#textbookChapterList .textbook-chapter-button').nth(1).click();
     await page.waitForTimeout(80);
     if(!/Resistance/i.test(await page.locator('#textbookArticle h1').innerText().catch(()=>'')))fail('textbook: chapter switching did not render Electricity resistance chapter');
     const beforeNotes=await page.evaluate(()=>window.CourseNotebook?.getNotes?.().length||0);
