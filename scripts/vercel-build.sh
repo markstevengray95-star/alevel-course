@@ -27,17 +27,19 @@ done
 echo "Applying verified integration compatibility fixes..."
 python3 scripts/apply-integration-fixes.py
 
-echo "Applying unified visual system to all topic apps..."
+echo "Applying focused unified visual system to all topic apps..."
 python3 scripts/apply-unified-topic-theme.py
 
 for file in "${required[@]}"; do
-  theme="$(dirname "$file")/unified-course-theme.css"
-  if [[ ! -f "$theme" ]]; then
-    echo "Missing unified topic theme: $theme" >&2
-    exit 1
-  fi
+  dir="$(dirname "$file")"
+  for asset in unified-course-theme.css unified-course-focus.css unified-course-embedded.js; do
+    if [[ ! -f "$dir/$asset" ]]; then
+      echo "Missing unified topic asset: $dir/$asset" >&2
+      exit 1
+    fi
+  done
   if ! grep -q "unified-course-topic-theme" "$file"; then
-    echo "Unified topic theme was not injected into: $file" >&2
+    echo "Unified topic UI was not injected into: $file" >&2
     exit 1
   fi
 done
@@ -47,10 +49,6 @@ if [[ ! -f "$materials_dir/vendor/three.module.min.js" || ! -f "$materials_dir/v
   echo "Generating Materials local vendor assets for embedded deployment..."
   npm install --prefix "$materials_dir" --ignore-scripts --no-audit --no-fund
   npm --prefix "$materials_dir" run vendor
-
-  # Three.js 0.18x splits the ESM build into three.module.js + three.core.js.
-  # The Materials repo's older vendor helper only copies the entry module, so
-  # copy the companion module explicitly for a fully local/offline deployment.
   if [[ -f "$materials_dir/node_modules/three/build/three.core.js" ]]; then
     cp "$materials_dir/node_modules/three/build/three.core.js" "$materials_dir/vendor/three.core.js"
   fi
@@ -67,17 +65,16 @@ for file in \
   fi
 done
 
-# Catch shell/coach syntax regressions before packaging the static output.
 node --check app.js
 node --check ai-coach.js
 node --check api/physics-coach.js
+node --check shared/unified-topic-embedded.js
 
 rm -rf dist
 mkdir -p dist
-cp index.html app.js ai-coach.js styles.css course-enhancements.css manifest.webmanifest .nojekyll dist/
+cp index.html app.js ai-coach.js styles.css course-enhancements.css focus-layout.css manifest.webmanifest .nojekyll dist/
 cp -R topics dist/topics
 
-# Submodule Git metadata and package-manager install folders are not required in the deployed static output.
 find dist/topics -name .git -exec rm -rf {} + 2>/dev/null || true
 find dist/topics -type d -name node_modules -prune -exec rm -rf {} + 2>/dev/null || true
 
