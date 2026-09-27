@@ -39,6 +39,9 @@ jobs:
           sleep 2
           curl --fail --silent http://127.0.0.1:4173/ > /dev/null
 
+      - name: Verify unified topic UI
+        run: node tests/theme-smoke.mjs
+
       - name: Diagnose mobile overflow
         run: node tests/mobile-overflow.mjs
 
