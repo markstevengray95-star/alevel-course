@@ -18,13 +18,14 @@ const browser = await chromium.launch({headless:true});
 const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, serviceWorkers: 'block' });
 const failures = [];
 const warnings = [];
+const errorText = e => e?.stack || e?.message || String(e);
 
 for (const route of routes) {
   const page = await context.newPage();
   const localFailures = [];
   const pageErrors = [];
   const consoleErrors = [];
-  page.on('pageerror', e => pageErrors.push(String(e)));
+  page.on('pageerror', e => pageErrors.push(errorText(e)));
   page.on('console', msg => { if (msg.type() === 'error') consoleErrors.push(msg.text()); });
   page.on('requestfailed', req => {
     const url = req.url();
@@ -42,23 +43,21 @@ for (const route of routes) {
     if (localFailures.length) failures.push(`${route}: ${localFailures.length} local network failure(s):\n  ${localFailures.join('\n  ')}`);
     if (pageErrors.length) failures.push(`${route}: page error(s):\n  ${pageErrors.join('\n  ')}`);
     if (consoleErrors.length) {
-      // Ignore browser favicon noise only; application console errors are failures.
       const real = consoleErrors.filter(x => !/favicon\.ico/i.test(x));
       if (real.length) failures.push(`${route}: console error(s):\n  ${real.join('\n  ')}`);
     }
     console.log(`Checked ${route} (${textLen} visible chars)`);
   } catch (e) {
-    failures.push(`${route}: navigation failed: ${e}`);
+    failures.push(`${route}: navigation failed: ${errorText(e)}`);
   } finally {
     await page.close();
   }
 }
 
-// Course-shell interaction and iframe integration check.
 {
   const page = await context.newPage();
   const pageErrors = [];
-  page.on('pageerror', e => pageErrors.push(String(e)));
+  page.on('pageerror', e => pageErrors.push(errorText(e)));
   await page.goto(base + '/', { waitUntil: 'domcontentloaded', timeout: 45000 });
   await page.waitForTimeout(1000);
   const cards = page.locator('.topic-card');
@@ -76,7 +75,7 @@ for (const route of routes) {
   await page.locator('#markComplete').click();
   const after = await page.locator('#progressText').innerText();
   if (before === after) failures.push('course shell: Mark topic complete did not update overall progress');
-  if (pageErrors.length) failures.push(`course shell interaction errors: ${pageErrors.join(' | ')}`);
+  if (pageErrors.length) failures.push(`course shell interaction errors:\n${pageErrors.join('\n---\n')}`);
   await page.close();
 }
 
