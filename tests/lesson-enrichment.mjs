@@ -8,6 +8,7 @@ const failures=[];
 const fail=message=>failures.push(message);
 
 async function selectUsefulText(target){
+  await target.scrollIntoViewIfNeeded().catch(()=>{});
   return target.evaluate(el=>{
     const walker=document.createTreeWalker(el,NodeFilter.SHOW_TEXT,{acceptNode(node){return node.textContent.trim().length>28?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_SKIP;}});
     const node=walker.nextNode();
@@ -54,7 +55,7 @@ else{
   if(!selected)fail('notebook: could not create a lesson text selection');
   await frame.waitForSelector('.uc-selection-save:not([hidden])',{timeout:2500}).catch(()=>fail('notebook: highlight-to-save action did not appear in the lesson'));
   const before=await page.evaluate(()=>window.CourseNotebook?.getNotes?.().length||0);
-  if(await frame.locator('.uc-selection-save:not([hidden])').isVisible().catch(()=>false))await frame.locator('.uc-selection-save:not([hidden])').click();
+  if(await frame.locator('.uc-selection-save:not([hidden])').isVisible().catch(()=>false))await frame.locator('.uc-selection-save:not([hidden])').click({timeout:4000});
   await page.waitForTimeout(120);
   const after=await page.evaluate(()=>window.CourseNotebook?.getNotes?.().length||0);
   if(after!==before+1)fail(`notebook: highlighted lesson text did not save (${before} → ${after})`);
@@ -62,11 +63,12 @@ else{
   await frame.locator('.uc-textbook-button').click();
   await page.waitForFunction(()=>{const w=document.getElementById('textbookWorkspace');return !!w&&!w.hidden&&document.querySelector('.textbook-section p');},null,{timeout:5000}).catch(()=>fail('textbook: reader did not open from lesson'));
   const paragraph=page.locator('.textbook-section p').first();
+  await paragraph.scrollIntoViewIfNeeded().catch(()=>{});
   const textbookSelected=await selectUsefulText(paragraph);
   if(!textbookSelected)fail('notebook: could not create a textbook text selection');
   await page.locator('#textbookSelectionSave:not([hidden])').waitFor({state:'visible',timeout:2500}).catch(()=>fail('notebook: highlight-to-save action did not appear in textbook'));
   const beforeTextbook=await page.evaluate(()=>window.CourseNotebook?.getNotes?.().length||0);
-  if(await page.locator('#textbookSelectionSave:not([hidden])').isVisible().catch(()=>false))await page.locator('#textbookSelectionSave:not([hidden])').click();
+  if(await page.locator('#textbookSelectionSave:not([hidden])').isVisible().catch(()=>false))await page.locator('#textbookSelectionSave:not([hidden])').click({timeout:4000});
   await page.waitForTimeout(120);
   const afterTextbook=await page.evaluate(()=>window.CourseNotebook?.getNotes?.().length||0);
   if(afterTextbook!==beforeTextbook+1)fail(`notebook: highlighted textbook text did not save (${beforeTextbook} → ${afterTextbook})`);
