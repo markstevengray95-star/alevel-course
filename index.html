@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#07111f">
+  <title>AQA A-level Physics Course</title>
+  <meta name="description" content="Unified AQA A-level Physics 7408 course hub with topic learning apps, simulations, textbook material, practical work and assessments.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <div>
+      <div class="brand">A-Level Physics Course</div>
+      <div class="muted small">AQA Physics 7408 · Core sections 3.1–3.8</div>
+    </div>
+    <div class="pills">
+      <span class="pill">8 AQA core topics</span>
+      <span class="pill">Original topic apps retained</span>
+      <span class="pill">One course dashboard</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap main">
+  <section class="hero-grid">
+    <article class="panel hero-copy">
+      <span class="eyebrow">Complete core course</span>
+      <h1>One place for the full AQA A-level Physics core.</h1>
+      <p>The existing specialist apps are organised into the official AQA sequence. Open any topic inside the course workspace, keep its original lessons, textbook sections, simulations, calculations, practicals and assessment tools, then return to the course map without losing your place.</p>
+      <div class="button-row">
+        <button class="button primary" id="continueBtn">Continue learning</button>
+        <button class="button" id="courseMapBtn">View course map</button>
+      </div>
+    </article>
+    <aside class="panel progress-panel">
+      <div class="progress-head"><strong>Core course progress</strong><span id="progressText">0 / 8 complete</span></div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="stat-grid">
+        <div><strong>3.1–3.5</strong><span>Year 12 core</span></div>
+        <div><strong>3.6–3.8</strong><span>Year 13 core</span></div>
+        <div><strong>9</strong><span>linked topic modules</span></div>
+        <div><strong>1</strong><span>course workspace</span></div>
+      </div>
+      <button class="text-button" id="resetProgress">Reset progress</button>
+    </aside>
+  </section>
+
+  <section id="courseMap" class="section-block">
+    <div class="section-head">
+      <div><span class="eyebrow">AQA specification order</span><h2>Course map</h2></div>
+      <p class="muted">Sections 3.1–3.5 form the first-year/AS content. Sections 3.6–3.8 complete the A-level core.</p>
+    </div>
+    <div class="topic-grid" id="topicGrid"></div>
+  </section>
+
+  <section class="workspace-section" id="workspaceSection">
+    <div class="workspace-head">
+      <div>
+        <span class="eyebrow" id="workspaceCode">AQA 3.1</span>
+        <h2 id="workspaceTitle">Measurements and their errors</h2>
+        <p class="muted" id="workspaceDescription"></p>
+      </div>
+      <div class="workspace-actions">
+        <button class="button" id="markComplete">Mark topic complete</button>
+        <a class="button" id="sourceLink" target="_blank" rel="noopener">Source repository</a>
+      </div>
+    </div>
+
+    <div id="moduleTabs" class="module-tabs hidden"></div>
+
+    <div class="workspace-shell panel">
+      <div class="workspace-toolbar">
+        <div><strong id="moduleLabel">Topic app</strong><span class="muted small">Original specialist project</span></div>
+        <div class="toolbar-actions">
+          <button class="text-button" id="reloadFrame">Reload</button>
+          <a class="text-button" id="openModule" target="_blank" rel="noopener">Open full page ↗</a>
+        </div>
+      </div>
+      <iframe id="topicFrame" title="A-level Physics topic app" loading="lazy"></iframe>
+      <div class="frame-help">
+        <strong>Deployment note:</strong> this course uses the topic repositories as Git submodules so their complete apps remain intact. Deploy/clone the course with submodules enabled for the embedded workspace to load locally.
+      </div>
+    </div>
+  </section>
+
+  <section class="panel option-note">
+    <span class="eyebrow">AQA Paper 3 option</span>
+    <h2>Optional topic slot</h2>
+    <p>The repositories supplied cover the full AQA core (3.1–3.8). A Paper 3 option such as Astrophysics, Medical Physics, Engineering Physics, Turning Points or Electronics can be added later as a ninth course section without changing the core navigation.</p>
+  </section>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>

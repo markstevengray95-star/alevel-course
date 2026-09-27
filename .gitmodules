@@ -1,0 +1,27 @@
+[submodule "topics/01-measurements"]
+	path = topics/01-measurements
+	url = https://github.com/markstevengray95-star/Alevelmesurments-and-erros.git
+[submodule "topics/02-particles-radiation"]
+	path = topics/02-particles-radiation
+	url = https://github.com/markstevengray95-star/Practical-and-radiation.git
+[submodule "topics/03-waves"]
+	path = topics/03-waves
+	url = https://github.com/markstevengray95-star/alevel-Wave.git
+[submodule "topics/04-mechanics-materials/mechanics"]
+	path = topics/04-mechanics-materials/mechanics
+	url = https://github.com/markstevengray95-star/mechanicsnew.git
+[submodule "topics/04-mechanics-materials/materials"]
+	path = topics/04-mechanics-materials/materials
+	url = https://github.com/markstevengray95-star/Alevelmaterials.git
+[submodule "topics/05-electricity"]
+	path = topics/05-electricity
+	url = https://github.com/markstevengray95-star/alevel-electricity.git
+[submodule "topics/06-further-mechanics-thermal"]
+	path = topics/06-further-mechanics-thermal
+	url = https://github.com/markstevengray95-star/furthermechanics.git
+[submodule "topics/07-fields"]
+	path = topics/07-fields
+	url = https://github.com/markstevengray95-star/alevel-fields-.git
+[submodule "topics/08-nuclear"]
+	path = topics/08-nuclear
+	url = https://github.com/markstevengray95-star/nuclear-physicsalevel.git
