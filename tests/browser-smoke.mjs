@@ -92,7 +92,7 @@ for (const route of routes) {
   }
 }
 
-// Course-shell integration: all cards, iframe changes and progress persistence control.
+// Course-shell integration: cards, persistent switcher, iframe changes, AI coach and progress controls.
 {
   const page = await desktop.newPage();
   await installConsoleStackCapture(page);
@@ -110,6 +110,40 @@ for (const route of routes) {
     const frame = page.frames().find(f => f !== page.mainFrame() && f.url().includes('/topics/'));
     if (!frame) failures.push(`course shell topic ${i+1}: embedded topic frame did not load`);
   }
+
+  // The top switcher should jump directly between topics and update the embedded module.
+  await page.locator('#quickCourseSelect').selectOption('electricity');
+  await page.waitForTimeout(650);
+  const switchedCode = await page.locator('#workspaceCode').innerText();
+  const switchedSrc = await page.locator('#topicFrame').getAttribute('src');
+  if (!switchedCode.includes('3.5')) failures.push(`course switcher: expected Electricity/AQA 3.5, got '${switchedCode}'`);
+  if (!switchedSrc?.includes('05-electricity')) failures.push(`course switcher: wrong iframe src after Electricity selection: ${switchedSrc}`);
+
+  await page.locator('#nextCourse').click();
+  await page.waitForTimeout(650);
+  const nextCode = await page.locator('#workspaceCode').innerText();
+  if (!nextCode.includes('3.6')) failures.push(`next course control: expected AQA 3.6, got '${nextCode}'`);
+
+  await page.keyboard.press('Alt+ArrowLeft');
+  await page.waitForTimeout(450);
+  const keyboardCode = await page.locator('#workspaceCode').innerText();
+  if (!keyboardCode.includes('3.5')) failures.push(`keyboard course navigation: expected return to AQA 3.5, got '${keyboardCode}'`);
+
+  // Coach should know the active context and fall back locally when the static test server has no /api function.
+  await page.locator('#coachToggle').click();
+  await page.waitForTimeout(120);
+  if (!(await page.locator('#coachPanel').evaluate(el=>el.classList.contains('open')))) failures.push('AI coach: drawer did not open');
+  const coachContext = await page.locator('#coachContextLabel').innerText();
+  if (!coachContext.includes('3.5') || !/Electricity/i.test(coachContext)) failures.push(`AI coach: context did not follow active course: '${coachContext}'`);
+  const beforeCoachMessages = await page.locator('.coach-message').count();
+  await page.locator('#coachMode').selectOption('hint');
+  await page.locator('#coachInput').fill('Give me a hint for the current topic.');
+  await page.locator('#coachSend').click();
+  await page.waitForFunction(count => document.querySelectorAll('.coach-message').length >= count + 2, beforeCoachMessages, {timeout:8000}).catch(e=>failures.push(`AI coach: no response appeared: ${errorText(e)}`));
+  const coachText = await page.locator('#coachMessages').innerText();
+  if (!/Physics Coach/i.test(coachText)) failures.push('AI coach: response area did not contain coach output');
+  await page.locator('#coachClose').click();
+
   const before = await page.locator('#progressText').innerText();
   await page.locator('#markComplete').click();
   const after = await page.locator('#progressText').innerText();
@@ -151,4 +185,4 @@ if (failures.length) {
   for (const f of failures) console.error(' -', f);
   process.exit(1);
 }
-console.log('\nPASS: desktop navigation, embedded-course integration and mobile runtime checks passed for every topic module.');
+console.log('\nPASS: desktop navigation, embedded-course integration, course switching, AI coach and mobile runtime checks passed.');
