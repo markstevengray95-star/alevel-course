@@ -1,0 +1,37 @@
+name: Validate unified A-Level Physics course
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout course and topic modules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Assemble Vercel output
+        run: bash scripts/vercel-build.sh
+
+      - name: Verify course shell
+        run: |
+          test -f dist/index.html
+          test -f dist/app.js
+          test -f dist/styles.css
+          test -f dist/topics/01-measurements/index.html
+          test -f dist/topics/02-particles-radiation/index.html
+          test -f dist/topics/03-waves/index.html
+          test -f dist/topics/04-mechanics-materials/mechanics/index.html
+          test -f dist/topics/04-mechanics-materials/materials/index.html
+          test -f dist/topics/05-electricity/index.html
+          test -f dist/topics/06-further-mechanics-thermal/index.html
+          test -f dist/topics/07-fields/index.html
+          test -f dist/topics/08-nuclear/index.html
+
+      - name: Report assembled size
+        run: du -sh dist
