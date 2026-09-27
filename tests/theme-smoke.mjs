@@ -38,6 +38,7 @@ for (let i=0;i<count;i++) {
       toolbarVisible:!!toolbar&&getComputedStyle(toolbar).display!=='none',
       exitVisible:!!document.querySelector('.uc-exit-course'),
       pickerVisible:!!document.querySelector('.uc-view-picker select'),
+      notebookVisible:!!document.querySelector('.uc-notebook-button'),
       accent:getComputedStyle(root).getPropertyValue('--uc-accent').trim()
     };
   });
@@ -72,4 +73,4 @@ else if (dims.scrollWidth > dims.clientWidth + 24) failures.push(`mobile embedde
 
 await browser.close();
 if (failures.length) { console.error(`\nFOCUSED TOPIC UI AUDIT FAILED (${failures.length}):`); failures.forEach(f=>console.error(' -',f)); process.exit(1); }
-console.log('\nPASS: every topic uses the compact embedded toolbar, hides duplicate chrome, and can exit back to Course Home.');
+console.log('\nPASS: every topic uses the same compact embedded toolbar, notebook control and focused visual system.');
