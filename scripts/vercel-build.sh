@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "Initialising A-Level Physics topic modules..."
+echo "Initialising A-Level Physics modules and course tools..."
 git submodule sync --recursive
 git submodule update --init --recursive
 
@@ -23,6 +23,11 @@ for file in "${required[@]}"; do
     exit 1
   fi
 done
+
+if [[ ! -f "tools/practicals/index.html" ]]; then
+  echo "Missing bundled A-Level practical app: tools/practicals/index.html" >&2
+  exit 1
+fi
 
 echo "Applying verified integration compatibility fixes..."
 python3 scripts/apply-integration-fixes.py
@@ -68,11 +73,12 @@ done
 node --check app.js
 node --check student-notebook.js
 node --check ai-coach.js
+node --check course-tools.js
 node --check mobile-mode.js
 node --check api/physics-coach.js
 node --check shared/unified-topic-embedded.js
 
-for file in student-notebook.js student-notebook.css mobile-mode.js mobile-mode.css; do
+for file in student-notebook.js student-notebook.css course-tools.js course-tools.css mobile-mode.js mobile-mode.css; do
   if [[ ! -f "$file" ]]; then
     echo "Missing course-wide shell asset: $file" >&2
     exit 1
@@ -80,11 +86,14 @@ for file in student-notebook.js student-notebook.css mobile-mode.js mobile-mode.
 done
 
 rm -rf dist
-mkdir -p dist
-cp index.html app.js student-notebook.js ai-coach.js mobile-mode.js styles.css course-enhancements.css focus-layout.css student-notebook.css mobile-mode.css manifest.webmanifest .nojekyll dist/
+mkdir -p dist/tools
+cp index.html app.js student-notebook.js ai-coach.js course-tools.js mobile-mode.js styles.css course-enhancements.css focus-layout.css student-notebook.css course-tools.css mobile-mode.css manifest.webmanifest .nojekyll dist/
 cp -R topics dist/topics
+cp -R tools/practicals dist/tools/practicals
 
 find dist/topics -name .git -exec rm -rf {} + 2>/dev/null || true
 find dist/topics -type d -name node_modules -prune -exec rm -rf {} + 2>/dev/null || true
+find dist/tools -name .git -exec rm -rf {} + 2>/dev/null || true
+find dist/tools -type d -name node_modules -prune -exec rm -rf {} + 2>/dev/null || true
 
-echo "Unified A-Level Physics course assembled in dist/."
+echo "Unified A-Level Physics course assembled in dist/ with Practical Lab and Marking launcher."
