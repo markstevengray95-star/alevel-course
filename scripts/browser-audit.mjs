@@ -14,7 +14,6 @@ function walk(dir) {
     return [full];
   });
 }
-
 for (const file of walk(root)) {
   if (path.basename(file).toLowerCase() === 'index.html') {
     const rel = path.relative(root, file).replaceAll(path.sep, '/');
@@ -59,7 +58,7 @@ try {
 
   for (let i = 0; i < count; i++) {
     await shell.locator('.topic-card').nth(i).click();
-    await shell.waitForTimeout(550);
+    await shell.waitForTimeout(400);
     if (!(await shell.locator('#workspaceSection').isVisible())) shellErrors.push(`topic ${i + 1}: workspace did not open`);
     if (!(await shell.locator('#exitCourse').isVisible())) shellErrors.push(`topic ${i + 1}: Exit course control is not visible`);
     const src = await shell.locator('#topicFrame').getAttribute('src');
@@ -69,28 +68,30 @@ try {
     if (!frame) shellErrors.push(`topic ${i + 1}: embedded frame unavailable`);
     else {
       const embeddedExit = frame.locator('.uc-exit-course');
-      if (!(await embeddedExit.isVisible().catch(() => false))) shellErrors.push(`topic ${i + 1}: embedded Exit course button missing`);
       const navSelect = frame.locator('.uc-view-picker select');
-      if (!(await navSelect.isVisible().catch(() => false))) shellErrors.push(`topic ${i + 1}: compact embedded section picker missing`);
+      await embeddedExit.waitFor({state:'visible',timeout:3500}).catch(()=>shellErrors.push(`topic ${i + 1}: embedded Exit course button missing`));
+      await navSelect.waitFor({state:'visible',timeout:3500}).catch(()=>shellErrors.push(`topic ${i + 1}: compact embedded section picker missing`));
     }
 
     await shell.locator('#exitCourse').click();
-    await shell.waitForTimeout(180);
+    await shell.waitForTimeout(120);
     if (!(await shell.locator('#courseHome').isVisible())) shellErrors.push(`topic ${i + 1}: course home did not return after exit`);
     if (await shell.locator('#workspaceSection').isVisible()) shellErrors.push(`topic ${i + 1}: workspace remained visible after exit`);
   }
 
   await shell.locator('.topic-card').first().click();
-  await shell.waitForTimeout(550);
+  await shell.waitForTimeout(400);
   const embeddedFrame = shell.frames().find(f => f !== shell.mainFrame() && f.url().includes('/topics/'));
   if (embeddedFrame) {
-    await embeddedFrame.locator('.uc-exit-course').click();
-    await shell.waitForTimeout(180);
+    const embeddedExit = embeddedFrame.locator('.uc-exit-course');
+    await embeddedExit.waitFor({state:'visible',timeout:3500});
+    await embeddedExit.click();
+    await shell.waitForTimeout(150);
     if (!(await shell.locator('#courseHome').isVisible())) shellErrors.push('embedded Exit course button did not return to home');
   }
 
   await shell.locator('#continueBtn').click();
-  await shell.waitForTimeout(350);
+  await shell.waitForTimeout(300);
   const markButton = shell.locator('#markComplete');
   await markButton.click();
   if (!/Completed/i.test(await markButton.innerText())) shellErrors.push('Mark topic complete did not update state');
