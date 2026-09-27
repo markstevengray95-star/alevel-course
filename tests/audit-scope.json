@@ -1,0 +1,6 @@
+{
+  "courseShell": true,
+  "topicModules": 9,
+  "browser": "chromium",
+  "checks": ["build", "resources", "javascript-syntax", "json", "duplicate-ids", "browser-errors", "network-failures", "iframe-navigation", "progress-interaction"]
+}
