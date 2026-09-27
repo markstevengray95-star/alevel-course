@@ -119,7 +119,7 @@ for (const route of routes) {
 }
 await desktop.close();
 
-// Mobile smoke pass: catches viewport-specific runtime failures and flags page-level horizontal overflow.
+// Mobile smoke pass: catches viewport-specific runtime failures and rejects page-level horizontal overflow.
 const mobile = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, serviceWorkers: 'block' });
 for (const route of routes) {
   const page = await mobile.newPage();
@@ -130,7 +130,7 @@ for (const route of routes) {
     await page.waitForTimeout(900);
     if (!res || res.status() >= 400) failures.push(`mobile ${route}: HTTP ${res?.status() ?? 'no response'}`);
     const dims = await page.evaluate(() => ({scrollWidth:document.documentElement.scrollWidth, clientWidth:document.documentElement.clientWidth}));
-    if (dims.scrollWidth > dims.clientWidth + 24) warnings.add(`mobile ${route}: page-level horizontal overflow ${dims.scrollWidth}px > ${dims.clientWidth}px`);
+    if (dims.scrollWidth > dims.clientWidth + 24) failures.push(`mobile ${route}: page-level horizontal overflow ${dims.scrollWidth}px > ${dims.clientWidth}px`);
     reportDiagnostics(route, 'mobile', d);
     console.log(`Mobile checked ${route}`);
   } catch (e) {
