@@ -4,57 +4,59 @@ html.unified-course-embedded .hero,
 html.unified-course-embedded .progress-card:not(.quiz-stats){display:none!important}
 
 html.unified-course-embedded body{background:#08111d!important}
-html.unified-course-embedded .main{padding:8px 0 28px!important}
+html.unified-course-embedded .main{padding:6px 0 24px!important}
 html.unified-course-embedded .main-nav{display:none!important}
 
+/* A single compact section switcher replaces each specialist app's full nav. */
 .uc-embedded-toolbar{
   position:sticky;top:0;z-index:140;
-  display:flex;align-items:center;gap:10px;
-  min-height:54px;padding:7px max(10px,calc((100vw - 1280px)/2));
-  background:rgba(8,17,29,.98);border-bottom:1px solid rgba(151,181,210,.14);
-  box-shadow:0 8px 22px rgba(0,0,0,.14);backdrop-filter:blur(14px)
+  display:flex;align-items:center;gap:7px;
+  min-height:46px;padding:5px max(10px,calc((100vw - 1280px)/2));
+  background:rgba(8,17,29,.985);border-bottom:1px solid rgba(151,181,210,.12);
+  box-shadow:none;backdrop-filter:blur(14px)
 }
 .uc-exit-course{
-  appearance:none;border:1px solid rgba(151,181,210,.2);border-radius:9px;
-  background:transparent;color:#dce8f2;padding:9px 11px;font:800 .8rem/1 system-ui,sans-serif;
+  appearance:none;border:1px solid rgba(151,181,210,.16);border-radius:8px;
+  background:transparent;color:#c9d7e4;padding:8px 10px;font:800 .74rem/1 system-ui,sans-serif;
   cursor:pointer;white-space:nowrap
 }
-.uc-exit-course:hover{background:rgba(255,255,255,.045);border-color:rgba(101,214,207,.4)}
-.uc-view-picker{display:flex;align-items:center;gap:8px;min-width:0;flex:1;margin:0!important}
-.uc-view-picker>span{color:#8297aa!important;font:800 .66rem/1 system-ui,sans-serif!important;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap}
+.uc-exit-course:hover{background:rgba(255,255,255,.04);border-color:rgba(101,214,207,.34);color:#eef8f7}
+.uc-view-picker{display:flex;align-items:center;gap:7px;min-width:0;flex:1;margin:0!important}
+.uc-view-picker>span{color:#71869a!important;font:800 .61rem/1 system-ui,sans-serif!important;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap}
 .uc-view-picker select{
-  width:min(360px,100%);min-height:38px;margin:0!important;padding:7px 10px!important;
-  border:1px solid rgba(151,181,210,.2)!important;border-radius:9px!important;
-  background:#0d1b2a!important;color:#edf4fb!important;font:750 .84rem/1.1 system-ui,sans-serif!important
+  width:min(330px,100%);min-height:34px;margin:0!important;padding:6px 9px!important;
+  border:1px solid rgba(151,181,210,.16)!important;border-radius:8px!important;
+  background:#0c1927!important;color:#e4edf5!important;font:750 .78rem/1.1 system-ui,sans-serif!important
 }
 
-html.unified-course-embedded .section-head{margin:0 0 10px!important}
+html.unified-course-embedded .section-head{margin:0 0 9px!important}
 html.unified-course-embedded .section-head>p{display:none!important}
 html.unified-course-embedded .section-head .eyebrow{display:none!important}
-html.unified-course-embedded .section-head h2{font-size:1.35rem!important;margin:0!important}
+html.unified-course-embedded .section-head h2{font-size:1.28rem!important;margin:0!important}
 html.unified-course-embedded .view{padding-top:0!important}
 html.unified-course-embedded .panel{box-shadow:none!important}
-html.unified-course-embedded .course-layout{grid-template-columns:minmax(190px,230px) minmax(0,1fr)!important;gap:10px!important}
+html.unified-course-embedded .course-layout{grid-template-columns:minmax(185px,225px) minmax(0,1fr)!important;gap:9px!important}
 html.unified-course-embedded .course-list{gap:5px!important}
-html.unified-course-embedded .course-button{padding:9px 10px!important;font-size:.78rem!important}
-html.unified-course-embedded .lesson-panel{padding:16px!important}
+html.unified-course-embedded .course-button{padding:8px 9px!important;font-size:.76rem!important}
+html.unified-course-embedded .lesson-panel{padding:15px!important}
 html.unified-course-embedded .lab-layout,
 html.unified-course-embedded .textbook-layout,
 html.unified-course-embedded .formula-layout,
 html.unified-course-embedded .practical-grid,
 html.unified-course-embedded .quiz-layout,
-html.unified-course-embedded .extended-layout{gap:10px!important}
+html.unified-course-embedded .extended-layout{gap:9px!important}
 
 @media(max-width:900px){
   html.unified-course-embedded .course-layout{grid-template-columns:1fr!important}
   html.unified-course-embedded .course-list{display:flex!important;overflow-x:auto!important;padding-bottom:4px!important}
-  html.unified-course-embedded .course-button{min-width:170px!important;flex:0 0 170px!important}
+  html.unified-course-embedded .course-button{min-width:165px!important;flex:0 0 165px!important}
 }
 @media(max-width:650px){
-  .uc-embedded-toolbar{padding:7px 8px;gap:7px}
-  .uc-exit-course{padding:9px 10px;font-size:.75rem}
+  .uc-embedded-toolbar{min-height:43px;padding:4px 6px;gap:5px}
+  .uc-exit-course{width:34px;height:34px;padding:0;font-size:0}
+  .uc-exit-course::after{content:'←';font-size:.82rem}
   .uc-view-picker>span{display:none}
-  .uc-view-picker select{width:100%;font-size:.78rem!important}
-  html.unified-course-embedded .wrap{width:min(100% - 12px,1280px)!important}
-  html.unified-course-embedded .section-head h2{font-size:1.2rem!important}
+  .uc-view-picker select{width:100%;min-height:34px;font-size:.74rem!important;padding:5px 8px!important}
+  html.unified-course-embedded .wrap{width:min(100% - 10px,1280px)!important}
+  html.unified-course-embedded .section-head h2{font-size:1.15rem!important}
 }
