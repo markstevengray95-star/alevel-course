@@ -23,6 +23,9 @@
 
   const practicalViews=['home','skills','quiz','equations','circuit'];
   const topicSectionKey='alevel-course-topic-sections-v1';
+  const progressKey='alevel-course-progress-v1';
+  const locationKey='alevel-course-location-v2';
+  const notebookKey='alevel-physics-student-notebook-v1';
   const body=document.body;
   const home=document.getElementById('courseHome');
   const workspace=document.getElementById('workspaceSection');
@@ -53,6 +56,94 @@
     body.dataset.courseArea=area;
   }
 
+  function courseTopics(){return window.CourseApp?.topics||[];}
+  function courseProgress(){return safeJson(localStorage.getItem(progressKey),{});}
+  function courseLocation(){return safeJson(localStorage.getItem(locationKey),{});}
+  function notebookNotes(){const value=safeJson(localStorage.getItem(notebookKey),[]);return Array.isArray(value)?value:[];}
+  function yearTopics(year){return courseTopics().filter(topic=>topic.year===year);}
+  function completedInYear(year){const done=courseProgress();return yearTopics(year).filter(topic=>done[topic.id]).length;}
+  function resumeState(){
+    const topics=courseTopics();
+    const stored=courseLocation();
+    const progress=courseProgress();
+    const topic=topics.find(item=>item.id===stored.topic)||topics.find(item=>!progress[item.id])||topics[0];
+    const moduleIndex=Math.min(Math.max(Number(stored.module)||0,0),Math.max(0,(topic?.modules?.length||1)-1));
+    return {topic,moduleIndex};
+  }
+
+  function ensureHomeDashboard(){
+    if(!home||document.getElementById('homeLearningDashboard'))return;
+    const intro=home.querySelector('.home-intro');
+    const cycle=home.querySelector('.study-cycle');
+    const map=document.getElementById('courseMap');
+    if(!intro||!cycle||!map)return;
+
+    const dashboard=document.createElement('section');
+    dashboard.id='homeLearningDashboard';
+    dashboard.className='home-learning-dashboard';
+    dashboard.setAttribute('aria-label','Learning overview');
+    dashboard.innerHTML=`
+      <button class="home-resume-card" id="homeResumeCard" type="button">
+        <span class="home-resume-kicker">Resume learning</span>
+        <span class="home-resume-main"><strong id="homeResumeTitle">Measurements and their errors</strong><span id="homeResumeAction">Continue →</span></span>
+        <span class="home-resume-detail" id="homeResumeDetail">AQA 3.1 · Year 12</span>
+        <span class="home-resume-progress"><span id="homeResumeProgressBar"></span></span>
+      </button>
+      <div class="home-overview-stats" aria-label="Course overview">
+        <div class="home-overview-stat"><span>Year 12</span><strong id="homeYear12Stat">0 / 5</strong><small>AQA 3.1–3.5</small></div>
+        <div class="home-overview-stat"><span>Year 13</span><strong id="homeYear13Stat">0 / 3</strong><small>AQA 3.6–3.8</small></div>
+        <div class="home-overview-stat"><span>Notebook</span><strong id="homeNotesStat">0</strong><small>saved notes</small></div>
+      </div>`;
+    cycle.before(dashboard);
+
+    const stages=document.createElement('div');
+    stages.id='courseStageStrip';
+    stages.className='course-stage-strip';
+    stages.setAttribute('aria-label','A-Level course stages');
+    stages.innerHTML=`
+      <div class="course-stage year12"><span class="course-stage-number">01</span><span><small>Year 12</small><strong>Core foundations</strong><em>AQA 3.1–3.5 · 5 topics</em></span><b id="year12StageProgress">0 / 5</b></div>
+      <span class="course-stage-connector" aria-hidden="true">→</span>
+      <div class="course-stage year13"><span class="course-stage-number">02</span><span><small>Year 13</small><strong>Advanced core</strong><em>AQA 3.6–3.8 · 3 topics</em></span><b id="year13StageProgress">0 / 3</b></div>`;
+    map.querySelector('.home-section-head')?.after(stages);
+
+    document.getElementById('homeResumeCard')?.addEventListener('click',()=>{
+      const {topic,moduleIndex}=resumeState();
+      if(topic)window.CourseApp?.openTopic?.(topic.id,true,moduleIndex);
+    });
+    updateHomeDashboard();
+  }
+
+  function updateHomeDashboard(){
+    if(!document.getElementById('homeLearningDashboard'))return;
+    const topics=courseTopics();
+    const {topic,moduleIndex}=resumeState();
+    const progress=courseProgress();
+    const done=topics.filter(item=>progress[item.id]).length;
+    const notes=notebookNotes();
+    const y12Done=completedInYear('Year 12');
+    const y13Done=completedInYear('Year 13');
+    const y12Total=yearTopics('Year 12').length||5;
+    const y13Total=yearTopics('Year 13').length||3;
+    const section=topic?topicSections[`${topic.id}:${moduleIndex}`]:null;
+    const module=topic?.modules?.[moduleIndex];
+    const detail=[topic?.code,topic?.year,module&&topic?.modules?.length>1?module.label:'',section?.label].filter(Boolean).join(' · ');
+    const resumeTitle=document.getElementById('homeResumeTitle');
+    const resumeDetail=document.getElementById('homeResumeDetail');
+    const resumeAction=document.getElementById('homeResumeAction');
+    const resumeBar=document.getElementById('homeResumeProgressBar');
+    if(resumeTitle)resumeTitle.textContent=topic?.title||'Start the A-Level Physics course';
+    if(resumeDetail)resumeDetail.textContent=detail||'AQA 7408 · Start with Measurements';
+    if(resumeAction)resumeAction.textContent=done===topics.length?'Review →':done?'Continue →':'Start →';
+    if(resumeBar)resumeBar.style.width=`${topics.length?Math.round(done/topics.length*100):0}%`;
+    const y12=document.getElementById('homeYear12Stat');if(y12)y12.textContent=`${y12Done} / ${y12Total}`;
+    const y13=document.getElementById('homeYear13Stat');if(y13)y13.textContent=`${y13Done} / ${y13Total}`;
+    const noteStat=document.getElementById('homeNotesStat');if(noteStat)noteStat.textContent=String(notes.length);
+    const s12=document.getElementById('year12StageProgress');if(s12)s12.textContent=`${y12Done} / ${y12Total}`;
+    const s13=document.getElementById('year13StageProgress');if(s13)s13.textContent=`${y13Done} / ${y13Total}`;
+    document.querySelector('.course-stage.year12')?.classList.toggle('complete',y12Done>=y12Total);
+    document.querySelector('.course-stage.year13')?.classList.toggle('complete',y13Done>=y13Total);
+  }
+
   function setLoading(show,text='Opening course tool…'){
     if(loadingText)loadingText.textContent=text;
     if(loading)loading.hidden=!show;
@@ -75,6 +166,7 @@
     if(!key||!Number.isInteger(value))return;
     topicSections[key]={index:value,label:String(label||'').trim()};
     localStorage.setItem(topicSectionKey,JSON.stringify(topicSections));
+    updateHomeDashboard();
   }
 
   function restoreTopicSection(){
@@ -113,6 +205,7 @@
       if(jumpbar)jumpbar.hidden=true;
       if(toolWorkspace)toolWorkspace.hidden=true;
       document.documentElement.classList.remove('tool-open');
+      updateHomeDashboard();
     }
   }
 
@@ -226,6 +319,7 @@
     if(body.classList.contains('tool-mode'))closeTool({scroll:false});
     if(body.classList.contains('course-mode'))window.CourseApp?.exitCourse?.({scroll:false});
     setAreaState('learn');
+    updateHomeDashboard();
     window.setTimeout(()=>document.getElementById('courseMap')?.scrollIntoView({behavior:'smooth',block:'start'}),30);
   }
 
@@ -233,6 +327,7 @@
     if(body.classList.contains('tool-mode'))closeTool({scroll:false});
     else if(body.classList.contains('course-mode'))window.CourseApp?.exitCourse?.({scroll:false});
     setAreaState('learn');
+    updateHomeDashboard();
     window.setTimeout(()=>document.getElementById('courseTools')?.scrollIntoView({behavior:'smooth',block:'start'}),40);
   }
 
@@ -249,6 +344,8 @@
   document.getElementById('toolReload')?.addEventListener('click',()=>{if(frame&&active){setLoading(true,`Reloading ${active.label}…`);frame.src=active.url;}});
   document.getElementById('mobileDockTools')?.addEventListener('click',showTools);
   document.getElementById('reloadFrame')?.addEventListener('click',()=>setTopicLoading(true),{capture:true});
+  document.getElementById('resetProgress')?.addEventListener('click',()=>window.setTimeout(updateHomeDashboard,0));
+  document.getElementById('markComplete')?.addEventListener('click',()=>window.setTimeout(updateHomeDashboard,0));
 
   frame?.addEventListener('load',()=>{
     if(!active){setLoading(false);return;}
@@ -267,6 +364,9 @@
     });
   }
 
+  const notebookList=document.getElementById('notebookList');
+  if(notebookList)new MutationObserver(updateHomeDashboard).observe(notebookList,{childList:true,subtree:true});
+
   window.addEventListener('message',event=>{
     if(!topicFrame||event.source!==topicFrame.contentWindow)return;
     if(event.data?.type==='alevel-topic-section')saveTopicSection(event.data.index,event.data.label);
@@ -275,11 +375,14 @@
   window.addEventListener('coursecontextchange',event=>{
     if(event.detail?.topicId)lastCourseState=event.detail;
     if(event.detail?.courseOpen)setAreaState('learn');
+    updateHomeDashboard();
     if(event.detail?.courseOpen===false&&event.detail?.topicId){
       const topicId=event.detail.topicId;
       window.setTimeout(()=>focusActiveTopicCard(topicId),35);
     }
   });
+  window.addEventListener('focus',updateHomeDashboard);
+  window.addEventListener('storage',event=>{if([progressKey,locationKey,notebookKey,topicSectionKey].includes(event.key))updateHomeDashboard();});
 
   document.addEventListener('keydown',event=>{
     if(event.key!=='Escape'||!body.classList.contains('tool-mode'))return;
@@ -291,6 +394,7 @@
     closeTool();
   });
 
+  ensureHomeDashboard();
   setAreaState('learn');
-  window.CourseTools={tools,openTool,closeTool,showTools,resumeLearning,getActive:()=>active?{...active}:null,setMarkingUrl:url=>{if(url){localStorage.setItem('alevel-marking-app-url',String(url).replace(/\/$/,''));location.reload();}}};
+  window.CourseTools={tools,openTool,closeTool,showTools,resumeLearning,updateHomeDashboard,getActive:()=>active?{...active}:null,setMarkingUrl:url=>{if(url){localStorage.setItem('alevel-marking-app-url',String(url).replace(/\/$/,''));location.reload();}}};
 })();
