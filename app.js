@@ -33,15 +33,13 @@ function saveLocation(){
 }
 function topicIndex(){return Math.max(0,topics.findIndex(t=>t.id===activeTopic.id));}
 function moduleUrl(){return activeTopic.modules[activeModule]?.path||activeTopic.modules[0].path;}
-function dispatchContext(){
-  window.dispatchEvent(new CustomEvent('coursecontextchange',{detail:getState()}));
-}
+function dispatchContext(){window.dispatchEvent(new CustomEvent('coursecontextchange',{detail:getState()}));}
 
 function renderProgress(){
  const done=topics.filter(t=>progress[t.id]).length;
  document.getElementById('progressText').textContent=`${done} / ${topics.length} complete`;
  document.getElementById('progressFill').style.width=`${done/topics.length*100}%`;
- document.getElementById('markComplete').textContent=progress[activeTopic.id]?'Completed ✓':'Mark topic complete';
+ document.getElementById('markComplete').textContent=progress[activeTopic.id]?'Completed ✓':'Mark complete';
  document.getElementById('markComplete').classList.toggle('complete-button',!!progress[activeTopic.id]);
  [...grid.children].forEach((el,i)=>el.classList.toggle('complete',!!progress[topics[i].id]));
  courseRail.querySelectorAll('[data-topic-id]').forEach(btn=>btn.classList.toggle('complete',!!progress[btn.dataset.topicId]));
@@ -76,6 +74,8 @@ function openTopic(id,scroll=false,moduleIndex=0){
  document.getElementById('workspaceCode').textContent=activeTopic.code;
  document.getElementById('workspaceTitle').textContent=activeTopic.title;
  document.getElementById('workspaceDescription').textContent=activeTopic.description;
+ const yearEl=document.getElementById('workspaceYear');
+ if(yearEl)yearEl.textContent=activeTopic.year;
  renderTabs();
  loadModule();
  renderGrid();
@@ -115,32 +115,14 @@ function loadModule(){
  document.getElementById('moduleNext').disabled=activeModule===activeTopic.modules.length-1;
 }
 
-function previousTopic(){
- const i=topicIndex();
- if(i>0)openTopic(topics[i-1].id,true,0);
-}
-function nextTopic(){
- const i=topicIndex();
- if(i<topics.length-1)openTopic(topics[i+1].id,true,0);
-}
+function previousTopic(){const i=topicIndex();if(i>0)openTopic(topics[i-1].id,true,0);}
+function nextTopic(){const i=topicIndex();if(i<topics.length-1)openTopic(topics[i+1].id,true,0);}
 function previousModule(){if(activeModule>0)changeModule(activeModule-1);}
 function nextModule(){if(activeModule<activeTopic.modules.length-1)changeModule(activeModule+1);}
 
 function getState(){
  const m=activeTopic.modules[activeModule];
- return {
-   topicId:activeTopic.id,
-   topicIndex:topicIndex(),
-   code:activeTopic.code,
-   title:activeTopic.title,
-   short:activeTopic.short,
-   year:activeTopic.year,
-   description:activeTopic.description,
-   moduleIndex:activeModule,
-   moduleLabel:m.label,
-   modulePath:m.path,
-   complete:!!progress[activeTopic.id]
- };
+ return {topicId:activeTopic.id,topicIndex:topicIndex(),code:activeTopic.code,title:activeTopic.title,short:activeTopic.short,year:activeTopic.year,description:activeTopic.description,moduleIndex:activeModule,moduleLabel:m.label,modulePath:m.path,complete:!!progress[activeTopic.id]};
 }
 
 function getActiveContext(){
