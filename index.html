@@ -5,10 +5,11 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#08111d">
   <title>AQA A-level Physics Course</title>
-  <meta name="description" content="Unified AQA A-level Physics 7408 course with lessons, simulations, practicals, assessments and an AI study coach.">
+  <meta name="description" content="Unified AQA A-level Physics 7408 course with lessons, simulations, practicals, assessments, a student notebook and an AI study coach.">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="course-enhancements.css">
   <link rel="stylesheet" href="focus-layout.css">
+  <link rel="stylesheet" href="student-notebook.css">
 </head>
 <body class="home-mode">
 <header class="topbar">
@@ -35,6 +36,7 @@
     <div class="course-position" id="coursePosition" aria-live="polite">1 / 8</div>
     <button class="nav-square topic-step" id="nextCourse" type="button" aria-label="Next topic">→</button>
     <button class="button complete-action jump-complete" id="markComplete" type="button">Mark complete</button>
+    <button class="button notebook-button" id="notebookToggle" type="button" title="Open student notebook"><span>▤</span> Notebook</button>
     <button class="button ai-button" id="coachToggle" type="button"><span>✦</span> AI Coach</button>
     <details class="workspace-more shell-more">
       <summary aria-label="More topic actions">•••</summary>
@@ -58,6 +60,7 @@
       </div>
       <div class="home-actions">
         <button class="button primary" id="continueBtn">Continue learning</button>
+        <button class="button quiet" id="homeNotebookBtn">▤ Notebook</button>
         <button class="button quiet" id="heroCoachBtn">✦ Ask AI</button>
       </div>
     </section>
@@ -71,7 +74,7 @@
     </section>
 
     <div class="home-footer-tools">
-      <span>Progress and your last position are saved on this device.</span>
+      <span>Progress, notebook notes and your last position are saved on this device.</span>
       <button class="text-button danger-subtle" id="resetProgress">Reset progress</button>
     </div>
   </div>
@@ -100,6 +103,24 @@
   </section>
 </main>
 
+<div class="notebook-backdrop" id="notebookBackdrop" hidden></div>
+<aside class="notebook-panel" id="notebookPanel" aria-hidden="true" aria-label="Student notebook">
+  <div class="notebook-head">
+    <div><span class="eyebrow">Across the whole course</span><h2>Student Notebook</h2><p>Save key ideas, lesson text and AI explanations from any AQA topic.</p></div>
+    <button class="nav-square" id="notebookClose" type="button" aria-label="Close notebook">×</button>
+  </div>
+  <div class="notebook-context">
+    <strong id="notebookContextLabel">AQA 3.1 · Measurements and their errors</strong>
+    <select id="notebookFilter" aria-label="Filter notebook notes by topic"><option value="all">All topics</option></select>
+  </div>
+  <div class="notebook-compose">
+    <label><span>Add your own note</span><textarea id="notebookInput" maxlength="5000" placeholder="Write a key idea, method, definition or reminder…"></textarea></label>
+    <div class="notebook-compose-row"><small>Ctrl/⌘ + Enter to save</small><button class="button primary notebook-save" id="notebookSave" type="button">Save note</button></div>
+  </div>
+  <div class="notebook-list" id="notebookList" aria-live="polite"></div>
+</aside>
+<div class="notebook-toast" id="notebookToast" role="status" aria-live="polite">Saved to notebook</div>
+
 <button class="coach-fab" id="coachFab" type="button" aria-label="Open AI Physics Coach">✦ <span>AI Coach</span></button>
 <div class="coach-backdrop" id="coachBackdrop" hidden></div>
 <aside class="coach-panel" id="coachPanel" aria-hidden="true" aria-label="AI Physics Coach">
@@ -122,6 +143,7 @@
 </aside>
 
 <script src="app.js"></script>
+<script src="student-notebook.js"></script>
 <script src="ai-coach.js"></script>
 </body>
 </html>
