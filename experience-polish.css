@@ -1,0 +1,85 @@
+/* Shared shell polish: one visual language across Learn, Practise, Assess, Notebook and AI. */
+:root{
+  --shell-radius:14px;
+  --shell-radius-sm:10px;
+  --shell-ease:cubic-bezier(.2,.8,.2,1);
+  --shell-bar:rgba(8,17,29,.965);
+  --shell-soft:rgba(102,217,208,.075);
+  --shell-soft-2:rgba(126,170,247,.075);
+}
+
+button,a,select,input,textarea{transition:border-color .16s var(--shell-ease),background-color .16s var(--shell-ease),color .16s var(--shell-ease),transform .16s var(--shell-ease),box-shadow .16s var(--shell-ease)}
+button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid rgba(102,217,208,.68);outline-offset:2px}
+
+/* Persistent course-area navigation on Course Home. */
+.global-course-nav{display:flex;align-items:center;gap:4px;padding:3px;border:1px solid var(--line-soft);border-radius:12px;background:rgba(255,255,255,.018)}
+.course-area-button{appearance:none;border:0;border-radius:9px;background:transparent;color:#8fa4b8;min-height:34px;padding:7px 11px;font:800 .7rem/1 system-ui,sans-serif;cursor:pointer;white-space:nowrap}
+.course-area-button:hover,.course-area-button[aria-current="page"]{background:rgba(102,217,208,.08);color:#e7fbf9}
+.course-area-button[aria-current="page"]{box-shadow:inset 0 0 0 1px rgba(102,217,208,.15)}
+
+/* Home becomes a clear learning cycle rather than disconnected blocks. */
+.study-cycle{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:14px 0 2px}
+.study-cycle-step{appearance:none;border:1px solid var(--line-soft);border-radius:13px;background:linear-gradient(145deg,rgba(13,23,36,.92),rgba(10,20,31,.92));color:var(--text);padding:12px 13px;text-align:left;cursor:pointer;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;min-height:70px}
+.study-cycle-step:hover,.study-cycle-step:focus-visible{border-color:rgba(102,217,208,.3);background:linear-gradient(145deg,rgba(16,31,46,.98),rgba(11,24,36,.98));transform:translateY(-1px)}
+.study-cycle-number{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:rgba(102,217,208,.08);border:1px solid rgba(102,217,208,.15);color:#bdf3ee;font:900 .72rem/1 system-ui,sans-serif}
+.study-cycle-copy{min-width:0;display:grid;gap:2px}.study-cycle-copy strong{font-size:.82rem}.study-cycle-copy span{font-size:.65rem;color:#8197aa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.study-cycle-arrow{color:#78b7b4;font-size:.84rem}
+
+/* Topic cards and course tools share the same density and interaction language. */
+.topic-card,.course-tool-card{border-color:rgba(151,181,210,.1)!important;background:linear-gradient(150deg,#0d1724,#0b1521)!important}
+.topic-card:hover,.course-tool-card:hover,.topic-card:focus-visible,.course-tool-card:focus-visible{border-color:rgba(102,217,208,.28)!important;background:linear-gradient(150deg,#111f2e,#0d1926)!important;box-shadow:0 10px 26px rgba(0,0,0,.12)!important}
+.course-tool-card{min-height:142px!important}.course-tool-icon{box-shadow:inset 0 0 0 1px rgba(255,255,255,.018)}
+.course-tool-footer strong{display:inline-flex;align-items:center;gap:4px}
+.home-footer-tools{margin-top:8px;border-top:1px solid rgba(151,181,210,.07)}
+
+/* Fast route from a focused topic into the practical/assessment tools. */
+.area-tool-button{background:transparent!important;color:#a9bdcf!important;border-color:rgba(151,181,210,.12)!important;font-size:.7rem!important;padding:8px 9px!important;white-space:nowrap}
+.area-tool-button:hover{color:#e5f9f6!important;border-color:rgba(102,217,208,.28)!important;background:rgba(102,217,208,.055)!important}
+
+/* Full-screen course tool shell uses the same proportions as focused topic mode. */
+.tool-workspace{animation:shellEnter .22s var(--shell-ease)}
+.tool-bar{height:54px!important;flex-basis:54px!important;padding-inline:max(8px,calc((100vw - 1580px)/2))!important;background:var(--shell-bar)!important}
+.tool-back{border-radius:10px!important;background:var(--shell-soft)!important}
+.tool-area-switcher{display:flex;align-items:center;gap:3px;padding:3px;border:1px solid rgba(151,181,210,.11);border-radius:10px;background:rgba(255,255,255,.018)}
+.tool-area-switcher button{appearance:none;border:0;border-radius:8px;background:transparent;color:#8fa4b8;height:30px;padding:0 9px;font:800 .66rem/1 system-ui,sans-serif;cursor:pointer}
+.tool-area-switcher button:hover,.tool-area-switcher button[aria-current="page"]{color:#e7fbf9;background:rgba(102,217,208,.08)}
+.practical-section-wrap{display:flex;align-items:center;gap:6px;padding-left:4px;border-left:1px solid rgba(151,181,210,.1)}
+.practical-section-wrap[hidden]{display:none!important}.practical-section-wrap span{font-size:.57rem;text-transform:uppercase;letter-spacing:.07em;color:#71869a;font-weight:850}.practical-section-picker{height:34px;max-width:170px;border:1px solid rgba(151,181,210,.13);border-radius:8px;background:#0c1825;color:#d8e6f2;padding:6px 28px 6px 8px;font:750 .67rem/1 system-ui,sans-serif}
+.tool-frame-wrap{background:#08111d!important}.tool-frame{background:#f7f8fa!important}
+.tool-loading{position:absolute;inset:0;z-index:5;display:grid;place-items:center;background:linear-gradient(180deg,#0a1522,#08111d);color:#c9d7e4;transition:opacity .18s var(--shell-ease),visibility .18s var(--shell-ease)}
+.tool-loading[hidden]{opacity:0;visibility:hidden;pointer-events:none}.tool-loading-inner{display:grid;justify-items:center;gap:10px;font-size:.76rem}.tool-spinner{width:26px;height:26px;border:2px solid rgba(151,181,210,.18);border-top-color:#66d9d0;border-radius:50%;animation:toolSpin .8s linear infinite}
+.tool-mode .coach-fab{display:none!important}
+
+/* Drawers feel like part of the same shell, not floating utilities. */
+.notebook-panel,.coach-panel{border-left:1px solid rgba(151,181,210,.12)!important;box-shadow:-24px 0 60px rgba(0,0,0,.28)!important}
+.notebook-head,.coach-head{border-bottom-color:rgba(151,181,210,.09)!important}
+.notebook-backdrop,.coach-backdrop{backdrop-filter:blur(3px)}
+
+/* Gentle transitions between shell states. */
+.home-mode .course-home,.course-mode .workspace-section{animation:shellEnter .22s var(--shell-ease)}
+.workspace-shell,.tool-frame-wrap{box-shadow:0 16px 42px rgba(0,0,0,.16)!important}
+
+@keyframes shellEnter{from{opacity:.01;transform:translateY(5px)}to{opacity:1;transform:none}}
+@keyframes toolSpin{to{transform:rotate(360deg)}}
+
+@media(max-width:1040px){
+  .global-course-nav{margin-left:auto}.header-progress{width:150px}
+  .area-tool-button{display:none!important}
+  .tool-area-switcher button{padding-inline:7px}
+}
+@media(max-width:760px){
+  .topbar-inner{gap:7px!important}.header-progress{display:none!important}.brand-block{margin-right:auto}
+  .global-course-nav{gap:2px;padding:2px}.course-area-button{min-height:32px;padding:6px 7px;font-size:.62rem}
+  .study-cycle{gap:6px}.study-cycle-step{grid-template-columns:auto 1fr;padding:10px;min-height:64px}.study-cycle-arrow{display:none}.study-cycle-copy span{font-size:.6rem}
+  .tool-bar{height:50px!important;flex-basis:50px!important}.tool-identity{display:none!important}.tool-area-switcher{margin-right:auto}.tool-area-switcher button{font-size:.6rem;height:32px;padding:0 7px}.practical-section-wrap span{display:none}.practical-section-picker{max-width:118px;height:34px;font-size:.61rem}
+  .tool-action.accent{display:none!important}
+}
+@media(max-width:520px){
+  .study-cycle{grid-template-columns:1fr}.study-cycle-step{min-height:58px}.study-cycle-copy span{white-space:normal}
+  .course-area-button{font-size:0;width:34px;padding:0}.course-area-button::before{font-size:.86rem}.course-area-button[data-area="learn"]::before{content:'◫'}.course-area-button[data-area="practicals"]::before{content:'⚗'}.course-area-button[data-area="marking"]::before{content:'✓'}
+  .tool-area-switcher button{width:34px;font-size:0;padding:0}.tool-area-switcher button::before{font-size:.82rem}.tool-area-switcher [data-tool-area="learn"]::before{content:'◫'}.tool-area-switcher [data-tool-area="practicals"]::before{content:'⚗'}.tool-area-switcher [data-tool-area="marking"]::before{content:'✓'}
+  .practical-section-picker{max-width:105px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+  .notebook-backdrop,.coach-backdrop{backdrop-filter:none}
+}
