@@ -18,10 +18,10 @@ TARGETS = [
 
 MARKER = '<!-- unified-course-topic-theme -->'
 INJECTION = f'''{MARKER}
-<link rel="stylesheet" href="unified-course-theme.css?v=12">
-<link rel="stylesheet" href="unified-course-focus.css?v=12">
+<link rel="stylesheet" href="unified-course-theme.css?v=13">
+<link rel="stylesheet" href="unified-course-focus.css?v=13">
 <script>if(window.self!==window.top)document.documentElement.classList.add('unified-course-embedded');</script>
-<script src="unified-course-embedded.js?v=12" defer></script>'''
+<script src="unified-course-embedded.js?v=13" defer></script>'''
 
 for source in (THEME_SOURCE, FOCUS_SOURCE, EMBEDDED_SCRIPT_SOURCE):
     if not source.exists():
