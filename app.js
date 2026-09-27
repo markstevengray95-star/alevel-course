@@ -14,26 +14,56 @@ const locationKey='alevel-course-location-v2';
 let progress=safeJson(localStorage.getItem(progressKey),{});
 let activeTopic=topics[0];
 let activeModule=0;
+let courseOpen=false;
 
 const grid=document.getElementById('topicGrid');
 const frame=document.getElementById('topicFrame');
 const tabs=document.getElementById('moduleTabs');
 const quickSelect=document.getElementById('quickCourseSelect');
 const courseRail=document.getElementById('courseRail');
+const courseHome=document.getElementById('courseHome');
+const workspace=document.getElementById('workspaceSection');
+const jumpbar=document.getElementById('courseJumpbar');
 
 function safeJson(value,fallback){try{return JSON.parse(value)||fallback}catch{return fallback}}
 function saveProgress(){localStorage.setItem(progressKey,JSON.stringify(progress));}
-function saveLocation(){
-  const state={topic:activeTopic.id,module:activeModule};
-  localStorage.setItem(locationKey,JSON.stringify(state));
-  const url=new URL(location.href);
-  url.searchParams.set('topic',activeTopic.id);
-  url.searchParams.set('module',String(activeModule));
-  history.replaceState(state,'',url);
-}
 function topicIndex(){return Math.max(0,topics.findIndex(t=>t.id===activeTopic.id));}
 function moduleUrl(){return activeTopic.modules[activeModule]?.path||activeTopic.modules[0].path;}
 function dispatchContext(){window.dispatchEvent(new CustomEvent('coursecontextchange',{detail:getState()}));}
+
+function writeCourseUrl(mode='replace'){
+  const state={topic:activeTopic.id,module:activeModule,view:'course'};
+  localStorage.setItem(locationKey,JSON.stringify({topic:activeTopic.id,module:activeModule}));
+  const url=new URL(location.href);
+  url.searchParams.set('view','course');
+  url.searchParams.set('topic',activeTopic.id);
+  url.searchParams.set('module',String(activeModule));
+  history[mode==='push'?'pushState':'replaceState'](state,'',url);
+}
+
+function writeHomeUrl(){
+  const url=new URL(location.href);
+  url.searchParams.delete('view');
+  url.searchParams.delete('topic');
+  url.searchParams.delete('module');
+  history.replaceState({view:'home'},'',url);
+}
+
+function setCourseMode(open,{scroll=true,updateUrl=true}={}){
+  courseOpen=!!open;
+  document.body.classList.toggle('course-mode',courseOpen);
+  document.body.classList.toggle('home-mode',!courseOpen);
+  courseHome.hidden=courseOpen;
+  workspace.hidden=!courseOpen;
+  jumpbar.hidden=!courseOpen;
+  if(!courseOpen){
+    if(updateUrl)writeHomeUrl();
+    if(scroll)window.scrollTo({top:0,behavior:'smooth'});
+    document.getElementById('brandHome')?.focus({preventScroll:true});
+  }else if(scroll){
+    workspace.scrollIntoView({behavior:'smooth',block:'start'});
+  }
+}
 
 function renderProgress(){
  const done=topics.filter(t=>progress[t.id]).length;
@@ -42,11 +72,11 @@ function renderProgress(){
  document.getElementById('markComplete').textContent=progress[activeTopic.id]?'Completed ✓':'Mark complete';
  document.getElementById('markComplete').classList.toggle('complete-button',!!progress[activeTopic.id]);
  [...grid.children].forEach((el,i)=>el.classList.toggle('complete',!!progress[topics[i].id]));
- courseRail.querySelectorAll('[data-topic-id]').forEach(btn=>btn.classList.toggle('complete',!!progress[btn.dataset.topicId]));
+ courseRail?.querySelectorAll('[data-topic-id]').forEach(btn=>btn.classList.toggle('complete',!!progress[btn.dataset.topicId]));
 }
 
 function renderGrid(){
- grid.innerHTML=topics.map((t,i)=>`<article class="topic-card ${t.id===activeTopic.id?'active':''} ${progress[t.id]?'complete':''}" data-id="${t.id}" tabindex="0" role="button" aria-label="Open ${t.title}"><span class="topic-index">${String(i+1).padStart(2,'0')} · ${t.code}</span><h3>${t.title}</h3><p>${t.description}</p><div class="topic-footer"><span>${t.year}</span><span>${t.modules.length>1?`${t.modules.length} linked modules`:'Open topic →'}</span></div></article>`).join('');
+ grid.innerHTML=topics.map((t,i)=>`<article class="topic-card ${t.id===activeTopic.id?'active':''} ${progress[t.id]?'complete':''}" data-id="${t.id}" tabindex="0" role="button" aria-label="Open ${t.title}"><span class="topic-index">${t.code}</span><h3>${t.title}</h3><p>${t.description}</p><div class="topic-footer"><span>${t.year}</span><span>Open →</span></div></article>`).join('');
  grid.querySelectorAll('.topic-card').forEach(card=>{
    const open=()=>openTopic(card.dataset.id,true,0);
    card.addEventListener('click',open);
@@ -57,8 +87,6 @@ function renderGrid(){
 function renderQuickNavigation(){
  quickSelect.innerHTML=topics.map((t,i)=>`<option value="${t.id}">${i+1}. ${t.code.replace('AQA ','')} · ${t.title}</option>`).join('');
  quickSelect.value=activeTopic.id;
- courseRail.innerHTML=topics.map((t,i)=>`<button type="button" class="rail-topic ${t.id===activeTopic.id?'active':''} ${progress[t.id]?'complete':''}" data-topic-id="${t.id}" title="${t.code} ${t.title}"><span>${i+1}</span><b>${t.short}</b></button>`).join('');
- courseRail.querySelectorAll('[data-topic-id]').forEach(btn=>btn.addEventListener('click',()=>openTopic(btn.dataset.topicId,true,0)));
  const i=topicIndex();
  document.getElementById('coursePosition').textContent=`${i+1} of ${topics.length}`;
  document.getElementById('prevCourse').disabled=i===0;
@@ -67,30 +95,40 @@ function renderQuickNavigation(){
  document.getElementById('workspaceNext').disabled=i===topics.length-1;
 }
 
-function openTopic(id,scroll=false,moduleIndex=0){
- const next=topics.find(t=>t.id===id)||topics[0];
- activeTopic=next;
- activeModule=Math.min(Math.max(Number(moduleIndex)||0,0),activeTopic.modules.length-1);
+function updateWorkspaceMetadata(){
  document.getElementById('workspaceCode').textContent=activeTopic.code;
  document.getElementById('workspaceTitle').textContent=activeTopic.title;
  document.getElementById('workspaceDescription').textContent=activeTopic.description;
- const yearEl=document.getElementById('workspaceYear');
- if(yearEl)yearEl.textContent=activeTopic.year;
+ document.getElementById('workspaceYear').textContent=activeTopic.year;
  renderTabs();
- loadModule();
- renderGrid();
  renderQuickNavigation();
+ renderGrid();
  renderProgress();
- saveLocation();
+}
+
+function openTopic(id,scroll=false,moduleIndex=0,{historyMode='auto'}={}){
+ const wasOpen=courseOpen;
+ activeTopic=topics.find(t=>t.id===id)||topics[0];
+ activeModule=Math.min(Math.max(Number(moduleIndex)||0,0),activeTopic.modules.length-1);
+ updateWorkspaceMetadata();
+ loadModule();
+ setCourseMode(true,{scroll:false,updateUrl:false});
+ const mode=historyMode==='auto'?(wasOpen?'replace':'push'):historyMode;
+ if(mode!=='none')writeCourseUrl(mode);
  dispatchContext();
- if(scroll)document.getElementById('workspaceSection').scrollIntoView({behavior:'smooth',block:'start'});
+ if(scroll)workspace.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function exitCourse({scroll=true,updateUrl=true}={}){
+ setCourseMode(false,{scroll,updateUrl});
+ dispatchContext();
 }
 
 function changeModule(index){
  activeModule=Math.min(Math.max(Number(index)||0,0),activeTopic.modules.length-1);
  renderTabs();
  loadModule();
- saveLocation();
+ writeCourseUrl('replace');
  dispatchContext();
 }
 
@@ -106,7 +144,7 @@ function renderTabs(){
 
 function loadModule(){
  const m=activeTopic.modules[activeModule];
- frame.src=m.path;
+ if(frame.getAttribute('src')!==m.path)frame.src=m.path;
  document.getElementById('moduleLabel').textContent=m.label;
  document.getElementById('modulePosition').textContent=activeTopic.modules.length>1?`Module ${activeModule+1} of ${activeTopic.modules.length}`:`${activeTopic.code} specialist app`;
  document.getElementById('sourceLink').href=m.repo;
@@ -122,22 +160,17 @@ function nextModule(){if(activeModule<activeTopic.modules.length-1)changeModule(
 
 function getState(){
  const m=activeTopic.modules[activeModule];
- return {topicId:activeTopic.id,topicIndex:topicIndex(),code:activeTopic.code,title:activeTopic.title,short:activeTopic.short,year:activeTopic.year,description:activeTopic.description,moduleIndex:activeModule,moduleLabel:m.label,modulePath:m.path,complete:!!progress[activeTopic.id]};
+ return {topicId:activeTopic.id,topicIndex:topicIndex(),code:activeTopic.code,title:activeTopic.title,short:activeTopic.short,year:activeTopic.year,description:activeTopic.description,moduleIndex:activeModule,moduleLabel:m.label,modulePath:m.path,complete:!!progress[activeTopic.id],courseOpen};
 }
 
 function getActiveContext(){
- const state=getState();
- let pageText='';
- let pageTitle='';
+ const state=getState();let pageText='';let pageTitle='';
  try{
    const doc=frame.contentDocument;
    if(doc){
      pageTitle=doc.title||'';
      const candidates=[...doc.querySelectorAll('h1,h2,h3,p,li,.equation,.formula-chip,.lesson-lead,.lesson-content,.textbook-section,.worked,.worked-example')];
-     const visible=candidates.filter(el=>{
-       const s=frame.contentWindow.getComputedStyle(el);
-       return s.display!=='none'&&s.visibility!=='hidden'&&el.getClientRects().length>0;
-     });
+     const visible=candidates.filter(el=>{const s=frame.contentWindow.getComputedStyle(el);return s.display!=='none'&&s.visibility!=='hidden'&&el.getClientRects().length>0;});
      pageText=visible.map(el=>el.textContent.trim()).filter(Boolean).join('\n').replace(/\n{3,}/g,'\n\n').slice(0,6500);
      if(!pageText)pageText=(doc.body?.innerText||'').trim().slice(0,6500);
    }
@@ -151,14 +184,13 @@ function restoreLocation(){
  const requested=params.get('topic')||stored.topic||topics[0].id;
  const topic=topics.find(t=>t.id===requested)||topics[0];
  const moduleParam=params.has('module')?Number(params.get('module')):Number(stored.module||0);
- return {topic:topic.id,module:Number.isFinite(moduleParam)?moduleParam:0};
+ return {topic:topic.id,module:Number.isFinite(moduleParam)?moduleParam:0,open:params.get('view')==='course'};
 }
 
-document.getElementById('markComplete').addEventListener('click',()=>{progress[activeTopic.id]=!progress[activeTopic.id];saveProgress();renderProgress();renderGrid();renderQuickNavigation();});
-document.getElementById('resetProgress').addEventListener('click',()=>{progress={};saveProgress();renderProgress();renderGrid();renderQuickNavigation();});
+document.getElementById('markComplete').addEventListener('click',()=>{progress[activeTopic.id]=!progress[activeTopic.id];saveProgress();renderProgress();renderGrid();});
+document.getElementById('resetProgress').addEventListener('click',()=>{progress={};saveProgress();renderProgress();renderGrid();});
 document.getElementById('reloadFrame').addEventListener('click',()=>{frame.src=moduleUrl();});
-document.getElementById('courseMapBtn').addEventListener('click',()=>document.getElementById('courseMap').scrollIntoView({behavior:'smooth'}));
-document.getElementById('continueBtn').addEventListener('click',()=>{const next=topics.find(t=>!progress[t.id])||topics[0];openTopic(next.id,true,0);});
+document.getElementById('continueBtn').addEventListener('click',()=>{const stored=safeJson(localStorage.getItem(locationKey),{});const next=topics.find(t=>t.id===stored.topic)||topics.find(t=>!progress[t.id])||topics[0];openTopic(next.id,true,stored.module||0);});
 quickSelect.addEventListener('change',()=>openTopic(quickSelect.value,true,0));
 document.getElementById('prevCourse').addEventListener('click',previousTopic);
 document.getElementById('nextCourse').addEventListener('click',nextTopic);
@@ -166,15 +198,30 @@ document.getElementById('workspacePrev').addEventListener('click',previousTopic)
 document.getElementById('workspaceNext').addEventListener('click',nextTopic);
 document.getElementById('modulePrev').addEventListener('click',previousModule);
 document.getElementById('moduleNext').addEventListener('click',nextModule);
+document.getElementById('exitCourse').addEventListener('click',()=>exitCourse());
+document.getElementById('brandHome').addEventListener('click',()=>exitCourse());
 frame.addEventListener('load',()=>dispatchContext());
-window.addEventListener('popstate',()=>{const restored=restoreLocation();openTopic(restored.topic,false,restored.module);});
+window.addEventListener('message',event=>{if(event.data?.type==='alevel-course-exit')exitCourse();});
+window.addEventListener('popstate',()=>{
+ const restored=restoreLocation();
+ if(restored.open)openTopic(restored.topic,false,restored.module,{historyMode:'none'});
+ else exitCourse({scroll:false,updateUrl:false});
+});
 document.addEventListener('keydown',e=>{
+ if(!courseOpen)return;
  if(e.altKey&&e.key==='ArrowLeft'){e.preventDefault();previousTopic();}
  if(e.altKey&&e.key==='ArrowRight'){e.preventDefault();nextTopic();}
 });
 
-window.CourseApp={topics,getState,getActiveContext,openTopic,previousTopic,nextTopic,changeModule};
+window.CourseApp={topics,getState,getActiveContext,openTopic,exitCourse,previousTopic,nextTopic,changeModule};
 
 const restored=restoreLocation();
+activeTopic=topics.find(t=>t.id===restored.topic)||topics[0];
+activeModule=Math.min(Math.max(Number(restored.module)||0,0),activeTopic.modules.length-1);
 renderGrid();
-openTopic(restored.topic,false,restored.module);
+renderQuickNavigation();
+renderTabs();
+renderProgress();
+updateWorkspaceMetadata();
+if(restored.open)openTopic(activeTopic.id,false,activeModule,{historyMode:'none'});
+else setCourseMode(false,{scroll:false,updateUrl:false});
