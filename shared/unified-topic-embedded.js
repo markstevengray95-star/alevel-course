@@ -3,6 +3,11 @@
 
   const requestExit = () => window.parent.postMessage({type:'alevel-course-exit'}, '*');
   const cleanText = value => String(value || '').replace(/\s+/g,' ').trim();
+  const applyMobileMode = enabled => document.documentElement.classList.toggle('unified-course-mobile', !!enabled);
+  window.addEventListener('message', event => {
+    if (event.data?.type === 'alevel-mobile-mode') applyMobileMode(event.data.enabled);
+  });
+
   const currentSection = (buttons) => {
     const activeNav = buttons.find(button => button.classList.contains('active') || button.getAttribute('aria-current') === 'page');
     const activeLesson = document.querySelector('.course-button.active,.lesson-path-step.active,.chapter-button.active,.textbook-sidebar button.active,.lesson-stage-button.active,.chunk-button.active');
