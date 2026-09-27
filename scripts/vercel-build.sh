@@ -28,15 +28,23 @@ echo "Applying verified integration compatibility fixes..."
 python3 scripts/apply-integration-fixes.py
 
 materials_dir="topics/04-mechanics-materials/materials"
-if [[ ! -f "$materials_dir/vendor/three.module.min.js" || ! -f "$materials_dir/vendor/xlsx.full.min.js" ]]; then
+if [[ ! -f "$materials_dir/vendor/three.module.min.js" || ! -f "$materials_dir/vendor/xlsx.full.min.js" || ! -f "$materials_dir/vendor/three.core.js" ]]; then
   echo "Generating Materials local vendor assets for embedded deployment..."
   npm install --prefix "$materials_dir" --ignore-scripts --no-audit --no-fund
   npm --prefix "$materials_dir" run vendor
+
+  # Three.js 0.18x splits the ESM build into three.module.js + three.core.js.
+  # The Materials repo's older vendor helper only copies the entry module, so
+  # copy the companion module explicitly for a fully local/offline deployment.
+  if [[ -f "$materials_dir/node_modules/three/build/three.core.js" ]]; then
+    cp "$materials_dir/node_modules/three/build/three.core.js" "$materials_dir/vendor/three.core.js"
+  fi
 fi
 
 for file in \
   "$materials_dir/three-performance-v10.js" \
   "$materials_dir/vendor/three.module.min.js" \
+  "$materials_dir/vendor/three.core.js" \
   "$materials_dir/vendor/xlsx.full.min.js"; do
   if [[ ! -f "$file" ]]; then
     echo "Missing generated Materials runtime dependency: $file" >&2
