@@ -40,8 +40,6 @@ function attachDiagnostics(page, route, mode='desktop') {
   page.on('requestfailed', req => {
     const url = req.url();
     const reason = req.failure()?.errorText || 'failed';
-    // The course shell intentionally replaces iframe src while switching topics.
-    // Chromium reports still-loading resources from the previous frame as ERR_ABORTED.
     if (mode === 'shell' && /ERR_ABORTED/i.test(reason)) return;
     if (url.startsWith(base)) localFailures.add(`${req.method()} ${url} :: ${reason}`);
     else warnings.add(`${mode} ${route}: external request failed: ${url}`);
@@ -69,7 +67,6 @@ for (const route of routes) {
     const overlay = await page.locator('[data-nextjs-dialog], .vite-error-overlay, #webpack-dev-server-client-overlay').count().catch(() => 0);
     if (overlay) failures.push(`desktop ${route}: framework error overlay detected`);
 
-    // Exercise each main app view so lazy textbook/simulation/practical/assessment code also runs.
     if (route !== '/') {
       const nav = page.locator('.main-nav .nav-button');
       const navCount = Math.min(await nav.count(), 16);
@@ -92,13 +89,9 @@ for (const route of routes) {
   }
 }
 
-// Course-shell integration: cards, persistent switcher, iframe changes, AI coach and progress controls.
 {
   const page = await desktop.newPage();
   await installConsoleStackCapture(page);
-
-  // CI serves dist/ with a plain static server, so intercept the serverless API route.
-  // This exercises the successful live-AI frontend path without producing a false 501.
   await page.route('**/api/physics-coach', async route => {
     await route.fulfill({
       status: 200,
@@ -125,7 +118,6 @@ for (const route of routes) {
     if (!frame) failures.push(`course shell topic ${i+1}: embedded topic frame did not load`);
   }
 
-  // The top switcher should jump directly between topics and update the embedded module.
   await page.locator('#quickCourseSelect').selectOption('electricity');
   await page.waitForTimeout(650);
   const switchedCode = await page.locator('#workspaceCode').innerText();
@@ -143,20 +135,18 @@ for (const route of routes) {
   const keyboardCode = await page.locator('#workspaceCode').innerText();
   if (!keyboardCode.includes('3.5')) failures.push(`keyboard course navigation: expected return to AQA 3.5, got '${keyboardCode}'`);
 
-  // Coach should know the active context and render a successful AI response.
   await page.locator('#coachToggle').click();
   await page.waitForTimeout(120);
   if (!(await page.locator('#coachPanel').evaluate(el=>el.classList.contains('open')))) failures.push('AI coach: drawer did not open');
   const coachContext = await page.locator('#coachContextLabel').innerText();
   if (!coachContext.includes('3.5') || !/Electricity/i.test(coachContext)) failures.push(`AI coach: context did not follow active course: '${coachContext}'`);
-  const beforeCoachMessages = await page.locator('.coach-message').count();
   await page.locator('#coachMode').selectOption('hint');
   await page.locator('#coachInput').fill('Give me a hint for the current topic.');
   await page.locator('#coachSend').click();
-  await page.waitForFunction(count => document.querySelectorAll('.coach-message').length >= count + 2, beforeCoachMessages, {timeout:8000}).catch(e=>failures.push(`AI coach: no response appeared: ${errorText(e)}`));
+  await page.waitForFunction(() => /Use V = IR as a starting relationship/i.test(document.querySelector('#coachMessages')?.innerText || ''), null, {timeout:8000}).catch(e=>failures.push(`AI coach: completed response did not appear: ${errorText(e)}`));
   const coachText = await page.locator('#coachMessages').innerText();
   if (!/Physics Coach/i.test(coachText)) failures.push('AI coach: response area did not contain coach output');
-  if (!/starting relationship|V = IR/i.test(coachText)) failures.push('AI coach: mocked live response was not rendered');
+  if (!/Use V = IR as a starting relationship/i.test(coachText)) failures.push('AI coach: mocked live response was not rendered');
   await page.locator('#coachClose').click();
 
   const before = await page.locator('#progressText').innerText();
@@ -168,7 +158,6 @@ for (const route of routes) {
 }
 await desktop.close();
 
-// Mobile smoke pass: catches viewport-specific runtime failures and rejects page-level horizontal overflow.
 const mobile = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, serviceWorkers: 'block' });
 for (const route of routes) {
   const page = await mobile.newPage();
