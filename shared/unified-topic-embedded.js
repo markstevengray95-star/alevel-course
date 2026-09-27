@@ -146,11 +146,16 @@
     if(text.length<3||!selection?.rangeCount||!anchor||anchor.closest('.uc-embedded-toolbar,.uc-selection-save,input,textarea,select,button'))return hideSelectionAction();
     const rect=selection.getRangeAt(0).getBoundingClientRect();
     if(!rect||(!rect.width&&!rect.height))return hideSelectionAction();
+    if(rect.bottom<0||rect.top>window.innerHeight||rect.right<0||rect.left>window.innerWidth)return hideSelectionAction();
     const button=ensureSelectionAction();
     selectionActionText=text;
     const width=156;
-    button.style.left=`${Math.min(Math.max(8,rect.left+rect.width/2-width/2),window.innerWidth-width-8)}px`;
-    button.style.top=`${Math.max(8,rect.top-42)}px`;
+    const height=40;
+    const left=Math.min(Math.max(8,rect.left+rect.width/2-width/2),Math.max(8,window.innerWidth-width-8));
+    const preferredTop=rect.top>=50?rect.top-42:rect.bottom+8;
+    const top=Math.min(Math.max(8,preferredTop),Math.max(8,window.innerHeight-height-8));
+    button.style.left=`${left}px`;
+    button.style.top=`${top}px`;
     button.hidden=false;
   }
   document.addEventListener('mouseup',event=>{if(!event.target.closest?.('.uc-selection-save'))window.setTimeout(showSelectionAction,0);});
