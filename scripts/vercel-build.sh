@@ -27,6 +27,21 @@ done
 echo "Applying verified integration compatibility fixes..."
 python3 scripts/apply-integration-fixes.py
 
+echo "Applying unified visual system to all topic apps..."
+python3 scripts/apply-unified-topic-theme.py
+
+for file in "${required[@]}"; do
+  theme="$(dirname "$file")/unified-course-theme.css"
+  if [[ ! -f "$theme" ]]; then
+    echo "Missing unified topic theme: $theme" >&2
+    exit 1
+  fi
+  if ! grep -q "unified-course-topic-theme" "$file"; then
+    echo "Unified topic theme was not injected into: $file" >&2
+    exit 1
+  fi
+done
+
 materials_dir="topics/04-mechanics-materials/materials"
 if [[ ! -f "$materials_dir/vendor/three.module.min.js" || ! -f "$materials_dir/vendor/xlsx.full.min.js" || ! -f "$materials_dir/vendor/three.core.js" ]]; then
   echo "Generating Materials local vendor assets for embedded deployment..."
