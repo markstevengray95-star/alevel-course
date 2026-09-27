@@ -21,7 +21,7 @@ function fail(message) { failures.push(message); }
 function warn(message) { warnings.push(message); }
 function cleanRef(value) { return value.trim().replace(/^['"]|['"]$/g, '').split('#')[0].split('?')[0]; }
 function isExternal(value) {
-  return !value || value.startsWith('#') || /^(?:https?:|data:|blob:|mailto:|tel:|javascript:|//)/i.test(value);
+  return !value || value.startsWith('#') || /^(?:https?:|data:|blob:|mailto:|tel:|javascript:|\/\/)/i.test(value);
 }
 function resolveLocal(fromFile, raw) {
   const value = cleanRef(raw);
