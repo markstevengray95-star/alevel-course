@@ -45,8 +45,20 @@
     select.focus({preventScroll:true});
     try{if(typeof select.showPicker==='function')select.showPicker();else select.click();}catch{select.click();}
   }
+  function loadLessonEnrichment(){
+    if(window.CourseLessonEnrichment||document.querySelector('script[data-course-lesson-enrichment]'))return;
+    const script=document.createElement('script');
+    script.src='lesson-enrichment.js';
+    script.dataset.courseLessonEnrichment='true';
+    document.body.appendChild(script);
+  }
   function loadTextbook(){
-    if(window.CourseTextbook||document.querySelector('script[data-course-textbook="reader"]'))return;
+    if(window.CourseTextbook){loadLessonEnrichment();return;}
+    if(document.querySelector('script[data-course-textbook="reader"]')){
+      const wait=window.setInterval(()=>{if(window.CourseTextbook){window.clearInterval(wait);loadLessonEnrichment();}},80);
+      window.setTimeout(()=>window.clearInterval(wait),5000);
+      return;
+    }
     const dataScript=document.createElement('script');
     dataScript.src='textbook-data.js';
     dataScript.dataset.courseTextbook='data';
@@ -54,6 +66,7 @@
       const reader=document.createElement('script');
       reader.src='textbook.js';
       reader.dataset.courseTextbook='reader';
+      reader.onload=loadLessonEnrichment;
       document.body.appendChild(reader);
     };
     document.body.appendChild(dataScript);
