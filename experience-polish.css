@@ -35,6 +35,13 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible,te
 .area-tool-button{background:transparent!important;color:#a9bdcf!important;border-color:rgba(151,181,210,.12)!important;font-size:.7rem!important;padding:8px 9px!important;white-space:nowrap}
 .area-tool-button:hover{color:#e5f9f6!important;border-color:rgba(102,217,208,.28)!important;background:rgba(102,217,208,.055)!important}
 
+/* Focused topic loading is visible without adding another permanent toolbar. */
+.workspace-shell{position:relative;isolation:isolate}
+#topicFrame{transition:opacity .18s var(--shell-ease),filter .18s var(--shell-ease)}
+.workspace-shell::after{content:'Opening topic…';position:absolute;inset:0;z-index:6;display:grid;place-items:center;background:linear-gradient(180deg,rgba(8,17,29,.92),rgba(8,17,29,.82));color:#c9d7e4;font:800 .75rem/1 system-ui,sans-serif;letter-spacing:.01em;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .16s var(--shell-ease),visibility .16s var(--shell-ease)}
+.workspace-shell.topic-loading::after{opacity:1;visibility:visible}
+.workspace-shell.topic-loading #topicFrame{opacity:.18;filter:saturate(.7)}
+
 /* Full-screen course tool shell uses the same proportions as focused topic mode. */
 .tool-workspace{animation:shellEnter .22s var(--shell-ease)}
 .tool-bar{height:54px!important;flex-basis:54px!important;padding-inline:max(8px,calc((100vw - 1580px)/2))!important;background:var(--shell-bar)!important}
