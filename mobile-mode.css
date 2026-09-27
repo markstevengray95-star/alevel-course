@@ -1,0 +1,30 @@
+/* Explicit phone-first mode, auto-enabled on small/coarse-pointer devices and manually switchable. */
+.mobile-study-dock{display:none}
+.mobile-ui{--mobile-dock-height:64px}
+.mobile-ui .mobile-study-dock{position:fixed;left:8px;right:8px;bottom:max(8px,env(safe-area-inset-bottom));z-index:88;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;padding:5px;border:1px solid rgba(151,181,210,.16);border-radius:14px;background:rgba(8,17,29,.96);box-shadow:0 12px 36px rgba(0,0,0,.42);backdrop-filter:blur(18px)}
+.mobile-ui .mobile-study-dock[hidden]{display:none!important}
+.mobile-ui .mobile-dock-button{appearance:none;border:0;border-radius:10px;background:transparent;color:#9fb2c5;min-height:48px;padding:5px 3px;display:grid;place-items:center;align-content:center;gap:3px;font:750 .58rem/1.1 system-ui,sans-serif;cursor:pointer}
+.mobile-ui .mobile-dock-button span{font-size:1rem;line-height:1}.mobile-ui .mobile-dock-button:hover,.mobile-ui .mobile-dock-button:focus-visible{background:rgba(102,217,208,.08);color:#e8fbf8;outline:none}.mobile-ui .mobile-dock-button.primary-mobile{color:#a6e8e2}
+.mobile-ui.course-mode{padding-bottom:calc(var(--mobile-dock-height) + max(12px,env(safe-area-inset-bottom)))}
+.mobile-ui.course-mode .course-jumpbar{bottom:auto!important}
+.mobile-ui.course-mode .course-jump-inner{min-height:44px!important;padding:4px 7px!important;gap:5px!important}
+.mobile-ui.course-mode #exitCourse,.mobile-ui.course-mode #markComplete,.mobile-ui.course-mode #notebookToggle,.mobile-ui.course-mode #coachToggle{display:none!important}
+.mobile-ui.course-mode .course-picker-wrap{max-width:none!important;flex:1!important;padding:0!important}
+.mobile-ui.course-mode .course-picker{height:36px!important;border-radius:10px!important;font-size:.75rem!important;padding:6px 30px 6px 9px!important}
+.mobile-ui.course-mode .shell-more summary{width:36px;height:36px;background:rgba(255,255,255,.025)}
+.mobile-ui.course-mode .main{width:100%!important;padding:0 4px calc(var(--mobile-dock-height) + 12px)!important}
+.mobile-ui.course-mode .workspace-shell{border-radius:6px!important;border-left:0!important;border-right:0!important}
+.mobile-ui.course-mode #topicFrame{height:calc(100dvh - 116px)!important;min-height:520px!important}
+.mobile-ui.course-mode.multi-module-topic #topicFrame{height:calc(100dvh - 151px)!important}
+.mobile-ui.course-mode .module-tabs{overflow-x:auto;display:flex;scrollbar-width:none;margin:3px 0!important;padding:0 3px!important}.mobile-ui.course-mode .module-tabs::-webkit-scrollbar{display:none}.mobile-ui.course-mode .module-tabs button{flex:1;min-width:120px;min-height:34px}
+.mobile-ui .notebook-panel,.mobile-ui .coach-panel{width:100vw!important;max-width:none!important;border-left:0!important;border-radius:0!important;padding-bottom:max(8px,env(safe-area-inset-bottom))}
+.mobile-ui .notebook-list{padding-bottom:calc(var(--mobile-dock-height) + 18px)}
+.mobile-ui .coach-messages{padding-bottom:10px}
+.mobile-ui .home-intro{padding:18px 2px 14px!important;gap:13px!important}.mobile-ui .home-intro h1{font-size:1.9rem!important}.mobile-ui .home-intro p{font-size:.84rem!important}
+.mobile-ui .home-actions{display:grid!important;grid-template-columns:1fr 1fr!important;width:100%!important}.mobile-ui .home-actions .button{width:100%!important;min-width:0!important}.mobile-ui #continueBtn{grid-column:1/-1;min-height:44px}.mobile-ui #homeMobileModeBtn.active{border-color:rgba(102,217,208,.35);background:rgba(102,217,208,.08);color:#dffbf8}
+.mobile-ui .topic-grid{grid-template-columns:1fr!important;gap:8px!important}.mobile-ui .topic-card{min-height:104px!important;padding:13px 14px!important}.mobile-ui .topic-card h3{font-size:.93rem!important;margin-top:6px!important}.mobile-ui .topic-card p{font-size:.71rem!important;-webkit-line-clamp:2!important}.mobile-ui .topic-footer{padding-top:6px!important}
+.mobile-ui .home-footer-tools{padding-bottom:max(12px,env(safe-area-inset-bottom))}
+.mobile-ui .workspace-menu{min-width:190px}.mobile-ui #mobileModeToggle{display:block!important}
+@media(min-width:821px){.mobile-ui .mobile-study-dock{left:50%;right:auto;width:min(520px,calc(100vw - 24px));transform:translateX(-50%)}}
+@media(max-width:420px){.mobile-ui .mobile-study-dock{left:5px;right:5px;bottom:max(5px,env(safe-area-inset-bottom));gap:2px;padding:4px}.mobile-ui .mobile-dock-button{min-height:46px;font-size:.55rem}.mobile-ui .home-actions{grid-template-columns:1fr 1fr!important}.mobile-ui .home-intro h1{font-size:1.75rem!important}}
+@media(prefers-reduced-motion:reduce){.mobile-ui .mobile-study-dock{backdrop-filter:none}}
