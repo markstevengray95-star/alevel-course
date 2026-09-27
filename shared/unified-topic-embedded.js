@@ -19,13 +19,20 @@
   };
   const selectedText = () => cleanText(window.getSelection?.()?.toString()).slice(0,5000);
 
-  const ready = () => {
+  let bootstrapTimer=0;
+  const ready = (attempt=0) => {
     document.documentElement.classList.add('unified-course-embedded');
-    const nav = document.querySelector('.main-nav');
-    if (!nav || document.querySelector('.uc-embedded-toolbar')) return;
+    if (document.querySelector('.uc-embedded-toolbar')) return;
 
-    const buttons = [...nav.querySelectorAll('.nav-button')].filter(button => button.dataset.view || button.textContent.trim());
-    if (!buttons.length) return;
+    const nav = document.querySelector('.main-nav');
+    const buttons = nav ? [...nav.querySelectorAll('.nav-button')].filter(button => button.dataset.view || button.textContent.trim()) : [];
+    if (!nav || !buttons.length) {
+      if (attempt < 50) {
+        clearTimeout(bootstrapTimer);
+        bootstrapTimer=window.setTimeout(()=>ready(attempt+1),100);
+      }
+      return;
+    }
 
     const toolbar = document.createElement('div');
     toolbar.className = 'uc-embedded-toolbar';
@@ -120,6 +127,6 @@
     });
   };
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ready, {once:true});
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ()=>ready(), {once:true});
   else ready();
 })();
