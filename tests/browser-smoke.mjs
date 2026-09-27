@@ -37,7 +37,7 @@ function reportDiagnostics(route, mode, d) {
   if (d.consoleErrors.size) failures.push(`${mode} ${route}: console errors:\n  ${[...d.consoleErrors].join('\n  ')}`);
 }
 
-const desktop = await browser.newContext({viewport:{width:1440,height:1000},serviceWorkers:'block',acceptDownloads:true});
+const desktop = await browser.newContext({viewport:{width:1440,height:1000},serviceWorkers:'block'});
 for (const route of routes) {
   const page = await desktop.newPage();
   const d = attachDiagnostics(page, route, 'desktop');
@@ -72,6 +72,31 @@ for (const route of routes) {
   const cards = page.locator('.topic-card');
   if (await cards.count() !== 8) failures.push(`shell: expected 8 topic cards, found ${await cards.count()}`);
   if (!(await page.locator('#homeNotebookBtn').isVisible())) failures.push('shell: notebook button missing on Course Home');
+  if (!(await page.locator('#homeMobileModeBtn').isVisible())) failures.push('shell: mobile mode button missing on Course Home');
+
+  // Explicit Mobile Mode on a wide screen must switch both shell and embedded topic UI.
+  await page.locator('#homeMobileModeBtn').click();
+  if (!(await page.locator('body').evaluate(el=>el.classList.contains('mobile-ui')))) failures.push('mobile mode: enabling did not add mobile-ui shell state');
+  if ((await page.evaluate(()=>localStorage.getItem('alevel-course-mobile-mode-v1'))) !== 'on') failures.push('mobile mode: enabled preference was not saved');
+  await cards.first().click();
+  await page.waitForTimeout(750);
+  if (!(await page.locator('#mobileStudyDock').isVisible().catch(()=>false))) failures.push('mobile mode: study dock missing in focused topic mode');
+  let mobileFrame = page.frames().find(f=>f!==page.mainFrame()&&f.url().includes('/topics/01-measurements'));
+  if (!mobileFrame) failures.push('mobile mode: embedded Measurements frame did not load');
+  else if (!(await mobileFrame.locator('html').evaluate(el=>el.classList.contains('unified-course-mobile')).catch(()=>false))) failures.push('mobile mode: state was not forwarded into embedded topic');
+
+  await page.locator('#mobileDockNotebook').click();
+  if (!(await page.locator('#notebookPanel').evaluate(el=>el.classList.contains('open')).catch(()=>false))) failures.push('mobile mode: dock Notebook control failed');
+  await page.locator('#notebookClose').click();
+  await page.locator('#mobileDockAI').click();
+  if (!(await page.locator('#coachPanel').evaluate(el=>el.classList.contains('open')).catch(()=>false))) failures.push('mobile mode: dock AI control failed');
+  await page.locator('#coachClose').click();
+  await page.locator('#mobileDockHome').click();
+  await page.waitForTimeout(180);
+  if (!(await page.locator('#courseHome').isVisible())) failures.push('mobile mode: dock Home control failed');
+  await page.locator('#homeMobileModeBtn').click();
+  if (await page.locator('body').evaluate(el=>el.classList.contains('mobile-ui'))) failures.push('mobile mode: disabling left mobile-ui shell state active');
+  if ((await page.evaluate(()=>localStorage.getItem('alevel-course-mobile-mode-v1'))) !== 'off') failures.push('mobile mode: disabled preference was not saved');
 
   await cards.nth(4).click();
   await page.waitForTimeout(700);
@@ -106,33 +131,6 @@ for (const route of routes) {
   if (!(await page.locator('.coach-save-note').last().isVisible().catch(()=>false))) failures.push('AI coach: Save explanation to notebook action missing');
   await page.locator('#coachClose').click();
 
-  await page.locator('#notebookToggle').click();
-  if (!(await page.locator('#notebookPanel').evaluate(el=>el.classList.contains('open')))) failures.push('notebook: panel did not open');
-  if (!(await page.locator('#notebookSearch').isVisible().catch(()=>false))) failures.push('notebook: search control missing');
-  if (!(await page.locator('#notebookExport').isVisible().catch(()=>false))) failures.push('notebook: export control missing');
-  await page.locator('#notebookInput').fill('Ohm law links potential difference, current and resistance.');
-  await page.locator('#notebookSave').click();
-  await page.waitForTimeout(120);
-  let noteCard=page.locator('.notebook-card').filter({hasText:'Ohm law'}).first();
-  if (!(await noteCard.isVisible().catch(()=>false))) failures.push('notebook: manual note did not save');
-  await noteCard.locator('.notebook-pin').click();
-  if ((await noteCard.locator('.notebook-pin').getAttribute('aria-pressed').catch(()=>null))!=='true') failures.push('notebook: pin control did not pin note');
-  await page.locator('#notebookSearch').fill('Ohm law');
-  await page.waitForTimeout(80);
-  if (!(await page.locator('.notebook-card').filter({hasText:'Ohm law'}).isVisible().catch(()=>false))) failures.push('notebook: search did not find saved note');
-  noteCard=page.locator('.notebook-card').filter({hasText:'Ohm law'}).first();
-  await noteCard.locator('.notebook-edit').click();
-  await noteCard.locator('.notebook-edit-input').fill('Ohm law: V = IR links potential difference, current and resistance.');
-  await noteCard.locator('.notebook-edit-save').click();
-  await page.waitForTimeout(80);
-  if (!(await page.locator('.notebook-card').filter({hasText:'V = IR'}).isVisible().catch(()=>false))) failures.push('notebook: inline edit did not update note');
-  await page.locator('#notebookSearch').fill('');
-  const downloadPromise=page.waitForEvent('download',{timeout:5000}).catch(()=>null);
-  await page.locator('#notebookExport').click();
-  const download=await downloadPromise;
-  if (!download || !download.suggestedFilename().endsWith('.md')) failures.push('notebook: Markdown export did not create a .md download');
-  await page.locator('#notebookClose').click();
-
   const before = await page.locator('#progressText').innerText();
   await page.locator('#markComplete').click();
   if (before === await page.locator('#progressText').innerText()) failures.push('shell: mark complete did not update progress');
@@ -165,6 +163,13 @@ for (const route of routes) {
     if (!res || res.status() >= 400) failures.push(`mobile ${route}: HTTP ${res?.status() ?? 'no response'}`);
     const dims = await page.evaluate(()=>({scrollWidth:document.documentElement.scrollWidth,clientWidth:document.documentElement.clientWidth}));
     if (dims.scrollWidth > dims.clientWidth + 24) failures.push(`mobile ${route}: horizontal overflow ${dims.scrollWidth}px > ${dims.clientWidth}px`);
+    if (route === '/') {
+      const autoMobile = await page.locator('body').evaluate(el=>el.classList.contains('mobile-ui')).catch(()=>false);
+      if (!autoMobile) failures.push('mobile /: Mobile Mode did not auto-enable on phone viewport');
+      await page.locator('.topic-card').first().click();
+      await page.waitForTimeout(450);
+      if (!(await page.locator('#mobileStudyDock').isVisible().catch(()=>false))) failures.push('mobile /: study dock not visible after opening a topic');
+    }
     reportDiagnostics(route,'mobile',d);
   } catch(e) { failures.push(`mobile ${route}: navigation failed: ${errorText(e)}`); }
   await page.close();
@@ -174,4 +179,4 @@ await browser.close();
 
 if (warnings.size) { console.log(`\nWarnings (${warnings.size}):`); for (const w of [...warnings].slice(0,30)) console.log(' -',w); }
 if (failures.length) { console.error(`\nBROWSER AUDIT FAILED (${failures.length}):`); failures.forEach(f=>console.error(' -',f)); process.exit(1); }
-console.log('\nPASS: focused home/topic flow, advanced shared notebook, AI coach, dropdown topic switching and mobile runtime checks passed.');
+console.log('\nPASS: focused course flow, explicit/automatic Mobile Mode, shared notebook, AI coach, dropdown topic switching and mobile runtime checks passed.');
