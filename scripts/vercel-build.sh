@@ -68,19 +68,20 @@ done
 node --check app.js
 node --check student-notebook.js
 node --check ai-coach.js
+node --check mobile-mode.js
 node --check api/physics-coach.js
 node --check shared/unified-topic-embedded.js
 
-for file in student-notebook.js student-notebook.css; do
+for file in student-notebook.js student-notebook.css mobile-mode.js mobile-mode.css; do
   if [[ ! -f "$file" ]]; then
-    echo "Missing course-wide notebook asset: $file" >&2
+    echo "Missing course-wide shell asset: $file" >&2
     exit 1
   fi
 done
 
 rm -rf dist
 mkdir -p dist
-cp index.html app.js student-notebook.js ai-coach.js styles.css course-enhancements.css focus-layout.css student-notebook.css manifest.webmanifest .nojekyll dist/
+cp index.html app.js student-notebook.js ai-coach.js mobile-mode.js styles.css course-enhancements.css focus-layout.css student-notebook.css mobile-mode.css manifest.webmanifest .nojekyll dist/
 cp -R topics dist/topics
 
 find dist/topics -name .git -exec rm -rf {} + 2>/dev/null || true
