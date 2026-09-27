@@ -96,6 +96,20 @@ for (const route of routes) {
 {
   const page = await desktop.newPage();
   await installConsoleStackCapture(page);
+
+  // CI serves dist/ with a plain static server, so intercept the serverless API route.
+  // This exercises the successful live-AI frontend path without producing a false 501.
+  await page.route('**/api/physics-coach', async route => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        answer: 'Use V = IR as a starting relationship. Identify the known electrical quantities, keep units in SI, and rearrange before substituting.',
+        model: 'test/physics-coach'
+      })
+    });
+  });
+
   const d = attachDiagnostics(page, '/', 'shell');
   await page.goto(base + '/', { waitUntil: 'domcontentloaded', timeout: 45000 });
   await page.waitForTimeout(900);
@@ -129,7 +143,7 @@ for (const route of routes) {
   const keyboardCode = await page.locator('#workspaceCode').innerText();
   if (!keyboardCode.includes('3.5')) failures.push(`keyboard course navigation: expected return to AQA 3.5, got '${keyboardCode}'`);
 
-  // Coach should know the active context and fall back locally when the static test server has no /api function.
+  // Coach should know the active context and render a successful AI response.
   await page.locator('#coachToggle').click();
   await page.waitForTimeout(120);
   if (!(await page.locator('#coachPanel').evaluate(el=>el.classList.contains('open')))) failures.push('AI coach: drawer did not open');
@@ -142,6 +156,7 @@ for (const route of routes) {
   await page.waitForFunction(count => document.querySelectorAll('.coach-message').length >= count + 2, beforeCoachMessages, {timeout:8000}).catch(e=>failures.push(`AI coach: no response appeared: ${errorText(e)}`));
   const coachText = await page.locator('#coachMessages').innerText();
   if (!/Physics Coach/i.test(coachText)) failures.push('AI coach: response area did not contain coach output');
+  if (!/starting relationship|V = IR/i.test(coachText)) failures.push('AI coach: mocked live response was not rendered');
   await page.locator('#coachClose').click();
 
   const before = await page.locator('#progressText').innerText();
