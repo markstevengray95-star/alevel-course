@@ -22,10 +22,13 @@
   };
 
   const practicalViews=['home','skills','quiz','equations','circuit'];
+  const topicSectionKey='alevel-course-topic-sections-v1';
   const body=document.body;
   const home=document.getElementById('courseHome');
   const workspace=document.getElementById('workspaceSection');
   const jumpbar=document.getElementById('courseJumpbar');
+  const topicFrame=document.getElementById('topicFrame');
+  const topicShell=document.querySelector('.workspace-shell');
   const toolWorkspace=document.getElementById('toolWorkspace');
   const frame=document.getElementById('toolFrame');
   const title=document.getElementById('toolTitle');
@@ -40,7 +43,10 @@
   let active=null;
   let lastCourseState=null;
   let practicalObserver=null;
+  let lastToolTrigger=null;
+  let topicSections=safeJson(localStorage.getItem(topicSectionKey),{});
 
+  function safeJson(value,fallback){try{return JSON.parse(value)||fallback}catch{return fallback}}
   function setAreaState(area){
     document.querySelectorAll('.course-area-button').forEach(button=>button.setAttribute('aria-current',button.dataset.area===area?'page':'false'));
     document.querySelectorAll('[data-tool-area]').forEach(button=>button.setAttribute('aria-current',button.dataset.toolArea===area?'page':'false'));
@@ -50,6 +56,44 @@
   function setLoading(show,text='Opening course tool…'){
     if(loadingText)loadingText.textContent=text;
     if(loading)loading.hidden=!show;
+  }
+
+  function setTopicLoading(show){
+    if(!topicShell)return;
+    topicShell.classList.toggle('topic-loading',!!show);
+    topicShell.setAttribute('aria-busy',show?'true':'false');
+  }
+
+  function topicStateKey(state=window.CourseApp?.getState?.()){
+    return state?.topicId?`${state.topicId}:${Number(state.moduleIndex)||0}`:'';
+  }
+
+  function saveTopicSection(index,label=''){
+    const state=window.CourseApp?.getState?.();
+    const key=topicStateKey(state);
+    const value=Number(index);
+    if(!key||!Number.isInteger(value))return;
+    topicSections[key]={index:value,label:String(label||'').trim()};
+    localStorage.setItem(topicSectionKey,JSON.stringify(topicSections));
+  }
+
+  function restoreTopicSection(){
+    if(!topicFrame?.contentWindow)return;
+    const key=topicStateKey();
+    const saved=key?topicSections[key]:null;
+    if(!Number.isInteger(saved?.index))return;
+    topicFrame.contentWindow.postMessage({type:'alevel-topic-restore-section',index:saved.index},'*');
+  }
+
+  function focusActiveTopicCard(topicId){
+    if(!topicId||body.classList.contains('tool-mode')||body.classList.contains('course-mode'))return;
+    const card=[...document.querySelectorAll('.topic-card')].find(item=>item.dataset.id===topicId);
+    card?.focus?.({preventScroll:true});
+  }
+
+  function focusHomeTool(toolId){
+    const target=document.querySelector(`.course-tool-card[data-course-tool="${toolId}"]`);
+    target?.focus?.({preventScroll:true});
   }
 
   function setShellForTool(open){
@@ -144,12 +188,13 @@
     }
     setLoading(true,tool.id==='practicals'?'Opening Practical Lab…':'Opening Exam Practice & Marking…');
     setShellForTool(true);
-    if(frame){frame.title=tool.label;if(frame.getAttribute('src')!==tool.url)frame.src=tool.url;else frame.src=tool.url;}
+    if(frame){frame.title=tool.label;frame.src=tool.url;}
     window.scrollTo({top:0,left:0,behavior:'instant'});
     window.dispatchEvent(new CustomEvent('coursetoolchange',{detail:{open:true,tool:{...tool}}}));
   }
 
   function closeTool({scroll=true}={}){
+    const closingTool=active?.id||lastToolTrigger?.dataset?.courseTool||'';
     clearPracticalBridge();
     if(frame)frame.src='about:blank';
     active=null;
@@ -158,7 +203,10 @@
     setShellForTool(false);
     if(scroll){
       const target=document.getElementById('courseTools');
-      window.setTimeout(()=>target?.scrollIntoView({behavior:'smooth',block:'start'}),20);
+      window.setTimeout(()=>{
+        target?.scrollIntoView({behavior:'smooth',block:'start'});
+        focusHomeTool(closingTool);
+      },20);
     }
     window.dispatchEvent(new CustomEvent('coursetoolchange',{detail:{open:false}}));
   }
@@ -188,7 +236,7 @@
     window.setTimeout(()=>document.getElementById('courseTools')?.scrollIntoView({behavior:'smooth',block:'start'}),40);
   }
 
-  document.querySelectorAll('[data-course-tool]').forEach(button=>button.addEventListener('click',()=>openTool(button.dataset.courseTool)));
+  document.querySelectorAll('[data-course-tool]').forEach(button=>button.addEventListener('click',()=>{lastToolTrigger=button;openTool(button.dataset.courseTool);}));
   document.getElementById('navLearn')?.addEventListener('click',showLearningMap);
   document.getElementById('cycleLearn')?.addEventListener('click',showLearningMap);
   document.getElementById('toolAreaLearn')?.addEventListener('click',resumeLearning);
@@ -200,6 +248,7 @@
   document.getElementById('toolAI')?.addEventListener('click',()=>document.getElementById('coachToggle')?.click());
   document.getElementById('toolReload')?.addEventListener('click',()=>{if(frame&&active){setLoading(true,`Reloading ${active.label}…`);frame.src=active.url;}});
   document.getElementById('mobileDockTools')?.addEventListener('click',showTools);
+  document.getElementById('reloadFrame')?.addEventListener('click',()=>setTopicLoading(true),{capture:true});
 
   frame?.addEventListener('load',()=>{
     if(!active){setLoading(false);return;}
@@ -208,9 +257,28 @@
     window.setTimeout(()=>setLoading(false),120);
   });
 
+  if(topicFrame){
+    new MutationObserver(mutations=>{
+      if(mutations.some(mutation=>mutation.type==='attributes'&&mutation.attributeName==='src'))setTopicLoading(true);
+    }).observe(topicFrame,{attributes:true,attributeFilter:['src']});
+    topicFrame.addEventListener('load',()=>{
+      window.setTimeout(restoreTopicSection,20);
+      window.setTimeout(()=>setTopicLoading(false),160);
+    });
+  }
+
+  window.addEventListener('message',event=>{
+    if(!topicFrame||event.source!==topicFrame.contentWindow)return;
+    if(event.data?.type==='alevel-topic-section')saveTopicSection(event.data.index,event.data.label);
+  });
+
   window.addEventListener('coursecontextchange',event=>{
     if(event.detail?.topicId)lastCourseState=event.detail;
     if(event.detail?.courseOpen)setAreaState('learn');
+    if(event.detail?.courseOpen===false&&event.detail?.topicId){
+      const topicId=event.detail.topicId;
+      window.setTimeout(()=>focusActiveTopicCard(topicId),35);
+    }
   });
 
   document.addEventListener('keydown',event=>{
