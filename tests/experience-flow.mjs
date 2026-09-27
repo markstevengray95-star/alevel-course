@@ -8,6 +8,7 @@ const failures=[];
 const fail=(message)=>failures.push(message);
 
 await page.goto(base+'/',{waitUntil:'domcontentloaded',timeout:45000});
+await page.waitForFunction(()=>window.CourseTextbook?.data,{timeout:5000}).catch(()=>fail('textbook: reader did not bootstrap'));
 await page.waitForTimeout(350);
 
 if(await page.locator('.study-cycle-step').count()!==3)fail('home: expected Learn, Practise and Assess study-cycle controls');
@@ -18,11 +19,16 @@ if(!(await page.locator('#homeResumeCard').isVisible().catch(()=>false)))fail('h
 if(await page.locator('.course-stage').count()!==2)fail('home: expected Year 12 and Year 13 course stages');
 if((await page.locator('#homeYear12Stat').innerText().catch(()=>''))!=='0 / 5')fail('home: Year 12 progress summary is incorrect initially');
 if((await page.locator('#homeYear13Stat').innerText().catch(()=>''))!=='0 / 3')fail('home: Year 13 progress summary is incorrect initially');
+if(!(await page.locator('#homeTextbookBtn').isVisible().catch(()=>false)))fail('textbook: Course Home textbook entry is missing');
+const textbookShape=await page.evaluate(()=>({topics:Object.keys(window.CourseTextbook?.data||{}).length,chapters:Object.values(window.CourseTextbook?.data||{}).reduce((n,t)=>n+(t.chapters?.length||0),0)}));
+if(textbookShape.topics!==8)fail(`textbook: expected 8 core topic books, found ${textbookShape.topics}`);
+if(textbookShape.chapters<34)fail(`textbook: expected at least 34 full chapters, found ${textbookShape.chapters}`);
 
 await page.locator('.topic-card[data-id="electricity"]').click();
 await page.waitForTimeout(650);
 if(!(await page.locator('#workspaceSection').isVisible()))fail('learn: topic workspace did not open');
 if(!(await page.locator('.area-tool-button[data-course-tool="practicals"]').isVisible().catch(()=>false)))fail('learn: Practical shortcut missing from focused course bar');
+if(!(await page.locator('#textbookToggle').isVisible().catch(()=>false)))fail('textbook: focused course Textbook control is missing');
 
 let topicFrame=page.frames().find(frame=>frame!==page.mainFrame()&&frame.url().includes('/topics/05-electricity/'));
 if(!topicFrame)fail('learn: Electricity topic iframe did not load');
@@ -34,6 +40,27 @@ else{
     await sectionPicker.selectOption('1');
     await page.waitForTimeout(180);
     if((await sectionPicker.inputValue().catch(()=>''))!=='1')fail('continuity: could not move Electricity to its second section');
+  }
+  if(!(await topicFrame.locator('.uc-textbook-button').isVisible().catch(()=>false)))fail('textbook: embedded Electricity toolbar is missing Textbook access');
+  else{
+    await topicFrame.locator('.uc-textbook-button').click();
+    await page.waitForTimeout(180);
+    if(!(await page.locator('#textbookWorkspace').isVisible().catch(()=>false)))fail('textbook: embedded toolbar did not open textbook workspace');
+    if((await page.locator('#textbookTopicSelect').inputValue().catch(()=>''))!=='electricity')fail('textbook: reader did not open the active Electricity book');
+    if(await page.locator('#textbookChapterList .textbook-chapter-button').count()<4)fail('textbook: Electricity book is missing full chapter navigation');
+    await page.locator('#textbookMobileChapter').selectOption('1');
+    await page.waitForTimeout(80);
+    if(!/Resistance/i.test(await page.locator('#textbookArticle h1').innerText().catch(()=>'')))fail('textbook: chapter switching did not render Electricity resistance chapter');
+    const beforeNotes=await page.evaluate(()=>window.CourseNotebook?.getNotes?.().length||0);
+    await page.locator('#textbookSaveSummary').click();
+    await page.waitForTimeout(60);
+    const afterNotes=await page.evaluate(()=>window.CourseNotebook?.getNotes?.().length||0);
+    if(afterNotes!==beforeNotes+1)fail('textbook: chapter summary did not save into Student Notebook');
+    await page.locator('#textbookMarkRead').click();
+    if(!(await page.locator('#textbookChapterList .textbook-chapter-button').nth(1).innerText().catch(()=>'' )).includes('✓'))fail('textbook: mark-as-read state did not update chapter navigation');
+    await page.locator('#textbookBack').click();
+    await page.waitForTimeout(80);
+    if(!(await page.locator('#workspaceSection').isVisible().catch(()=>false)))fail('textbook: closing reader did not return to active lesson workspace');
   }
 }
 
@@ -52,6 +79,7 @@ await page.waitForTimeout(850);
 if(!(await page.locator('#toolWorkspace').isVisible().catch(()=>false)))fail('practise: tool workspace did not open');
 if(!(await page.locator('#practicalSectionWrap').isVisible().catch(()=>false)))fail('practise: integrated Practical Lab section picker is missing');
 if((await page.locator('#toolAreaPracticals').getAttribute('aria-current'))!=='page')fail('practise: Practical area is not marked active');
+if(!(await page.locator('#toolTextbook').isVisible().catch(()=>false)))fail('textbook: Course Tools workspace is missing Textbook access');
 
 const practicalFrame=page.frames().find(frame=>frame!==page.mainFrame()&&frame.url().includes('/tools/practicals/'));
 if(!practicalFrame)fail('practise: Practical Lab iframe did not load');
@@ -110,7 +138,13 @@ if(dims.scrollWidth>dims.clientWidth+20)fail(`mobile home: horizontal overflow $
 if(!(await page.locator('.global-course-nav').isVisible().catch(()=>false)))fail('mobile home: compact course-area navigation is missing');
 if(!(await page.locator('#homeResumeCard').isVisible().catch(()=>false)))fail('mobile home: resume card is not visible');
 if(!(await page.locator('#courseStageStrip').isVisible().catch(()=>false)))fail('mobile home: Year 12/Year 13 stage strip is not visible');
+await page.locator('#homeTextbookBtn').click();
+await page.waitForTimeout(100);
+if(!(await page.locator('#textbookWorkspace').isVisible().catch(()=>false)))fail('mobile textbook: reader did not open');
+const textbookDims=await page.locator('#textbookWorkspace').evaluate(el=>({scrollWidth:el.scrollWidth,clientWidth:el.clientWidth})).catch(()=>({scrollWidth:999,clientWidth:0}));
+if(textbookDims.scrollWidth>textbookDims.clientWidth+10)fail(`mobile textbook: horizontal overflow ${textbookDims.scrollWidth}px > ${textbookDims.clientWidth}px`);
+if(!(await page.locator('#textbookMobileChapter').isVisible().catch(()=>false)))fail('mobile textbook: compact chapter picker is missing');
 
 await browser.close();
 if(failures.length){console.error(`\nEXPERIENCE FLOW FAILED (${failures.length})`);failures.forEach(item=>console.error(' -',item));process.exit(1);}
-console.log('PASS: premium Course Home, Learn → Practise → Assess navigation, remembered topic sections, loading feedback, focus return and compact mobile shell work together.');
+console.log('PASS: full textbook, premium Course Home, Learn → Practise → Assess navigation, remembered topic sections, notebook saving, focus return and compact mobile shell work together.');
