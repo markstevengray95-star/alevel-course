@@ -37,7 +37,7 @@ function reportDiagnostics(route, mode, d) {
   if (d.consoleErrors.size) failures.push(`${mode} ${route}: console errors:\n  ${[...d.consoleErrors].join('\n  ')}`);
 }
 
-const desktop = await browser.newContext({viewport:{width:1440,height:1000},serviceWorkers:'block'});
+const desktop = await browser.newContext({viewport:{width:1440,height:1000},serviceWorkers:'block',acceptDownloads:true});
 for (const route of routes) {
   const page = await desktop.newPage();
   const d = attachDiagnostics(page, route, 'desktop');
@@ -106,6 +106,33 @@ for (const route of routes) {
   if (!(await page.locator('.coach-save-note').last().isVisible().catch(()=>false))) failures.push('AI coach: Save explanation to notebook action missing');
   await page.locator('#coachClose').click();
 
+  await page.locator('#notebookToggle').click();
+  if (!(await page.locator('#notebookPanel').evaluate(el=>el.classList.contains('open')))) failures.push('notebook: panel did not open');
+  if (!(await page.locator('#notebookSearch').isVisible().catch(()=>false))) failures.push('notebook: search control missing');
+  if (!(await page.locator('#notebookExport').isVisible().catch(()=>false))) failures.push('notebook: export control missing');
+  await page.locator('#notebookInput').fill('Ohm law links potential difference, current and resistance.');
+  await page.locator('#notebookSave').click();
+  await page.waitForTimeout(120);
+  let noteCard=page.locator('.notebook-card').filter({hasText:'Ohm law'}).first();
+  if (!(await noteCard.isVisible().catch(()=>false))) failures.push('notebook: manual note did not save');
+  await noteCard.locator('.notebook-pin').click();
+  if ((await noteCard.locator('.notebook-pin').getAttribute('aria-pressed').catch(()=>null))!=='true') failures.push('notebook: pin control did not pin note');
+  await page.locator('#notebookSearch').fill('Ohm law');
+  await page.waitForTimeout(80);
+  if (!(await page.locator('.notebook-card').filter({hasText:'Ohm law'}).isVisible().catch(()=>false))) failures.push('notebook: search did not find saved note');
+  noteCard=page.locator('.notebook-card').filter({hasText:'Ohm law'}).first();
+  await noteCard.locator('.notebook-edit').click();
+  await noteCard.locator('.notebook-edit-input').fill('Ohm law: V = IR links potential difference, current and resistance.');
+  await noteCard.locator('.notebook-edit-save').click();
+  await page.waitForTimeout(80);
+  if (!(await page.locator('.notebook-card').filter({hasText:'V = IR'}).isVisible().catch(()=>false))) failures.push('notebook: inline edit did not update note');
+  await page.locator('#notebookSearch').fill('');
+  const downloadPromise=page.waitForEvent('download',{timeout:5000}).catch(()=>null);
+  await page.locator('#notebookExport').click();
+  const download=await downloadPromise;
+  if (!download || !download.suggestedFilename().endsWith('.md')) failures.push('notebook: Markdown export did not create a .md download');
+  await page.locator('#notebookClose').click();
+
   const before = await page.locator('#progressText').innerText();
   await page.locator('#markComplete').click();
   if (before === await page.locator('#progressText').innerText()) failures.push('shell: mark complete did not update progress');
@@ -147,4 +174,4 @@ await browser.close();
 
 if (warnings.size) { console.log(`\nWarnings (${warnings.size}):`); for (const w of [...warnings].slice(0,30)) console.log(' -',w); }
 if (failures.length) { console.error(`\nBROWSER AUDIT FAILED (${failures.length}):`); failures.forEach(f=>console.error(' -',f)); process.exit(1); }
-console.log('\nPASS: focused home/topic flow, shared notebook controls, AI coach, dropdown topic switching and mobile runtime checks passed.');
+console.log('\nPASS: focused home/topic flow, advanced shared notebook, AI coach, dropdown topic switching and mobile runtime checks passed.');
