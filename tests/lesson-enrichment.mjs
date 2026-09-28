@@ -43,11 +43,14 @@ else{
   if(await frame.locator('.uc-term-item').count()<2)fail('visuals: lesson key terminology detail is missing');
   if(await frame.locator('.uc-misconception').count()<2)fail('teaching: common misconception corrections are missing');
   if(await frame.locator('.uc-misconception p').first().innerText().catch(()=>'' )==='')fail('teaching: misconception correction has no explanation');
+  if(await frame.locator('.uc-concept-node').count()<4)fail('teaching: concept-connection chain is missing or too shallow');
   if(await frame.locator('.uc-equation-card').count()<1)fail('visuals: equation meaning cards are missing');
   if(await frame.locator('.uc-equation-card p').count()<1)fail('teaching: equation cards do not explain when to use the relationship');
   if(await frame.locator('.uc-equation-card em').count()<1)fail('teaching: equation cards do not include a calculation/model check');
   if(await frame.locator('.uc-worked-step').count()<1)fail('visuals: worked-example reasoning flow is missing');
+  if(await frame.locator('.uc-sense-check').count()<1)fail('teaching: worked example does not include an answer sense-check');
   if(await frame.locator('.uc-application-card').count()<1)fail('teaching: application/stretch task is missing');
+  if(await frame.locator('.uc-hinge-card').count()<1)fail('teaching: diagnostic hinge question is missing');
   if(await frame.locator('.uc-exam-focus').count()<1)fail('visuals: AQA exam-focus panel is missing');
   if(await frame.locator('.uc-command-guide>div').count()<1)fail('teaching: exam command-word guidance is missing');
 
@@ -57,6 +60,16 @@ else{
     const detail=await term.locator('p').innerText().catch(()=> '');
     if(detail.length<12)fail('visuals: terminology card does not reveal useful detail');
   }
+
+  const hinge=frame.locator('.uc-hinge-card details').first();
+  if(await hinge.count()){
+    await hinge.locator('summary').click().catch(()=>{});
+    const correction=await hinge.locator('p').innerText().catch(()=> '');
+    if(correction.length<20)fail('teaching: diagnostic hinge reveal does not contain a useful physics correction');
+  }
+
+  const simulationStage=frame.locator('.lesson-stage[data-stage="simulation"],.lesson-stage[data-stage="sim"]');
+  if(await simulationStage.count()&&await frame.locator('.uc-simulation-cycle').count()<1)fail('teaching: simulation slide is missing Predict → Observe → Explain prompts');
 
   const courseLayout=frame.locator('.course-layout').first();
   if(await courseLayout.count()){
@@ -99,10 +112,10 @@ if(frame){
   if(dims.scrollWidth>dims.clientWidth+12)fail(`layout: enriched mobile lesson overflows horizontally (${dims.scrollWidth}px > ${dims.clientWidth}px)`);
   const visualWidth=await frame.locator('.uc-slide-enrichment .uc-lesson-visual').first().evaluate(el=>el.getBoundingClientRect().width).catch(()=>0);
   if(visualWidth>390)fail(`layout: lesson visual is wider than mobile viewport (${visualWidth}px)`);
-  const cards=await frame.locator('.uc-misconception,.uc-application-body>*,.uc-command-guide>div').evaluateAll(nodes=>nodes.map(el=>el.getBoundingClientRect().right)).catch(()=>[]);
+  const cards=await frame.locator('.uc-misconception,.uc-application-body>*,.uc-command-guide>div,.uc-concept-node,.uc-hinge-body>*,.uc-poe-grid>div').evaluateAll(nodes=>nodes.map(el=>el.getBoundingClientRect().right)).catch(()=>[]);
   if(cards.some(right=>right>402))fail('layout: new teaching-detail cards overflow the mobile viewport');
 }
 
 await browser.close();
 if(failures.length){console.error(`\nLESSON ENRICHMENT FAILED (${failures.length})`);failures.forEach(item=>console.error(' -',item));process.exit(1);}
-console.log('PASS: lessons use presentation-style navigation with contextual diagrams, what-to-notice guidance, terminology, misconception correction, equation-use coaching, worked methods, application/stretch tasks, AQA command-word support and highlight-to-notebook saving.');
+console.log('PASS: lessons use presentation-style navigation with contextual diagrams, concept chains, what-to-notice guidance, terminology, misconception correction, diagnostic hinge questions, equation-use coaching, worked methods with sense checks, application/stretch tasks, simulation reasoning prompts, AQA command-word support and highlight-to-notebook saving.');
