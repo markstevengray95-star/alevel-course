@@ -1,9 +1,11 @@
 (() => {
-  const styles = ['lesson-phase3.css','lesson-activities.css','lesson-simulations.css'];
+  const styles = ['lesson-phase3.css','lesson-activities.css','lesson-simulations.css','lesson-assessment.css','lesson-progression.css'];
   const scripts = [
     {src:'lesson-phase3.js', ready:()=>!!window.ALEVEL_PHASE3},
     {src:'lesson-activities.js', ready:()=>!!window.ALEVEL_ACTIVITIES},
-    {src:'lesson-simulations.js', ready:()=>!!window.ALEVEL_SIMULATIONS}
+    {src:'lesson-simulations.js', ready:()=>!!window.ALEVEL_SIMULATIONS},
+    {src:'lesson-assessment.js', ready:()=>!!window.ALEVEL_ASSESSMENT},
+    {src:'lesson-progression.js', ready:()=>!!window.ALEVEL_PROGRESSION}
   ];
 
   function loadStyles(){
