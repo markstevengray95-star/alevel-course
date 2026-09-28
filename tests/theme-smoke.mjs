@@ -7,13 +7,13 @@ const page = await context.newPage();
 const failures = [];
 
 async function inspectFocusedFrame(label){
-  for(let attempt=0;attempt<8;attempt++){
+  for(let attempt=0;attempt<4;attempt++){
     try{
       const frameHandle=await page.locator('#topicFrame').elementHandle();
       const frame=await frameHandle?.contentFrame();
-      if(!frame){await page.waitForTimeout(100);continue;}
-      await frame.waitForLoadState('domcontentloaded',{timeout:2500}).catch(()=>{});
-      await frame.waitForFunction(()=>document.documentElement.classList.contains('uc-embedded-ready'),null,{timeout:5500}).catch(()=>{});
+      if(!frame){await page.waitForTimeout(80);continue;}
+      await frame.waitForLoadState('domcontentloaded',{timeout:1800}).catch(()=>{});
+      await frame.waitForFunction(()=>document.documentElement.classList.contains('uc-embedded-ready'),null,{timeout:2500}).catch(()=>{});
       const result=await frame.evaluate(() => {
         const root=document.documentElement;
         const links=[...document.querySelectorAll('link[rel="stylesheet"]')].map(l=>l.getAttribute('href')||'');
@@ -40,7 +40,7 @@ async function inspectFocusedFrame(label){
       });
       return {frame,result};
     }catch(error){
-      if(/Execution context was destroyed|Frame was detached|navigation/i.test(String(error))){await page.waitForTimeout(140);continue;}
+      if(/Execution context was destroyed|Frame was detached|navigation/i.test(String(error))){await page.waitForTimeout(100);continue;}
       throw error;
     }
   }
@@ -48,8 +48,8 @@ async function inspectFocusedFrame(label){
   return {frame:null,result:null};
 }
 
-await page.goto(base + '/', {waitUntil:'domcontentloaded',timeout:45000});
-await page.waitForTimeout(500);
+await page.goto(base + '/', {waitUntil:'domcontentloaded',timeout:30000});
+await page.waitForTimeout(350);
 const cards = page.locator('.topic-card');
 const count = await cards.count();
 
@@ -59,15 +59,15 @@ for (let i=0;i<count;i++) {
   const {result}=await inspectFocusedFrame(label);
   if(!result){
     await page.locator('#exitCourse').click().catch(()=>{});
-    await page.waitForTimeout(120);
+    await page.waitForTimeout(100);
     continue;
   }
 
-  for (const [key,value] of Object.entries(result)) if ((key!=='accent' && !value) || (key==='accent' && !value)) failures.push(`${label}: ${key} check failed`);
+  for (const [key,value] of Object.entries(result)) if (!value) failures.push(`${label}: ${key} check failed`);
   console.log(`Focused topic UI checked: ${label}`);
 
   await page.locator('#exitCourse').click();
-  await page.waitForTimeout(120);
+  await page.waitForTimeout(100);
   if (!(await page.locator('#courseHome').isVisible())) failures.push(`${label}: home did not return after shell exit`);
 }
 
@@ -76,14 +76,14 @@ const last=await inspectFocusedFrame('final embedded exit check');
 if (last.frame) {
   if(await last.frame.locator('.uc-exit-course').isVisible().catch(()=>false)){
     await last.frame.locator('.uc-exit-course').click();
-    await page.waitForTimeout(150);
+    await page.waitForTimeout(120);
     if (!(await page.locator('#courseHome').isVisible())) failures.push('embedded Exit course did not return to home');
   } else failures.push('embedded Exit course was not ready for the exit test');
 }
 
 await page.setViewportSize({width:390,height:844});
 await page.locator('.topic-card').last().click();
-await page.waitForTimeout(550);
+await page.waitForTimeout(350);
 await inspectFocusedFrame('mobile embedded topic');
 const dims = await page.locator('#topicFrame').evaluate(frameEl => {
   const doc=frameEl.contentDocument;
