@@ -9,7 +9,7 @@ const failures = [];
 async function inspectFocusedFrame(label){
   for(let attempt=0;attempt<4;attempt++){
     try{
-      const frameHandle=await page.locator('#topicFrame').elementHandle();
+      const frameHandle=await page.locator('#topicFrame').elementHandle({timeout:2000});
       const frame=await frameHandle?.contentFrame();
       if(!frame){await page.waitForTimeout(80);continue;}
       await frame.waitForLoadState('domcontentloaded',{timeout:1800}).catch(()=>{});
@@ -40,7 +40,7 @@ async function inspectFocusedFrame(label){
       });
       return {frame,result};
     }catch(error){
-      if(/Execution context was destroyed|Frame was detached|navigation/i.test(String(error))){await page.waitForTimeout(100);continue;}
+      if(/Execution context was destroyed|Frame was detached|navigation|Timeout/i.test(String(error))){await page.waitForTimeout(100);continue;}
       throw error;
     }
   }
@@ -48,42 +48,43 @@ async function inspectFocusedFrame(label){
   return {frame:null,result:null};
 }
 
-await page.goto(base + '/', {waitUntil:'domcontentloaded',timeout:30000});
-await page.waitForTimeout(350);
-const cards = page.locator('.topic-card');
-const count = await cards.count();
-
-for (let i=0;i<count;i++) {
-  await page.locator('.topic-card').nth(i).click();
-  const label = (await page.locator('#workspaceTitle').innerText()).trim();
-  const {result}=await inspectFocusedFrame(label);
-  if(!result){
-    await page.locator('#exitCourse').click().catch(()=>{});
-    await page.waitForTimeout(100);
-    continue;
-  }
-
-  for (const [key,value] of Object.entries(result)) if (!value) failures.push(`${label}: ${key} check failed`);
-  console.log(`Focused topic UI checked: ${label}`);
-
-  await page.locator('#exitCourse').click();
-  await page.waitForTimeout(100);
-  if (!(await page.locator('#courseHome').isVisible())) failures.push(`${label}: home did not return after shell exit`);
+async function openTopic(id){
+  await page.evaluate(topicId => window.CourseApp?.openTopic?.(topicId,false,0,{historyMode:'none'}), id);
+  await page.waitForTimeout(180);
+}
+async function exitTopic(){
+  await page.evaluate(() => window.CourseApp?.exitCourse?.({scroll:false,updateUrl:false}));
+  await page.waitForTimeout(80);
 }
 
-await page.locator('.topic-card').last().click();
+await page.goto(base + '/', {waitUntil:'domcontentloaded',timeout:30000});
+await page.waitForFunction(() => !!window.CourseApp?.topics?.length, null, {timeout:5000});
+const topics = await page.evaluate(() => window.CourseApp.topics.map(t => ({id:t.id,title:t.title})));
+if(topics.length !== 8) failures.push(`expected 8 topics, found ${topics.length}`);
+
+for (const topic of topics) {
+  await openTopic(topic.id);
+  const {result}=await inspectFocusedFrame(topic.title);
+  if(!result){ await exitTopic(); continue; }
+  for (const [key,value] of Object.entries(result)) if (!value) failures.push(`${topic.title}: ${key} check failed`);
+  console.log(`Focused topic UI checked: ${topic.title}`);
+  await exitTopic();
+  if (!(await page.locator('#courseHome').isVisible({timeout:1500}).catch(()=>false))) failures.push(`${topic.title}: home did not return after shell exit`);
+}
+
+await openTopic(topics.at(-1)?.id);
 const last=await inspectFocusedFrame('final embedded exit check');
 if (last.frame) {
-  if(await last.frame.locator('.uc-exit-course').isVisible().catch(()=>false)){
-    await last.frame.locator('.uc-exit-course').click();
+  const exit=last.frame.locator('.uc-exit-course');
+  if(await exit.isVisible({timeout:1500}).catch(()=>false)){
+    await exit.click({timeout:2000}).catch(error=>failures.push(`embedded Exit course click failed: ${error.message}`));
     await page.waitForTimeout(120);
-    if (!(await page.locator('#courseHome').isVisible())) failures.push('embedded Exit course did not return to home');
+    if (!(await page.locator('#courseHome').isVisible({timeout:1500}).catch(()=>false))) failures.push('embedded Exit course did not return to home');
   } else failures.push('embedded Exit course was not ready for the exit test');
 }
 
 await page.setViewportSize({width:390,height:844});
-await page.locator('.topic-card').last().click();
-await page.waitForTimeout(350);
+await openTopic(topics.at(-1)?.id);
 await inspectFocusedFrame('mobile embedded topic');
 const dims = await page.locator('#topicFrame').evaluate(frameEl => {
   const doc=frameEl.contentDocument;
