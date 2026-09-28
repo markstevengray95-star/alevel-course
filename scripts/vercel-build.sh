@@ -81,6 +81,7 @@ shell_assets=(
   lesson-content.js lesson-content.css
   presentation-mode.js
   lesson-phase3.js lesson-phase3.css
+  lesson-deepening.js lesson-deepening.css
   lesson-activities.js lesson-activities.css
   lesson-simulations.js lesson-simulations.css
   lesson-assessment.js lesson-assessment.css
@@ -98,7 +99,7 @@ done
 
 for file in \
   app.js student-notebook.js ai-coach.js course-tools.js mobile-mode.js textbook-data.js textbook.js lesson-enrichment.js \
-  curriculum-map.js lesson-content.js presentation-mode.js lesson-phase3.js lesson-activities.js lesson-simulations.js \
+  curriculum-map.js lesson-content.js presentation-mode.js lesson-phase3.js lesson-deepening.js lesson-activities.js lesson-simulations.js \
   lesson-assessment.js lesson-progression.js lesson-teacher-tools.js lesson-astar.js \
   api/physics-coach.js shared/unified-topic-embedded.js shared/simple-lesson-navigation.js shared/lesson-presentation-enhancements.js; do
   node --check "$file"
@@ -116,4 +117,4 @@ find dist/topics -type d -name node_modules -prune -exec rm -rf {} + 2>/dev/null
 find dist/tools -name .git -exec rm -rf {} + 2>/dev/null || true
 find dist/tools -type d -name node_modules -prune -exec rm -rf {} + 2>/dev/null || true
 
-echo "Unified A-Level Physics course assembled in dist/ with presentation-style lessons, curriculum map, lesson reader, activity/simulation/assessment suite, richer topic visuals, shared Learn, Practise and Assess navigation, the full AQA textbook and contextual lesson enrichment."
+echo "Unified A-Level Physics course assembled in dist/ with presentation-style lessons, curriculum map, lesson reader, activity/simulation/assessment suite, deeper reasoning and justification slides, richer topic visuals, shared Learn, Practise and Assess navigation, the full AQA textbook and contextual lesson enrichment."
