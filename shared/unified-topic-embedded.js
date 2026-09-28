@@ -4,7 +4,7 @@
   const requestExit = () => window.parent.postMessage({type:'alevel-course-exit'}, '*');
   const requestTextbook = () => window.parent.postMessage({type:'alevel-textbook-open'}, '*');
   const cleanText = value => String(value || '').replace(/\s+/g,' ').trim();
-  const esc = value => String(value ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const esc = value => String(value ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[m]));
   const applyMobileMode = enabled => document.documentElement.classList.toggle('unified-course-mobile', !!enabled);
   let pendingRestoreIndex = null;
   let activeButtons = [];
@@ -100,6 +100,8 @@
     body.innerHTML=`<div class="uc-essential-intro"><span>${esc(data.code||'AQA Physics')}</span><strong>${esc(data.chapterTitle||'Lesson essentials')}</strong><p>${esc(data.summary||'')}</p></div>${ideas?`<div class="uc-essential-section"><span class="uc-essential-label">Key ideas</span><ul>${ideas}</ul></div>`:''}${equations?`<div class="uc-essential-section"><span class="uc-essential-label">Key equations</span><div class="uc-essential-equations">${equations}</div></div>`:''}${example}<div class="uc-essential-actions"><button type="button" class="uc-essential-textbook">Open full textbook chapter →</button></div>`;
     body.querySelector('.uc-essential-textbook')?.addEventListener('click',()=>window.parent.postMessage({type:'alevel-lesson-enrichment-open-textbook',topicId:data.topicId,chapterIndex:Number(data.chapterIndex)||0},'*'));
     panel.dataset.ready='true';
+    window.__courseLessonEnrichment=data;
+    window.CourseLessonPresentationEnhancer?.decorate?.(data);
   }
 
   window.addEventListener('message', event => {
