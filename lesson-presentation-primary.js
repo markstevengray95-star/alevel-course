@@ -8,10 +8,14 @@
     return document.querySelector('.deep-deck-shell');
   }
 
+  function setText(element,text){
+    if(element && element.textContent!==text) element.textContent=text;
+  }
+
   function relabelLaunchers(root=document){
-    root.querySelectorAll?.('[data-present-lesson]').forEach(button=>{button.textContent='Present lesson';});
-    root.querySelectorAll?.('[data-teacher-presentation]').forEach(button=>{button.textContent='Present lesson';});
-    root.querySelectorAll?.('[data-open-deep-presentation]').forEach(button=>{button.textContent='Present lesson';});
+    root.querySelectorAll?.('[data-present-lesson]').forEach(button=>setText(button,'Present lesson'));
+    root.querySelectorAll?.('[data-teacher-presentation]').forEach(button=>setText(button,'Present lesson'));
+    root.querySelectorAll?.('[data-open-deep-presentation]').forEach(button=>setText(button,'Present lesson'));
   }
 
   function addToolButton(container, attr, label){
@@ -23,37 +27,45 @@
     container.insertBefore(button,container.firstChild);
   }
 
+  function refreshSlideLabels(shell){
+    shell?.querySelectorAll('[data-deep-list] button').forEach((button,index)=>{
+      const label=`Go to slide ${index+1}: ${button.textContent.replace(/^\d+\.\s*/, '')}`;
+      if(button.getAttribute('aria-label')!==label) button.setAttribute('aria-label',label);
+    });
+  }
+
   function decoratePresentation(){
     if(decorating) return;
+    const shell=presentationShell();
+    if(!shell) return;
+    if(shell.dataset.primaryPresentationReady==='1'){
+      refreshSlideLabels(shell);
+      return;
+    }
     decorating=true;
     try{
-      const shell=presentationShell();
-      if(!shell) return;
+      shell.dataset.primaryPresentationReady='1';
       shell.classList.add('lesson-presentation-shell');
       const dialog=shell.querySelector('.deep-deck');
-      dialog?.setAttribute('aria-label','Lesson presentation');
+      if(dialog?.getAttribute('aria-label')!=='Lesson presentation') dialog?.setAttribute('aria-label','Lesson presentation');
 
-      const sideKicker=shell.querySelector('.phase3-deck-side .phase3-kicker');
-      if(sideKicker) sideKicker.textContent='Lesson presentation';
+      setText(shell.querySelector('.phase3-deck-side .phase3-kicker'),'Lesson presentation');
 
       const tools=shell.querySelector('.phase3-deck-tools');
       addToolButton(tools,'data-presentation-restart','Restart');
       addToolButton(tools,'data-presentation-fullscreen','Full screen');
 
-      const closeButton=tools?.querySelector('[data-deep-close]');
-      if(closeButton) closeButton.textContent='Lesson notes';
-      const copyButton=tools?.querySelector('[data-deep-copy]');
-      if(copyButton) copyButton.textContent='Copy slides';
-
-      const topHint=shell.querySelector('.phase3-top span');
-      if(topHint) topHint.textContent='← / → change slide · Esc opens lesson notes';
+      setText(tools?.querySelector('[data-deep-close]'),'Lesson notes');
+      setText(tools?.querySelector('[data-deep-copy]'),'Copy slides');
+      setText(shell.querySelector('.phase3-top span'),'← / → change slide · Esc opens lesson notes');
 
       const prev=shell.querySelector('[data-deep-prev]');
       const next=shell.querySelector('[data-deep-next]');
-      if(prev){prev.innerHTML='<span aria-hidden="true">←</span><span>Previous</span>';prev.setAttribute('aria-label','Previous slide');}
-      if(next){next.innerHTML='<span>Next</span><span aria-hidden="true">→</span>';next.setAttribute('aria-label','Next slide');}
-
-      shell.querySelectorAll('[data-deep-list] button').forEach((button,index)=>button.setAttribute('aria-label',`Go to slide ${index+1}: ${button.textContent.replace(/^\d+\.\s*/, '')}`));
+      const prevMarkup='<span aria-hidden="true">←</span><span>Previous</span>';
+      const nextMarkup='<span>Next</span><span aria-hidden="true">→</span>';
+      if(prev){if(prev.innerHTML!==prevMarkup)prev.innerHTML=prevMarkup;if(prev.getAttribute('aria-label')!=='Previous slide')prev.setAttribute('aria-label','Previous slide');}
+      if(next){if(next.innerHTML!==nextMarkup)next.innerHTML=nextMarkup;if(next.getAttribute('aria-label')!=='Next slide')next.setAttribute('aria-label','Next slide');}
+      refreshSlideLabels(shell);
     } finally {
       decorating=false;
     }
