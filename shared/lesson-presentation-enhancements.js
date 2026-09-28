@@ -4,6 +4,7 @@
   const esc=value=>String(value??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   let latest=null;
   let renderTimer=0;
+  let requestVersion=0;
 
   const removeOld=()=>document.querySelectorAll('.uc-slide-enrichment').forEach(el=>el.remove());
 
@@ -68,6 +69,28 @@
     renderTimer=window.setTimeout(()=>latest&&decorate(latest),delay);
   };
 
+  function requestEnrichment(){
+    const sectionSelect=document.querySelector('.uc-view-picker select');
+    const lessonSelect=[...document.querySelectorAll('.uc-simple-lesson-nav select')].find(select=>{
+      const style=getComputedStyle(select);return style.display!=='none'&&style.visibility!=='hidden';
+    });
+    const sectionLabel=sectionSelect?.selectedOptions?.[0]?.textContent||'';
+    const lessonLabel=lessonSelect?.selectedOptions?.[0]?.textContent||'';
+    const label=clean(`${sectionLabel} ${lessonLabel}`)||document.title;
+    const version=++requestVersion;
+    const send=()=>window.parent.postMessage({
+      type:'alevel-lesson-enrichment-request',
+      index:Number(sectionSelect?.value)||0,
+      label,
+      pageTitle:document.title
+    },'*');
+    send();
+    [250,700,1500].forEach(delay=>window.setTimeout(()=>{
+      if(version!==requestVersion||latest)return;
+      send();
+    },delay));
+  }
+
   window.addEventListener('message',event=>{
     if(event.data?.type==='alevel-lesson-enrichment')schedule(event.data,0);
   });
@@ -81,6 +104,15 @@
     });
     if(meaningful)schedule(latest,90);
   });
-  const start=()=>observer.observe(document.body,{childList:true,subtree:true});
+  const start=()=>{
+    observer.observe(document.body,{childList:true,subtree:true});
+    window.setTimeout(requestEnrichment,0);
+    document.addEventListener('change',event=>{
+      if(event.target?.matches?.('.uc-view-picker select,.uc-simple-lesson-nav select')){
+        latest=null;
+        window.setTimeout(requestEnrichment,80);
+      }
+    },true);
+  };
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
