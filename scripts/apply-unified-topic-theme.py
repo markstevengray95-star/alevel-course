@@ -22,14 +22,14 @@ TARGETS = [
 
 MARKER = '<!-- unified-course-topic-theme -->'
 INJECTION = f'''{MARKER}
-<link rel="stylesheet" href="unified-course-theme.css?v=19">
-<link rel="stylesheet" href="unified-course-focus.css?v=19">
-<link rel="stylesheet" href="unified-course-navigation.css?v=19">
-<link rel="stylesheet" href="unified-course-presentation.css?v=19">
+<link rel="stylesheet" href="unified-course-theme.css?v=20">
+<link rel="stylesheet" href="unified-course-focus.css?v=20">
+<link rel="stylesheet" href="unified-course-navigation.css?v=20">
+<link rel="stylesheet" href="unified-course-presentation.css?v=20">
 <script>if(window.self!==window.top)document.documentElement.classList.add('unified-course-embedded');</script>
-<script src="unified-course-embedded.js?v=19" defer></script>
-<script src="unified-course-navigation.js?v=19" defer></script>
-<script src="unified-course-presentation.js?v=19" defer></script>'''
+<script src="unified-course-embedded.js?v=20" defer></script>
+<script src="unified-course-navigation.js?v=20" defer></script>
+<script src="unified-course-presentation.js?v=20" defer></script>'''
 
 for source in (THEME_SOURCE, FOCUS_SOURCE, EMBEDDED_SCRIPT_SOURCE, NAV_STYLE_SOURCE, NAV_SCRIPT_SOURCE, PRESENTATION_STYLE_SOURCE, PRESENTATION_SCRIPT_SOURCE):
     if not source.exists():
