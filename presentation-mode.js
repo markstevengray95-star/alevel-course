@@ -1,7 +1,8 @@
 (() => {
-  const styles = ['lesson-phase3.css','lesson-activities.css','lesson-simulations.css','lesson-assessment.css','lesson-progression.css','lesson-teacher-tools.css','lesson-astar.css'];
+  const styles = ['lesson-phase3.css','lesson-deepening.css','lesson-activities.css','lesson-simulations.css','lesson-assessment.css','lesson-progression.css','lesson-teacher-tools.css','lesson-astar.css'];
   const scripts = [
     {src:'lesson-phase3.js', ready:()=>!!window.ALEVEL_PHASE3},
+    {src:'lesson-deepening.js', ready:()=>!!window.ALEVEL_DEEPENING},
     {src:'lesson-activities.js', ready:()=>!!window.ALEVEL_ACTIVITIES},
     {src:'lesson-simulations.js', ready:()=>!!window.ALEVEL_SIMULATIONS},
     {src:'lesson-assessment.js', ready:()=>!!window.ALEVEL_ASSESSMENT},
