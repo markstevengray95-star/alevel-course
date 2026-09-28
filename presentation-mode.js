@@ -53,11 +53,11 @@
   }
 
   function loadEnhancements(callback){
-    if(callback)callbacks.push(callback);
     if(loaded){
       if(callback){try{callback();}catch{}}
       return;
     }
+    if(callback)callbacks.push(callback);
     if(loading)return;
     loading=true;
     loadStyles();
