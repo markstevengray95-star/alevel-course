@@ -83,7 +83,7 @@ node --check shared/unified-topic-embedded.js
 node --check shared/simple-lesson-navigation.js
 node --check shared/lesson-presentation-enhancements.js
 
-for file in student-notebook.js student-notebook.css course-tools.js course-tools.css mobile-mode.js mobile-mode.css experience-polish.css textbook-data.js textbook.js textbook.css lesson-enrichment.js lesson-enrichment.css; do
+for file in student-notebook.js student-notebook.css course-tools.js course-tools.css mobile-mode.js mobile-mode.css experience-polish.css textbook-data.js textbook.js textbook.css lesson-enrichment.js lesson-enrichment.css curriculum-map.css lesson-content.css; do
   if [[ ! -f "$file" ]]; then
     echo "Missing course-wide shell asset: $file" >&2
     exit 1
@@ -92,7 +92,7 @@ done
 
 rm -rf dist
 mkdir -p dist/tools
-cp index.html app.js student-notebook.js ai-coach.js course-tools.js mobile-mode.js textbook-data.js textbook.js lesson-enrichment.js styles.css course-enhancements.css focus-layout.css student-notebook.css course-tools.css mobile-mode.css experience-polish.css textbook.css lesson-enrichment.css manifest.webmanifest .nojekyll dist/
+cp index.html app.js student-notebook.js ai-coach.js course-tools.js mobile-mode.js textbook-data.js textbook.js lesson-enrichment.js styles.css course-enhancements.css focus-layout.css student-notebook.css course-tools.css mobile-mode.css experience-polish.css textbook.css lesson-enrichment.css curriculum-map.css lesson-content.css manifest.webmanifest .nojekyll dist/
 cp -R topics dist/topics
 cp -R tools/practicals dist/tools/practicals
 
