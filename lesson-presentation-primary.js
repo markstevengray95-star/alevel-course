@@ -35,10 +35,6 @@
 
       const sideKicker=shell.querySelector('.phase3-deck-side .phase3-kicker');
       if(sideKicker) sideKicker.textContent='Lesson presentation';
-      const subtitle=shell.querySelector('[data-deep-subtitle]');
-      if(subtitle && !subtitle.dataset.presentationHint){
-        subtitle.dataset.presentationHint='1';
-      }
 
       const tools=shell.querySelector('.phase3-deck-tools');
       addToolButton(tools,'data-presentation-restart','Restart');
@@ -78,7 +74,7 @@
   }
 
   function showLessonNotes(){
-    window.ALEVEL_DEEPENING?.open && presentationShell()?.querySelector('[data-deep-close]')?.click();
+    presentationShell()?.querySelector('.phase3-deck-tools [data-deep-close]')?.click();
     document.body.classList.remove('lesson-presentation-primary');
     const reader=document.querySelector('.lesson-reader-shell:not([hidden])');
     reader?.querySelector('.lesson-reader-body')?.focus?.();
@@ -99,9 +95,9 @@
       else document.exitFullscreen?.().catch(()=>{});
       return;
     }
-    const close=event.target.closest?.('.lesson-presentation-shell .phase3-deck-tools [data-deep-close]');
+    const close=event.target.closest?.('.lesson-presentation-shell [data-deep-close]');
     if(close){
-      document.body.classList.remove('lesson-presentation-primary');
+      window.setTimeout(()=>document.body.classList.remove('lesson-presentation-primary'),0);
     }
   },true);
 
@@ -115,7 +111,7 @@
     const id=event.detail?.id;
     if(!id) return;
     activeId=id;
-    window.setTimeout(()=>openPresentation(id),40);
+    openPresentation(id);
   });
 
   const observer=new MutationObserver(()=>{
@@ -125,7 +121,7 @@
   const start=()=>{
     relabelLaunchers();
     observer.observe(document.body,{childList:true,subtree:true});
-    if(activeId) window.setTimeout(()=>openPresentation(activeId),80);
+    if(activeId) openPresentation(activeId);
   };
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start,{once:true}); else start();
 
