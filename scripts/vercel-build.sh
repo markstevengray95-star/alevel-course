@@ -70,29 +70,44 @@ for file in \
   fi
 done
 
-node --check app.js
-node --check student-notebook.js
-node --check ai-coach.js
-node --check course-tools.js
-node --check mobile-mode.js
-node --check textbook-data.js
-node --check textbook.js
-node --check lesson-enrichment.js
-node --check api/physics-coach.js
-node --check shared/unified-topic-embedded.js
-node --check shared/simple-lesson-navigation.js
-node --check shared/lesson-presentation-enhancements.js
+shell_assets=(
+  student-notebook.js student-notebook.css
+  course-tools.js course-tools.css
+  mobile-mode.js mobile-mode.css
+  experience-polish.css
+  textbook-data.js textbook.js textbook.css
+  lesson-enrichment.js lesson-enrichment.css
+  curriculum-map.js curriculum-map.css
+  lesson-content.js lesson-content.css
+  presentation-mode.js
+  lesson-phase3.js lesson-phase3.css
+  lesson-activities.js lesson-activities.css
+  lesson-simulations.js lesson-simulations.css
+  lesson-assessment.js lesson-assessment.css
+  lesson-progression.js lesson-progression.css
+  lesson-teacher-tools.js lesson-teacher-tools.css
+  lesson-astar.js lesson-astar.css
+)
 
-for file in student-notebook.js student-notebook.css course-tools.js course-tools.css mobile-mode.js mobile-mode.css experience-polish.css textbook-data.js textbook.js textbook.css lesson-enrichment.js lesson-enrichment.css curriculum-map.css lesson-content.css; do
+for file in "${shell_assets[@]}"; do
   if [[ ! -f "$file" ]]; then
     echo "Missing course-wide shell asset: $file" >&2
     exit 1
   fi
 done
 
+for file in \
+  app.js student-notebook.js ai-coach.js course-tools.js mobile-mode.js textbook-data.js textbook.js lesson-enrichment.js \
+  curriculum-map.js lesson-content.js presentation-mode.js lesson-phase3.js lesson-activities.js lesson-simulations.js \
+  lesson-assessment.js lesson-progression.js lesson-teacher-tools.js lesson-astar.js \
+  api/physics-coach.js shared/unified-topic-embedded.js shared/simple-lesson-navigation.js shared/lesson-presentation-enhancements.js; do
+  node --check "$file"
+done
+
 rm -rf dist
 mkdir -p dist/tools
-cp index.html app.js student-notebook.js ai-coach.js course-tools.js mobile-mode.js textbook-data.js textbook.js lesson-enrichment.js styles.css course-enhancements.css focus-layout.css student-notebook.css course-tools.css mobile-mode.css experience-polish.css textbook.css lesson-enrichment.css curriculum-map.css lesson-content.css manifest.webmanifest .nojekyll dist/
+cp index.html app.js ai-coach.js styles.css course-enhancements.css focus-layout.css manifest.webmanifest .nojekyll dist/
+cp "${shell_assets[@]}" dist/
 cp -R topics dist/topics
 cp -R tools/practicals dist/tools/practicals
 
@@ -101,4 +116,4 @@ find dist/topics -type d -name node_modules -prune -exec rm -rf {} + 2>/dev/null
 find dist/tools -name .git -exec rm -rf {} + 2>/dev/null || true
 find dist/tools -type d -name node_modules -prune -exec rm -rf {} + 2>/dev/null || true
 
-echo "Unified A-Level Physics course assembled in dist/ with presentation-style lessons, richer topic visuals, shared Learn, Practise and Assess navigation, the full AQA textbook and contextual lesson enrichment."
+echo "Unified A-Level Physics course assembled in dist/ with presentation-style lessons, curriculum map, lesson reader, activity/simulation/assessment suite, richer topic visuals, shared Learn, Practise and Assess navigation, the full AQA textbook and contextual lesson enrichment."
