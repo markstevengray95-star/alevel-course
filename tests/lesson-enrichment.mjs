@@ -32,21 +32,29 @@ let frame=page.frames().find(item=>item!==page.mainFrame()&&item.url().includes(
 if(!frame)fail('enrichment: Electricity iframe did not load');
 else{
   await frame.waitForSelector('.uc-lesson-essentials[data-ready="true"]',{timeout:5000}).catch(()=>fail('enrichment: Lesson Essentials did not render'));
+  await frame.waitForFunction(()=>document.documentElement.classList.contains('uc-lesson-visuals-ready'),null,{timeout:5000}).catch(()=>fail('enrichment: rich lesson presentation visuals did not initialise'));
   if(!(await frame.locator('.uc-essential-intro p').innerText().catch(()=>'')))fail('enrichment: lesson summary is missing');
   if(await frame.locator('.uc-essential-section li').count()<1)fail('enrichment: lesson key ideas are missing');
   if(await frame.locator('.uc-essential-equation').count()<1)fail('enrichment: lesson equations are missing');
   if(!(await frame.locator('.uc-essential-textbook').isVisible().catch(()=>false)))fail('enrichment: full textbook chapter link is missing');
 
+  if(await frame.locator('.uc-slide-enrichment .uc-lesson-visual svg').count()<1)fail('visuals: lesson does not contain a topic-matched physics diagram');
+  if(await frame.locator('.uc-term-item').count()<2)fail('visuals: lesson key terminology detail is missing');
+  if(await frame.locator('.uc-equation-card').count()<1)fail('visuals: equation meaning cards are missing');
+  if(await frame.locator('.uc-worked-step').count()<1)fail('visuals: worked-example reasoning flow is missing');
+  if(await frame.locator('.uc-exam-focus').count()<1)fail('visuals: AQA exam-focus panel is missing');
+
+  const term=frame.locator('.uc-term-item').first();
+  if(await term.count()){
+    await term.locator('summary').click().catch(()=>{});
+    const detail=await term.locator('p').innerText().catch(()=> '');
+    if(detail.length<12)fail('visuals: terminology card does not reveal useful detail');
+  }
+
   const courseLayout=frame.locator('.course-layout').first();
   if(await courseLayout.count()){
     const columns=await courseLayout.evaluate(el=>getComputedStyle(el).gridTemplateColumns).catch(()=> '');
     if(columns&&columns.trim().split(/\s+/).length>1)fail(`layout: embedded lesson still uses a multi-column sidebar layout (${columns})`);
-  }
-  const courseList=frame.locator('.course-list').first();
-  if(await courseList.count()){
-    const listStyle=await courseList.evaluate(el=>({display:getComputedStyle(el).display,overflow:getComputedStyle(el).overflowX})).catch(()=>({}));
-    if(listStyle.display!=='flex')fail(`layout: lesson navigator should be a simple horizontal strip (display=${listStyle.display||'unknown'})`);
-    if(!['auto','scroll'].includes(listStyle.overflow))fail(`layout: lesson navigator should scroll horizontally when needed (overflow=${listStyle.overflow||'unknown'})`);
   }
 
   let selectable=frame.locator('.lesson-panel p,.lesson-panel li,.uc-essential-intro p,.uc-essential-section li span').filter({visible:true}).first();
@@ -82,8 +90,10 @@ frame=page.frames().find(item=>item!==page.mainFrame()&&item.url().includes('/to
 if(frame){
   const dims=await frame.evaluate(()=>({scrollWidth:document.documentElement.scrollWidth,clientWidth:document.documentElement.clientWidth})).catch(()=>({scrollWidth:999,clientWidth:0}));
   if(dims.scrollWidth>dims.clientWidth+12)fail(`layout: enriched mobile lesson overflows horizontally (${dims.scrollWidth}px > ${dims.clientWidth}px)`);
+  const visualWidth=await frame.locator('.uc-slide-enrichment .uc-lesson-visual').first().evaluate(el=>el.getBoundingClientRect().width).catch(()=>0);
+  if(visualWidth>390)fail(`layout: lesson visual is wider than mobile viewport (${visualWidth}px)`);
 }
 
 await browser.close();
 if(failures.length){console.error(`\nLESSON ENRICHMENT FAILED (${failures.length})`);failures.forEach(item=>console.error(' -',item));process.exit(1);}
-console.log('PASS: lessons use the simplified layout, contextual Lesson Essentials, and highlight-to-notebook saving in both lessons and textbook.');
+console.log('PASS: lessons use presentation-style navigation, contextual diagrams, terminology, equation meaning, worked-method visuals, AQA exam focus and highlight-to-notebook saving.');
