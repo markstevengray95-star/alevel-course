@@ -6,6 +6,8 @@ FOCUS_SOURCE = Path('shared/embedded-focus.css')
 EMBEDDED_SCRIPT_SOURCE = Path('shared/unified-topic-embedded.js')
 NAV_STYLE_SOURCE = Path('shared/simple-lesson-navigation.css')
 NAV_SCRIPT_SOURCE = Path('shared/simple-lesson-navigation.js')
+PRESENTATION_STYLE_SOURCE = Path('shared/lesson-presentation-enhancements.css')
+PRESENTATION_SCRIPT_SOURCE = Path('shared/lesson-presentation-enhancements.js')
 TARGETS = [
     Path('topics/01-measurements/index.html'),
     Path('topics/02-particles-radiation/index.html'),
@@ -20,14 +22,16 @@ TARGETS = [
 
 MARKER = '<!-- unified-course-topic-theme -->'
 INJECTION = f'''{MARKER}
-<link rel="stylesheet" href="unified-course-theme.css?v=17">
-<link rel="stylesheet" href="unified-course-focus.css?v=17">
-<link rel="stylesheet" href="unified-course-navigation.css?v=17">
+<link rel="stylesheet" href="unified-course-theme.css?v=18">
+<link rel="stylesheet" href="unified-course-focus.css?v=18">
+<link rel="stylesheet" href="unified-course-navigation.css?v=18">
+<link rel="stylesheet" href="unified-course-presentation.css?v=18">
 <script>if(window.self!==window.top)document.documentElement.classList.add('unified-course-embedded');</script>
-<script src="unified-course-embedded.js?v=17" defer></script>
-<script src="unified-course-navigation.js?v=17" defer></script>'''
+<script src="unified-course-embedded.js?v=18" defer></script>
+<script src="unified-course-navigation.js?v=18" defer></script>
+<script src="unified-course-presentation.js?v=18" defer></script>'''
 
-for source in (THEME_SOURCE, FOCUS_SOURCE, EMBEDDED_SCRIPT_SOURCE, NAV_STYLE_SOURCE, NAV_SCRIPT_SOURCE):
+for source in (THEME_SOURCE, FOCUS_SOURCE, EMBEDDED_SCRIPT_SOURCE, NAV_STYLE_SOURCE, NAV_SCRIPT_SOURCE, PRESENTATION_STYLE_SOURCE, PRESENTATION_SCRIPT_SOURCE):
     if not source.exists():
         raise SystemExit(f'Missing shared topic asset: {source}')
 
@@ -37,6 +41,8 @@ assets = {
     'unified-course-embedded.js': EMBEDDED_SCRIPT_SOURCE.read_text('utf-8'),
     'unified-course-navigation.css': NAV_STYLE_SOURCE.read_text('utf-8'),
     'unified-course-navigation.js': NAV_SCRIPT_SOURCE.read_text('utf-8'),
+    'unified-course-presentation.css': PRESENTATION_STYLE_SOURCE.read_text('utf-8'),
+    'unified-course-presentation.js': PRESENTATION_SCRIPT_SOURCE.read_text('utf-8'),
 }
 if len(assets['unified-course-theme.css'].strip()) < 500:
     raise SystemExit('Shared topic theme looks unexpectedly small.')
