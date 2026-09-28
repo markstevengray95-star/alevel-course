@@ -26,6 +26,8 @@ jobs:
           test -f dist/experience-polish.css
           test -f dist/lesson-enrichment.js
           test -f dist/lesson-enrichment.css
+          test -f dist/lesson-spec-depth.js
+          test -f dist/lesson-spec-depth.css
           test -f dist/lesson-deepening.js
           test -f dist/lesson-deepening.css
           test -f dist/tools/practicals/index.html
@@ -44,6 +46,9 @@ jobs:
 
       - name: Verify lesson uniqueness and presentation depth
         run: node tests/lesson-uniqueness.mjs
+
+      - name: Run independent teaching-strength audit
+        run: node tests/teaching-strength.mjs
 
       - name: Install browser audit dependency
         run: |
