@@ -59,6 +59,9 @@ jobs:
       - name: Verify unified topic UI
         run: node tests/theme-smoke.mjs
 
+      - name: Verify simplified lesson navigation
+        run: node tests/simple-navigation.mjs
+
       - name: Verify integrated study flow
         run: node tests/experience-flow.mjs
 

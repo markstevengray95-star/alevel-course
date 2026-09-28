@@ -42,6 +42,9 @@ jobs:
       - name: Verify unified topic UI
         run: node tests/theme-smoke.mjs
 
+      - name: Verify simplified lesson navigation
+        run: node tests/simple-navigation.mjs
+
       - name: Diagnose mobile overflow
         run: node tests/mobile-overflow.mjs
 
