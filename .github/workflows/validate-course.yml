@@ -30,6 +30,8 @@ jobs:
           test -f dist/lesson-spec-depth.css
           test -f dist/lesson-deepening.js
           test -f dist/lesson-deepening.css
+          test -f dist/lesson-presentation-primary.js
+          test -f dist/lesson-presentation-primary.css
           test -f dist/tools/practicals/index.html
           test -f dist/topics/01-measurements/index.html
           test -f dist/topics/02-particles-radiation/index.html
@@ -65,6 +67,9 @@ jobs:
           done
           cat /tmp/alevel-course-http.log
           exit 1
+
+      - name: Verify lessons open as presentations
+        run: node tests/default-lesson-presentation.mjs
 
       - name: Verify unified topic UI
         run: node tests/theme-smoke.mjs
