@@ -26,6 +26,8 @@ jobs:
           test -f dist/experience-polish.css
           test -f dist/lesson-enrichment.js
           test -f dist/lesson-enrichment.css
+          test -f dist/lesson-deepening.js
+          test -f dist/lesson-deepening.css
           test -f dist/tools/practicals/index.html
           test -f dist/topics/01-measurements/index.html
           test -f dist/topics/02-particles-radiation/index.html
@@ -39,6 +41,9 @@ jobs:
 
       - name: Run comprehensive static audit
         run: node scripts/full-audit.mjs dist
+
+      - name: Verify lesson uniqueness and presentation depth
+        run: node tests/lesson-uniqueness.mjs
 
       - name: Install browser audit dependency
         run: |
