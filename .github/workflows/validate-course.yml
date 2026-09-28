@@ -5,10 +5,14 @@ on:
     branches: [main, phase-10-quality-control]
   pull_request:
 
+concurrency:
+  group: alevel-course-validation-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 25
     steps:
       - name: Checkout course and topic modules
         uses: actions/checkout@v4
@@ -73,26 +77,26 @@ jobs:
           cat /tmp/alevel-course-http.log
           exit 1
 
+      - name: Verify Phase 1-10 course system
+        run: timeout 120s node tests/phase10-course-system.mjs
+
       - name: Verify unified topic UI
-        run: node tests/theme-smoke.mjs
+        run: timeout 120s node tests/theme-smoke.mjs
 
       - name: Verify simplified lesson navigation
-        run: node tests/simple-navigation.mjs
+        run: timeout 120s node tests/simple-navigation.mjs
 
       - name: Verify integrated study flow
-        run: node tests/experience-flow.mjs
+        run: timeout 150s node tests/experience-flow.mjs
 
       - name: Verify lesson enrichment and notebook selection
-        run: node tests/lesson-enrichment.mjs
-
-      - name: Verify Phase 1-10 course system
-        run: node tests/phase10-course-system.mjs
+        run: timeout 120s node tests/lesson-enrichment.mjs
 
       - name: Run browser runtime audit
-        run: node scripts/browser-audit.mjs dist
+        run: timeout 180s node scripts/browser-audit.mjs dist
 
       - name: Diagnose mobile overflow
-        run: node tests/mobile-overflow.mjs
+        run: timeout 90s node tests/mobile-overflow.mjs
 
       - name: Report assembled size
         run: du -sh dist
