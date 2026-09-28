@@ -2,12 +2,13 @@ name: Validate unified A-Level Physics course
 
 on:
   push:
-    branches: [main]
+    branches: [main, phase-10-quality-control]
   pull_request:
 
 jobs:
   validate:
     runs-on: ubuntu-latest
+    timeout-minutes: 35
     steps:
       - name: Checkout course and topic modules
         uses: actions/checkout@v4
@@ -15,27 +16,43 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Audit AQA map and Phase 1-10 architecture
+        run: node scripts/spec-audit.mjs .
+
       - name: Assemble Vercel output
         run: bash scripts/vercel-build.sh
 
-      - name: Verify course shell
+      - name: Verify course shell and Phase 1-10 assets
         run: |
-          test -f dist/index.html
-          test -f dist/app.js
-          test -f dist/styles.css
-          test -f dist/experience-polish.css
-          test -f dist/lesson-enrichment.js
-          test -f dist/lesson-enrichment.css
-          test -f dist/tools/practicals/index.html
-          test -f dist/topics/01-measurements/index.html
-          test -f dist/topics/02-particles-radiation/index.html
-          test -f dist/topics/03-waves/index.html
-          test -f dist/topics/04-mechanics-materials/mechanics/index.html
-          test -f dist/topics/04-mechanics-materials/materials/index.html
-          test -f dist/topics/05-electricity/index.html
-          test -f dist/topics/06-further-mechanics-thermal/index.html
-          test -f dist/topics/07-fields/index.html
-          test -f dist/topics/08-nuclear/index.html
+          required=(
+            dist/index.html dist/app.js dist/styles.css dist/experience-polish.css
+            dist/curriculum-map.js dist/curriculum-map.css
+            dist/lesson-content.js dist/lesson-content.css
+            dist/presentation-mode.js dist/lesson-phase3.js dist/lesson-phase3.css
+            dist/lesson-activities.js dist/lesson-activities.css
+            dist/lesson-simulations.js dist/lesson-simulations.css
+            dist/lesson-assessment.js dist/lesson-assessment.css
+            dist/lesson-progression.js dist/lesson-progression.css
+            dist/lesson-teacher-tools.js dist/lesson-teacher-tools.css
+            dist/lesson-astar.js dist/lesson-astar.css
+            dist/quality-control.js dist/quality-control.css
+            dist/tools/practicals/index.html
+            dist/topics/01-measurements/index.html
+            dist/topics/02-particles-radiation/index.html
+            dist/topics/03-waves/index.html
+            dist/topics/04-mechanics-materials/mechanics/index.html
+            dist/topics/04-mechanics-materials/materials/index.html
+            dist/topics/05-electricity/index.html
+            dist/topics/06-further-mechanics-thermal/index.html
+            dist/topics/07-fields/index.html
+            dist/topics/08-nuclear/index.html
+          )
+          for file in "${required[@]}"; do test -f "$file" || { echo "Missing $file"; exit 1; }; done
 
       - name: Run comprehensive static audit
         run: node scripts/full-audit.mjs dist
@@ -68,8 +85,14 @@ jobs:
       - name: Verify lesson enrichment and notebook selection
         run: node tests/lesson-enrichment.mjs
 
+      - name: Verify Phase 1-10 course system
+        run: node tests/phase10-course-system.mjs
+
       - name: Run browser runtime audit
         run: node scripts/browser-audit.mjs dist
+
+      - name: Diagnose mobile overflow
+        run: node tests/mobile-overflow.mjs
 
       - name: Report assembled size
         run: du -sh dist
