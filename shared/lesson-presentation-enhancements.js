@@ -6,6 +6,7 @@
   let renderTimer=0;
   let requestVersion=0;
 
+  document.documentElement.classList.add('uc-presentation-script-loaded');
   const removeOld=()=>document.querySelectorAll('.uc-slide-enrichment').forEach(el=>el.remove());
 
   function termsMarkup(terms=[]){
@@ -40,6 +41,7 @@
   }
 
   function decorate(data){
+    if(!data)return;
     latest=data;
     removeOld();
 
@@ -50,11 +52,11 @@
     const fallback=document.querySelector('.uc-lesson-essentials .uc-essential-body');
 
     let used=false;
-    if(learn&&data.visual){used=insertHtml(learn,`<section class="uc-slide-enrichment uc-visual-card">${data.visual}</section>`)||used;}
-    if(learn){used=insertHtml(learn,termsMarkup(data.terms))||used;}
-    if(equations){used=insertHtml(equations,equationMarkup(data.equations))||used;}
-    if(worked){used=insertHtml(worked,workedMarkup(data.example))||used;}
-    if(exam){used=insertHtml(exam,examMarkup(data))||used;}
+    if(learn&&data.visual)used=insertHtml(learn,`<section class="uc-slide-enrichment uc-visual-card">${data.visual}</section>`)||used;
+    if(learn)used=insertHtml(learn,termsMarkup(data.terms))||used;
+    if(equations)used=insertHtml(equations,equationMarkup(data.equations))||used;
+    if(worked)used=insertHtml(worked,workedMarkup(data.example))||used;
+    if(exam)used=insertHtml(exam,examMarkup(data))||used;
 
     if(!used&&fallback){
       const visual=data.visual?`<section class="uc-slide-enrichment uc-visual-card">${data.visual}</section>`:'';
@@ -62,6 +64,8 @@
     }
     document.documentElement.classList.add('uc-lesson-visuals-ready');
   }
+
+  window.CourseLessonPresentationEnhancer={decorate};
 
   const schedule=(data=latest,delay=40)=>{
     if(data)latest=data;
@@ -78,12 +82,7 @@
     const lessonLabel=lessonSelect?.selectedOptions?.[0]?.textContent||'';
     const label=clean(`${sectionLabel} ${lessonLabel}`)||document.title;
     const version=++requestVersion;
-    const send=()=>window.parent.postMessage({
-      type:'alevel-lesson-enrichment-request',
-      index:Number(sectionSelect?.value)||0,
-      label,
-      pageTitle:document.title
-    },'*');
+    const send=()=>window.parent.postMessage({type:'alevel-lesson-enrichment-request',index:Number(sectionSelect?.value)||0,label,pageTitle:document.title},'*');
     send();
     [250,700,1500].forEach(delay=>window.setTimeout(()=>{
       if(version!==requestVersion||latest)return;
@@ -106,7 +105,8 @@
   });
   const start=()=>{
     observer.observe(document.body,{childList:true,subtree:true});
-    window.setTimeout(requestEnrichment,0);
+    if(window.__courseLessonEnrichment)schedule(window.__courseLessonEnrichment,0);
+    else window.setTimeout(requestEnrichment,0);
     document.addEventListener('change',event=>{
       if(event.target?.matches?.('.uc-view-picker select,.uc-simple-lesson-nav select')){
         latest=null;
