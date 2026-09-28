@@ -39,10 +39,17 @@ else{
   if(!(await frame.locator('.uc-essential-textbook').isVisible().catch(()=>false)))fail('enrichment: full textbook chapter link is missing');
 
   if(await frame.locator('.uc-slide-enrichment .uc-lesson-visual svg').count()<1)fail('visuals: lesson does not contain a topic-matched physics diagram');
+  if(await frame.locator('.uc-visual-guide b').count()<2)fail('visuals: diagram does not explain what students should notice');
   if(await frame.locator('.uc-term-item').count()<2)fail('visuals: lesson key terminology detail is missing');
+  if(await frame.locator('.uc-misconception').count()<2)fail('teaching: common misconception corrections are missing');
+  if(await frame.locator('.uc-misconception p').first().innerText().catch(()=>'' )==='')fail('teaching: misconception correction has no explanation');
   if(await frame.locator('.uc-equation-card').count()<1)fail('visuals: equation meaning cards are missing');
+  if(await frame.locator('.uc-equation-card p').count()<1)fail('teaching: equation cards do not explain when to use the relationship');
+  if(await frame.locator('.uc-equation-card em').count()<1)fail('teaching: equation cards do not include a calculation/model check');
   if(await frame.locator('.uc-worked-step').count()<1)fail('visuals: worked-example reasoning flow is missing');
+  if(await frame.locator('.uc-application-card').count()<1)fail('teaching: application/stretch task is missing');
   if(await frame.locator('.uc-exam-focus').count()<1)fail('visuals: AQA exam-focus panel is missing');
+  if(await frame.locator('.uc-command-guide>div').count()<1)fail('teaching: exam command-word guidance is missing');
 
   const term=frame.locator('.uc-term-item').first();
   if(await term.count()){
@@ -92,8 +99,10 @@ if(frame){
   if(dims.scrollWidth>dims.clientWidth+12)fail(`layout: enriched mobile lesson overflows horizontally (${dims.scrollWidth}px > ${dims.clientWidth}px)`);
   const visualWidth=await frame.locator('.uc-slide-enrichment .uc-lesson-visual').first().evaluate(el=>el.getBoundingClientRect().width).catch(()=>0);
   if(visualWidth>390)fail(`layout: lesson visual is wider than mobile viewport (${visualWidth}px)`);
+  const cards=await frame.locator('.uc-misconception,.uc-application-body>*,.uc-command-guide>div').evaluateAll(nodes=>nodes.map(el=>el.getBoundingClientRect().right)).catch(()=>[]);
+  if(cards.some(right=>right>402))fail('layout: new teaching-detail cards overflow the mobile viewport');
 }
 
 await browser.close();
 if(failures.length){console.error(`\nLESSON ENRICHMENT FAILED (${failures.length})`);failures.forEach(item=>console.error(' -',item));process.exit(1);}
-console.log('PASS: lessons use presentation-style navigation, contextual diagrams, terminology, equation meaning, worked-method visuals, AQA exam focus and highlight-to-notebook saving.');
+console.log('PASS: lessons use presentation-style navigation with contextual diagrams, what-to-notice guidance, terminology, misconception correction, equation-use coaching, worked methods, application/stretch tasks, AQA command-word support and highlight-to-notebook saving.');
