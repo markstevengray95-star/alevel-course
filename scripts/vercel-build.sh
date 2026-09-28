@@ -37,7 +37,7 @@ python3 scripts/apply-unified-topic-theme.py
 
 for file in "${required[@]}"; do
   dir="$(dirname "$file")"
-  for asset in unified-course-theme.css unified-course-focus.css unified-course-embedded.js unified-course-navigation.css unified-course-navigation.js; do
+  for asset in unified-course-theme.css unified-course-focus.css unified-course-embedded.js unified-course-navigation.css unified-course-navigation.js unified-course-presentation.css unified-course-presentation.js; do
     if [[ ! -f "$dir/$asset" ]]; then
       echo "Missing unified topic asset: $dir/$asset" >&2
       exit 1
@@ -81,6 +81,7 @@ node --check lesson-enrichment.js
 node --check api/physics-coach.js
 node --check shared/unified-topic-embedded.js
 node --check shared/simple-lesson-navigation.js
+node --check shared/lesson-presentation-enhancements.js
 
 for file in student-notebook.js student-notebook.css course-tools.js course-tools.css mobile-mode.js mobile-mode.css experience-polish.css textbook-data.js textbook.js textbook.css lesson-enrichment.js lesson-enrichment.css; do
   if [[ ! -f "$file" ]]; then
@@ -100,4 +101,4 @@ find dist/topics -type d -name node_modules -prune -exec rm -rf {} + 2>/dev/null
 find dist/tools -name .git -exec rm -rf {} + 2>/dev/null || true
 find dist/tools -type d -name node_modules -prune -exec rm -rf {} + 2>/dev/null || true
 
-echo "Unified A-Level Physics course assembled in dist/ with simplified lesson navigation, shared Learn, Practise and Assess navigation, the full AQA textbook and contextual lesson enrichment."
+echo "Unified A-Level Physics course assembled in dist/ with presentation-style lessons, richer topic visuals, shared Learn, Practise and Assess navigation, the full AQA textbook and contextual lesson enrichment."
