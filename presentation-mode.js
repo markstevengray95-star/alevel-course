@@ -54,7 +54,10 @@
 
   function loadEnhancements(callback){
     if(callback)callbacks.push(callback);
-    if(loaded){finish();return;}
+    if(loaded){
+      if(callback){try{callback();}catch{}}
+      return;
+    }
     if(loading)return;
     loading=true;
     loadStyles();
@@ -73,7 +76,9 @@
   });
 
   const start=()=>{
-    if(window.ALEVEL_ACTIVE_LESSON||location.hash.startsWith('#lesson='))loadEnhancements(replayActiveLesson);
+    loadEnhancements(()=>{
+      if(window.ALEVEL_ACTIVE_LESSON)replayActiveLesson();
+    });
   };
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 
