@@ -74,7 +74,12 @@
 
   const observer=new MutationObserver(mutations=>{
     if(!latest)return;
-    if(mutations.some(m=>m.addedNodes.length||m.removedNodes.length))schedule(latest,90);
+    const meaningful=mutations.some(mutation=>{
+      if(mutation.target?.closest?.('.uc-slide-enrichment'))return false;
+      const nodes=[...mutation.addedNodes,...mutation.removedNodes];
+      return nodes.some(node=>!(node.nodeType===1&&node.classList?.contains('uc-slide-enrichment')));
+    });
+    if(meaningful)schedule(latest,90);
   });
   const start=()=>observer.observe(document.body,{childList:true,subtree:true});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
