@@ -1,5 +1,5 @@
 (() => {
-  const styles = ['lesson-phase3.css','lesson-activities.css','lesson-simulations.css','lesson-assessment.css','lesson-progression.css','lesson-teacher-tools.css','lesson-astar.css'];
+  const styles = ['lesson-phase3.css','lesson-activities.css','lesson-simulations.css','lesson-assessment.css','lesson-progression.css','lesson-teacher-tools.css','lesson-astar.css','quality-control.css'];
   const scripts = [
     {src:'lesson-phase3.js', ready:()=>!!window.ALEVEL_PHASE3},
     {src:'lesson-activities.js', ready:()=>!!window.ALEVEL_ACTIVITIES},
@@ -7,7 +7,8 @@
     {src:'lesson-assessment.js', ready:()=>!!window.ALEVEL_ASSESSMENT},
     {src:'lesson-progression.js', ready:()=>!!window.ALEVEL_PROGRESSION},
     {src:'lesson-teacher-tools.js', ready:()=>!!window.ALEVEL_TEACHER_TOOLS},
-    {src:'lesson-astar.js', ready:()=>!!window.ALEVEL_ASTAR}
+    {src:'lesson-astar.js', ready:()=>!!window.ALEVEL_ASTAR},
+    {src:'quality-control.js', ready:()=>!!window.ALEVEL_QUALITY_CONTROL}
   ];
 
   function loadStyles(){
