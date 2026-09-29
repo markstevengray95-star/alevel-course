@@ -3,7 +3,8 @@
 
   const homeStyles = [
     'lesson-quality-audit.css',
-    'presentation-library.css'
+    'presentation-library.css',
+    'lesson-automarking.css'
   ];
   const coreStyles = [
     'lesson-phase3.css',
@@ -28,7 +29,8 @@
 
   const homeScripts = [
     {src:'lesson-quality-audit.js', ready:()=>!!window.ALEVEL_QUALITY_AUDIT},
-    {src:'presentation-library.js', ready:()=>!!window.ALEVEL_PRESENTATION_LIBRARY}
+    {src:'presentation-library.js', ready:()=>!!window.ALEVEL_PRESENTATION_LIBRARY},
+    {src:'lesson-automarking.js', ready:()=>!!window.ALEVEL_AUTOMARK}
   ];
   const coreScripts = [
     {src:'lesson-phase3.js', ready:()=>!!window.ALEVEL_PHASE3},
@@ -111,6 +113,7 @@
     homeLoaded=true;
     homeLoading=false;
     document.documentElement.classList.add('presentation-library-ready');
+    document.documentElement.classList.add('lesson-automarking-ready');
     runCallbacks(homeCallbacks);
   }
 
@@ -180,12 +183,21 @@
     });
   }
 
+  function registerOfflineSupport(){
+    if(!('serviceWorker' in navigator) || location.protocol==='file:') return;
+    navigator.serviceWorker.register('sw.js').then(reg=>{
+      document.documentElement.classList.add('offline-support-ready');
+      reg.update?.().catch(()=>{});
+    }).catch(()=>{});
+  }
+
   window.addEventListener('alevel:lesson-selected',()=>{
     if(!coreLoaded&&!coreLoading) activateLessonPresentation();
     else if(coreLoaded) deferExtras();
   });
 
   const start=()=>{
+    registerOfflineSupport();
     loadHome();
     if(window.ALEVEL_ACTIVE_LESSON||location.hash.startsWith('#lesson=')) activateLessonPresentation();
   };
