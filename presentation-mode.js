@@ -4,7 +4,8 @@
   const homeStyles = [
     'lesson-quality-audit.css',
     'presentation-library.css',
-    'lesson-automarking.css'
+    'lesson-automarking.css',
+    'guided-tutor-dashboard.css'
   ];
   const coreStyles = [
     'lesson-phase3.css',
@@ -30,7 +31,8 @@
   const homeScripts = [
     {src:'lesson-quality-audit.js', ready:()=>!!window.ALEVEL_QUALITY_AUDIT},
     {src:'presentation-library.js', ready:()=>!!window.ALEVEL_PRESENTATION_LIBRARY},
-    {src:'lesson-automarking.js', ready:()=>!!window.ALEVEL_AUTOMARK}
+    {src:'lesson-automarking.js', ready:()=>!!window.ALEVEL_AUTOMARK},
+    {src:'guided-tutor-dashboard.js', ready:()=>!!window.ALEVEL_GUIDED_TUTOR}
   ];
   const coreScripts = [
     {src:'lesson-phase3.js', ready:()=>!!window.ALEVEL_PHASE3},
@@ -114,6 +116,7 @@
     homeLoading=false;
     document.documentElement.classList.add('presentation-library-ready');
     document.documentElement.classList.add('lesson-automarking-ready');
+    document.documentElement.classList.add('guided-tutor-ready');
     runCallbacks(homeCallbacks);
   }
 
