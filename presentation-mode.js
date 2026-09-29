@@ -36,6 +36,7 @@
     {src:'lesson-automarking.js', ready:()=>!!window.ALEVEL_AUTOMARK},
     {src:'guided-tutor-dashboard.js', ready:()=>!!window.ALEVEL_GUIDED_TUTOR},
     {src:'lesson-navigator.js', ready:()=>!!window.ALEVEL_LESSON_NAVIGATOR},
+    {src:'lesson-reader-quicknav.js', ready:()=>!!window.ALEVEL_LESSON_QUICKNAV},
     {src:'guided-tutor-mode.js', ready:()=>!!window.ALEVEL_GUIDED_TUTOR_MODE}
   ];
   const coreScripts = [
