@@ -1,0 +1,599 @@
+/* Phase 3 — PowerPoint-style classroom slide layouts */
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide{
+  --slide-accent:#2563eb;
+  --slide-accent-soft:#dbeafe;
+  --slide-ink:#0f172a;
+  --slide-muted:#475569;
+  --slide-paper:#ffffff;
+  --slide-line:#dbe4f0;
+  position:relative;
+  isolation:isolate;
+  color:var(--slide-ink);
+  background:var(--slide-paper);
+  border:1px solid rgba(148,163,184,.28);
+  box-shadow:0 28px 75px rgba(2,6,23,.32), inset 0 0 0 1px rgba(255,255,255,.55);
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide::before{
+  content:"";
+  position:absolute;
+  inset:0 auto 0 0;
+  width:clamp(8px,.75vw,13px);
+  background:var(--slide-accent);
+  z-index:-1;
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide::after{
+  content:"";
+  position:absolute;
+  width:34%;
+  aspect-ratio:1;
+  right:-14%;
+  top:-34%;
+  border-radius:50%;
+  background:var(--slide-accent-soft);
+  opacity:.34;
+  z-index:-2;
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide .phase3-kicker{
+  width:max-content;
+  max-width:100%;
+  margin-bottom:clamp(.6rem,1.05vw,1rem);
+  padding:.38rem .72rem;
+  border-radius:999px;
+  background:var(--slide-accent-soft);
+  color:var(--slide-accent);
+  font-size:clamp(.72rem,.86vw,.9rem);
+  font-weight:800;
+  line-height:1;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide h1,
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide h2{
+  color:var(--slide-ink);
+  letter-spacing:-.035em;
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide ul{
+  list-style:none;
+  padding:0;
+  width:100%;
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide li{
+  position:relative;
+  border:1px solid var(--slide-line);
+  border-radius:14px;
+  background:rgba(248,250,252,.9);
+  box-shadow:none;
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide li::before{
+  content:"";
+  position:absolute;
+  left:-1px;
+  top:18%;
+  bottom:18%;
+  width:4px;
+  border-radius:0 99px 99px 0;
+  background:var(--slide-accent);
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-teacher-note{
+  position:absolute;
+  left:clamp(1.35rem,3.5vw,3.9rem);
+  right:clamp(1.35rem,3.5vw,3.9rem);
+  bottom:clamp(.8rem,1.4vw,1.3rem);
+  margin:0;
+  padding:.58rem .8rem;
+  border-radius:10px;
+  background:rgba(15,23,42,.06);
+  color:#475569;
+  border:1px dashed rgba(100,116,139,.28);
+  font-size:clamp(.72rem,.85vw,.88rem);
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-teacher-note strong{
+  margin-right:.45rem;
+  color:#0f172a;
+}
+
+/* 1. Title / section opener */
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="title"]{
+  --slide-accent:#60a5fa;
+  --slide-accent-soft:rgba(96,165,250,.15);
+  --slide-ink:#f8fafc;
+  justify-content:flex-end;
+  padding:clamp(2rem,4.6vw,5rem);
+  background:
+    radial-gradient(circle at 82% 20%,rgba(59,130,246,.22),transparent 30%),
+    linear-gradient(135deg,#07111f 0%,#0f172a 48%,#172554 100%);
+  border-color:rgba(148,163,184,.14);
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="title"]::before{
+  width:clamp(10px,.95vw,16px);
+  background:linear-gradient(#38bdf8,#2563eb);
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="title"]::after{
+  width:52%;
+  right:-16%;
+  top:-45%;
+  background:radial-gradient(circle,rgba(96,165,250,.2),transparent 68%);
+  opacity:1;
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="title"] .phase3-kicker{
+  background:rgba(255,255,255,.08);
+  color:#bfdbfe;
+  border:1px solid rgba(191,219,254,.16);
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="title"] h1{
+  color:#fff;
+  max-width:15ch;
+  font-size:clamp(2.7rem,5.7vw,5.6rem);
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="title"] ul{
+  max-width:min(950px,82%);
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="title"] li{
+  color:#dbeafe;
+  background:transparent;
+  border:0;
+  border-radius:0;
+  padding:.18rem 0 .18rem 1.1rem;
+  font-size:clamp(1rem,1.35vw,1.35rem);
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="title"] li::before{
+  width:6px;
+  height:6px;
+  top:.72em;
+  bottom:auto;
+  border-radius:50%;
+  background:#60a5fa;
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="title"] .deep-teacher-note{
+  color:#cbd5e1;
+  background:rgba(255,255,255,.06);
+  border-color:rgba(255,255,255,.12);
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="title"] .deep-teacher-note strong{color:#fff}
+
+/* 2. Retrieval / check / plenary prompt layouts */
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide:is([data-layout="retrieval"],[data-layout="check"],[data-layout="plenary"]){
+  --slide-accent:#7c3aed;
+  --slide-accent-soft:#ede9fe;
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide:is([data-layout="retrieval"],[data-layout="check"],[data-layout="plenary"]) ul{
+  counter-reset:prompt;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  align-items:stretch;
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide:is([data-layout="retrieval"],[data-layout="check"],[data-layout="plenary"]) li{
+  counter-increment:prompt;
+  min-height:clamp(90px,9vw,138px);
+  display:flex;
+  align-items:center;
+  padding:clamp(.9rem,1.3vw,1.25rem) clamp(1rem,1.5vw,1.4rem) clamp(.9rem,1.3vw,1.25rem) clamp(3.2rem,4vw,4.1rem);
+  background:linear-gradient(145deg,#fff,#faf8ff);
+  font-weight:650;
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide:is([data-layout="retrieval"],[data-layout="check"],[data-layout="plenary"]) li::before{
+  content:counter(prompt);
+  left:clamp(.8rem,1.1vw,1.1rem);
+  top:50%;
+  bottom:auto;
+  width:clamp(1.8rem,2.3vw,2.4rem);
+  height:clamp(1.8rem,2.3vw,2.4rem);
+  transform:translateY(-50%);
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  background:var(--slide-accent);
+  color:#fff;
+  font-size:.85em;
+  font-weight:850;
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="check"]{
+  --slide-accent:#0891b2;
+  --slide-accent-soft:#cffafe;
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="plenary"]{
+  --slide-accent:#4f46e5;
+  --slide-accent-soft:#e0e7ff;
+}
+
+/* 3. Objectives */
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="objectives"]{
+  --slide-accent:#2563eb;
+  --slide-accent-soft:#dbeafe;
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="objectives"] ul{
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  align-items:stretch;
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="objectives"] li{
+  min-height:clamp(120px,12vw,178px);
+  display:flex;
+  align-items:flex-end;
+  padding:clamp(1rem,1.5vw,1.45rem);
+  background:linear-gradient(160deg,#fff,#eff6ff);
+  font-weight:700;
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="objectives"] li::after{
+  content:"✓";
+  position:absolute;
+  top:.8rem;
+  right:.9rem;
+  width:2rem;
+  height:2rem;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  background:var(--slide-accent-soft);
+  color:var(--slide-accent);
+  font-weight:900;
+}
+
+/* 4. Vocabulary */
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="vocabulary"]{
+  --slide-accent:#0f766e;
+  --slide-accent-soft:#ccfbf1;
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="vocabulary"] ul{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:clamp(.45rem,.8vw,.75rem);
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="vocabulary"] li{
+  padding:clamp(.55rem,.8vw,.8rem) clamp(.7rem,1vw,1rem);
+  background:#f8fffd;
+  font-weight:700;
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="vocabulary"] li::before{
+  top:0;
+  bottom:0;
+  width:5px;
+}
+
+/* 5. Core teaching / application */
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide:is([data-layout="teach"],[data-layout="application"]){
+  --slide-accent:#1d4ed8;
+  --slide-accent-soft:#dbeafe;
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide:is([data-layout="teach"],[data-layout="application"]) h2{
+  max-width:24ch;
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide:is([data-layout="teach"],[data-layout="application"]) ul{
+  max-width:100%;
+  grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide:is([data-layout="teach"],[data-layout="application"]) li:first-child{
+  grid-row:span 2;
+  display:flex;
+  align-items:center;
+  font-size:1.08em;
+  font-weight:700;
+  background:linear-gradient(145deg,#eff6ff,#fff);
+  border-color:#bfdbfe;
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="application"]{
+  --slide-accent:#9333ea;
+  --slide-accent-soft:#f3e8ff;
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="application"] li:first-child{
+  background:linear-gradient(145deg,#faf5ff,#fff);
+  border-color:#e9d5ff;
+}
+
+/* 6. Worked example */
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="worked"]{
+  --slide-accent:#0f766e;
+  --slide-accent-soft:#ccfbf1;
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="worked"] ul{
+  counter-reset:worked;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="worked"] li{
+  counter-increment:worked;
+  padding-left:clamp(3rem,3.8vw,3.8rem);
+  background:linear-gradient(145deg,#fff,#f0fdfa);
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="worked"] li::before{
+  content:counter(worked);
+  left:.75rem;
+  top:50%;
+  bottom:auto;
+  transform:translateY(-50%);
+  width:2rem;
+  height:2rem;
+  display:grid;
+  place-items:center;
+  border-radius:8px;
+  color:#fff;
+  background:var(--slide-accent);
+  font-weight:900;
+}
+
+/* 7. Student task */
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="activity"]{
+  --slide-accent:#d97706;
+  --slide-accent-soft:#fef3c7;
+  background:linear-gradient(180deg,#fffdf8,#fff);
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="activity"]::after{
+  content:"TASK";
+  width:auto;
+  aspect-ratio:auto;
+  right:clamp(1.3rem,2vw,2rem);
+  top:clamp(1.15rem,1.8vw,1.8rem);
+  border-radius:9px;
+  padding:.45rem .75rem;
+  background:#f59e0b;
+  color:#fff;
+  opacity:1;
+  font-size:clamp(.68rem,.82vw,.82rem);
+  font-weight:900;
+  letter-spacing:.14em;
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="activity"] ul{
+  counter-reset:task;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="activity"] li{
+  counter-increment:task;
+  min-height:clamp(120px,12vw,180px);
+  padding-top:3.4rem;
+  background:#fffaf0;
+  border-color:#fde68a;
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="activity"] li::before{
+  content:"0" counter(task);
+  left:.95rem;
+  top:.9rem;
+  bottom:auto;
+  width:auto;
+  background:transparent;
+  color:#b45309;
+  font-size:1.35rem;
+  font-weight:900;
+}
+
+/* 8. Answer / mark scheme */
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide:is([data-layout="answer"],[data-layout="markscheme"]){
+  --slide-accent:#15803d;
+  --slide-accent-soft:#dcfce7;
+  background:linear-gradient(180deg,#fbfffc,#fff);
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide:is([data-layout="answer"],[data-layout="markscheme"]) li{
+  padding-left:clamp(2.8rem,3.4vw,3.4rem);
+  background:#f8fff9;
+  border-color:#bbf7d0;
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide:is([data-layout="answer"],[data-layout="markscheme"]) li::before{
+  content:"✓";
+  left:.82rem;
+  top:50%;
+  bottom:auto;
+  transform:translateY(-50%);
+  width:1.65rem;
+  height:1.65rem;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  background:#16a34a;
+  color:#fff;
+  font-size:.82rem;
+  font-weight:900;
+}
+
+/* 9. Exam question */
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="exam"]{
+  --slide-accent:#111827;
+  --slide-accent-soft:#e5e7eb;
+  justify-content:flex-start;
+  background:#fff;
+  border:2px solid #d1d5db;
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="exam"]::before{
+  width:100%;
+  height:clamp(8px,.75vw,12px);
+  inset:0 0 auto 0;
+  background:#111827;
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="exam"]::after{
+  content:"AQA STYLE";
+  width:auto;
+  aspect-ratio:auto;
+  top:clamp(1rem,1.5vw,1.4rem);
+  right:clamp(1rem,1.5vw,1.4rem);
+  border-radius:4px;
+  padding:.4rem .6rem;
+  background:#111827;
+  color:#fff;
+  opacity:1;
+  font-size:.68rem;
+  font-weight:900;
+  letter-spacing:.13em;
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="exam"] h2{
+  margin-top:clamp(.8rem,1.6vw,1.4rem);
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="exam"] ul{
+  display:block;
+  max-width:92%;
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="exam"] li{
+  min-height:clamp(145px,15vw,230px);
+  display:flex;
+  align-items:flex-start;
+  padding:clamp(1.25rem,1.8vw,1.8rem);
+  border-radius:4px;
+  border-color:#cbd5e1;
+  background:#fff;
+  font-size:clamp(1.15rem,1.65vw,1.6rem);
+  line-height:1.5;
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="exam"] li::before{display:none}
+
+/* 10. Misconception repair */
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="misconception"]{
+  --slide-accent:#dc2626;
+  --slide-accent-soft:#fee2e2;
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="misconception"] ul{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="misconception"] li{
+  background:#fffafa;
+  border-color:#fecaca;
+  padding-left:clamp(2.9rem,3.6vw,3.6rem);
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="misconception"] li::before{
+  content:"!";
+  left:.85rem;
+  top:50%;
+  bottom:auto;
+  transform:translateY(-50%);
+  width:1.8rem;
+  height:1.8rem;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  background:#dc2626;
+  color:#fff;
+  font-weight:900;
+}
+
+/* 11. Stretch */
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="stretch"]{
+  --slide-accent:#7e22ce;
+  --slide-accent-soft:#f3e8ff;
+  background:
+    radial-gradient(circle at 88% 18%,rgba(147,51,234,.12),transparent 30%),
+    linear-gradient(155deg,#fff,#faf5ff);
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="stretch"]::after{
+  content:"A*";
+  width:clamp(72px,8vw,110px);
+  aspect-ratio:1;
+  right:clamp(1.2rem,2.1vw,2rem);
+  top:clamp(1.1rem,1.8vw,1.8rem);
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  background:linear-gradient(145deg,#9333ea,#6b21a8);
+  color:#fff;
+  opacity:1;
+  font-size:clamp(1.6rem,2.6vw,2.6rem);
+  font-weight:950;
+  box-shadow:0 15px 35px rgba(126,34,206,.24);
+}
+
+/* 12. Summary */
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="summary"]{
+  --slide-accent:#0369a1;
+  --slide-accent-soft:#e0f2fe;
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="summary"] ul{
+  counter-reset:summary;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:clamp(.35rem,.65vw,.65rem);
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="summary"] li{
+  counter-increment:summary;
+  min-height:clamp(118px,11vw,165px);
+  display:flex;
+  align-items:flex-end;
+  padding:clamp(2.5rem,3.4vw,3.3rem) clamp(.65rem,.9vw,.9rem) clamp(.7rem,1vw,1rem);
+  background:linear-gradient(160deg,#fff,#f0f9ff);
+  border-color:#bae6fd;
+  font-size:.88em;
+  font-weight:700;
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="summary"] li::before{
+  content:counter(summary);
+  left:.7rem;
+  top:.65rem;
+  bottom:auto;
+  width:1.9rem;
+  height:1.9rem;
+  display:grid;
+  place-items:center;
+  border-radius:7px;
+  background:#0284c7;
+  color:#fff;
+  font-size:.82rem;
+  font-weight:900;
+}
+
+/* Generic typography refinement and room for teacher note */
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide:has(.deep-teacher-note){
+  padding-bottom:clamp(3.8rem,5.2vw,5.2rem);
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide.presentation-dense:has(.deep-teacher-note){
+  padding-bottom:clamp(3.2rem,4.4vw,4.4rem);
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide.presentation-very-dense:has(.deep-teacher-note){
+  padding-bottom:clamp(2.9rem,3.9vw,3.9rem);
+}
+
+/* Presentation chrome: visually closer to PowerPoint without competing with the slide */
+.lesson-presentation-primary .lesson-presentation-shell .phase3-deck-side{
+  background:rgba(15,23,42,.86);
+  border:1px solid rgba(148,163,184,.12);
+  backdrop-filter:blur(14px);
+}
+.lesson-presentation-primary .lesson-presentation-shell .phase3-deck-tools button{
+  border-radius:8px;
+}
+.lesson-presentation-primary .lesson-presentation-shell .phase3-top{
+  color:#dbeafe;
+}
+.lesson-presentation-primary .lesson-presentation-shell .phase3-progress{
+  background:rgba(255,255,255,.13);
+}
+.lesson-presentation-primary .lesson-presentation-shell .phase3-progress span{
+  display:block;
+  height:100%;
+  border-radius:inherit;
+  background:linear-gradient(90deg,#38bdf8,#2563eb);
+}
+.lesson-presentation-primary .lesson-presentation-shell .phase3-nav button{
+  border-radius:9px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.14);
+  color:#f8fafc;
+}
+.lesson-presentation-primary .lesson-presentation-shell .phase3-nav button:not(:disabled):hover{
+  background:rgba(255,255,255,.14);
+}
+
+@media(max-width:900px){
+  .lesson-presentation-primary .lesson-presentation-shell .deep-slide:is([data-layout="objectives"],[data-layout="activity"]) ul{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  .lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="summary"] ul{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+  .lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="summary"] li{
+    min-height:auto;
+  }
+}
+@media(max-width:680px){
+  .lesson-presentation-primary .lesson-presentation-shell .deep-slide:is([data-layout="retrieval"],[data-layout="check"],[data-layout="plenary"],[data-layout="objectives"],[data-layout="vocabulary"],[data-layout="teach"],[data-layout="worked"],[data-layout="activity"],[data-layout="application"],[data-layout="misconception"],[data-layout="summary"]) ul{
+    grid-template-columns:1fr 1fr;
+  }
+  .lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="title"] ul{
+    display:block;
+    max-width:100%;
+  }
+  .lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="activity"] li,
+  .lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="objectives"] li,
+  .lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="summary"] li{
+    min-height:auto;
+  }
+  .lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="exam"] li{
+    min-height:auto;
+    font-size:.9rem;
+  }
+  .lesson-presentation-primary .lesson-presentation-shell .deep-teacher-note{
+    left:.9rem;
+    right:.9rem;
+    bottom:.55rem;
+    padding:.4rem .55rem;
+    font-size:.68rem;
+  }
+}
