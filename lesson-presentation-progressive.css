@@ -1,0 +1,81 @@
+/* Phase 5 — progressive PowerPoint-style slide builds */
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide .p5-fragment-hidden{
+  visibility:hidden;
+  opacity:0;
+  transform:translateY(14px) scale(.985);
+  pointer-events:none;
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide .p5-fragment-shown{
+  visibility:visible;
+  opacity:1;
+  transform:translateY(0) scale(1);
+  transition:opacity .24s ease,transform .28s cubic-bezier(.2,.8,.2,1),filter .28s ease;
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide .p5-fragment-pop{
+  animation:p5-fragment-pop .42s cubic-bezier(.2,.8,.2,1);
+}
+@keyframes p5-fragment-pop{
+  0%{opacity:.25;transform:translateY(16px) scale(.97);filter:blur(1px)}
+  58%{transform:translateY(-2px) scale(1.008)}
+  100%{opacity:1;transform:translateY(0) scale(1);filter:none}
+}
+.lesson-presentation-primary .lesson-presentation-shell .phase3-top .p5-build-status{
+  margin-left:auto;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:92px;
+  padding:.34rem .65rem;
+  border-radius:999px;
+  border:1px solid rgba(147,197,253,.28);
+  background:rgba(15,23,42,.82);
+  color:#dbeafe;
+  font-size:.74rem;
+  font-weight:800;
+  letter-spacing:.02em;
+  box-shadow:0 8px 20px rgba(2,6,23,.16);
+}
+.lesson-presentation-primary .lesson-presentation-shell .phase3-top .p5-build-status.complete{
+  color:#dcfce7;
+  border-color:rgba(134,239,172,.34);
+  background:rgba(20,83,45,.72);
+}
+.lesson-presentation-primary .lesson-presentation-shell [data-p4-reveal].p5-complete{
+  opacity:.72;
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide.p5-progressive-slide:not(.p5-build-complete)::after{
+  content:'Press →, Space or R to reveal the next point';
+  position:absolute;
+  right:1rem;
+  bottom:.75rem;
+  padding:.32rem .55rem;
+  border-radius:999px;
+  background:rgba(15,23,42,.72);
+  color:rgba(248,250,252,.92);
+  font-size:clamp(.62rem,.72vw,.74rem);
+  font-weight:700;
+  letter-spacing:.01em;
+  pointer-events:none;
+  box-shadow:0 6px 16px rgba(2,6,23,.14);
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="answer"] .p5-fragment-shown,
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="markscheme"] .p5-fragment-shown{
+  box-shadow:0 8px 22px rgba(22,101,52,.1);
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="worked"] .p5-fragment-shown{
+  border-color:rgba(37,99,235,.24);
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="misconception"] .p5-fragment-shown{
+  box-shadow:0 8px 20px rgba(185,28,28,.08);
+}
+.lesson-presentation-primary .lesson-presentation-shell .deep-slide[data-layout="stretch"] .p5-fragment-shown{
+  box-shadow:0 8px 20px rgba(109,40,217,.08);
+}
+@media(max-width:680px){
+  .lesson-presentation-primary .lesson-presentation-shell .phase3-top .p5-build-status{min-width:72px;padding:.26rem .45rem;font-size:.64rem}
+  .lesson-presentation-primary .lesson-presentation-shell .deep-slide.p5-progressive-slide:not(.p5-build-complete)::after{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+  .lesson-presentation-primary .lesson-presentation-shell .deep-slide .p5-fragment-shown,
+  .lesson-presentation-primary .lesson-presentation-shell .deep-slide .p5-fragment-pop{transition:none!important;animation:none!important}
+}
