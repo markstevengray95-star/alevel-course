@@ -1,0 +1,39 @@
+(()=>{
+  'use strict';
+  let shell=null,search='',topic='all',year='all',status='all';
+  const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const lessons=()=>window.ALEVEL_LESSONS||[];
+  const topics=()=>window.ALEVEL_CURRICULUM_MAP||[];
+  function modelMap(){try{return new Map((window.ALEVEL_GUIDED_TUTOR?.models?.()||[]).map(m=>[m.base.id,m]));}catch{return new Map();}}
+  function stateFor(id,map){const m=map.get(id);if(!m||m.stats?.percent===null)return{key:'new',label:'Not assessed',pct:'—'};return{key:m.status?.key||'new',label:m.status?.label||'Not assessed',pct:`${Math.round((m.stats.percent||0)*100)}%`};}
+  function ensureButtons(){
+    const nav=document.querySelector('.global-course-nav');
+    if(nav&&!nav.querySelector('[data-lesson-navigator-open]')){const b=document.createElement('button');b.type='button';b.className='course-area-button lesson-nav-trigger';b.dataset.lessonNavigatorOpen='';b.textContent='Lessons';b.title='Browse all AQA lessons (L)';nav.appendChild(b);}
+    const actions=document.querySelector('.lesson-reader-actions');
+    if(actions&&!actions.querySelector('[data-lesson-navigator-open]')){const b=document.createElement('button');b.type='button';b.dataset.lessonNavigatorOpen='';b.textContent='Browse lessons';actions.prepend(b);}
+    const jump=document.querySelector('.course-jump-inner');
+    if(jump&&!jump.querySelector('[data-lesson-navigator-open]')){const b=document.createElement('button');b.type='button';b.className='button area-tool-button';b.dataset.lessonNavigatorOpen='';b.textContent='☰ Lessons';const notebook=jump.querySelector('#notebookToggle');notebook?.insertAdjacentElement('beforebegin',b);}
+  }
+  function ensure(){
+    if(shell?.isConnected)return shell;
+    shell=document.createElement('div');shell.className='lesson-navigator-shell';shell.hidden=true;shell.innerHTML=`<div class="ln-backdrop" data-ln-close></div><aside class="ln-panel" role="dialog" aria-modal="true" aria-label="Lesson navigator"><header class="ln-head"><div><span>AQA 7408</span><h2>Lessons & topics</h2><p>Jump straight to any lesson, topic or current priority.</p></div><button type="button" data-ln-close aria-label="Close">×</button></header><div class="ln-tools"><label class="ln-search"><span>Search lessons</span><input type="search" data-ln-search placeholder="Search title, AQA reference or topic…"></label><div class="ln-filters"><select data-ln-topic aria-label="Filter by topic"><option value="all">All topics</option></select><select data-ln-year aria-label="Filter by year"><option value="all">All years</option><option>Year 12</option><option>Year 13</option></select><select data-ln-status aria-label="Filter by learning status"><option value="all">All progress</option><option value="priority">Priority / practice</option><option value="secure">Secure / strong</option><option value="new">Not assessed</option></select></div></div><div class="ln-summary" data-ln-summary></div><div class="ln-results" data-ln-results></div></aside>`;document.body.appendChild(shell);
+    const topicSelect=shell.querySelector('[data-ln-topic]');topicSelect.innerHTML+=[...topics()].map(t=>`<option value="${esc(t.id)}">${esc(t.code)} · ${esc(t.title)}</option>`).join('');
+    shell.addEventListener('click',e=>{if(e.target.closest('[data-ln-close]'))close();const row=e.target.closest('[data-ln-lesson]');if(row){close();window.ALEVEL_LESSON_CONTENT?.open?.(row.dataset.lnLesson);}const t=e.target.closest('[data-ln-open-topic]');if(t){close();window.CourseApp?.openTopic?.(t.dataset.lnOpenTopic,true,0);}});
+    shell.querySelector('[data-ln-search]').addEventListener('input',e=>{search=e.target.value;render();});
+    topicSelect.addEventListener('change',e=>{topic=e.target.value;render();});
+    shell.querySelector('[data-ln-year]').addEventListener('change',e=>{year=e.target.value;render();});
+    shell.querySelector('[data-ln-status]').addEventListener('change',e=>{status=e.target.value;render();});
+    return shell;
+  }
+  function filtered(){const map=modelMap(),q=search.trim().toLowerCase();return lessons().filter(l=>{const st=stateFor(l.id,map);if(topic!=='all'&&l.topicId!==topic)return false;if(year!=='all'&&l.year!==year)return false;if(status==='priority'&&!['relearn','develop'].includes(st.key))return false;if(status==='secure'&&!['secure','strong'].includes(st.key))return false;if(status==='new'&&st.key!=='new')return false;if(q&&!`${l.title} ${l.ref} ${l.topicTitle} ${l.topicCode} ${l.focus}`.toLowerCase().includes(q))return false;return true;});}
+  function render(){if(!shell)return;const map=modelMap(),rows=filtered();const byTopic=new Map();rows.forEach(l=>{const arr=byTopic.get(l.topicId)||[];arr.push(l);byTopic.set(l.topicId,arr);});shell.querySelector('[data-ln-summary]').innerHTML=`<strong>${rows.length}</strong><span>lesson${rows.length===1?'':'s'} shown</span><button type="button" data-ln-clear>Clear filters</button>`;shell.querySelector('[data-ln-summary] [data-ln-clear]')?.addEventListener('click',()=>{search='';topic='all';year='all';status='all';shell.querySelector('[data-ln-search]').value='';shell.querySelector('[data-ln-topic]').value='all';shell.querySelector('[data-ln-year]').value='all';shell.querySelector('[data-ln-status]').value='all';render();});
+    const html=[...topics()].filter(t=>byTopic.has(t.id)).map(t=>{const ls=byTopic.get(t.id);return `<section class="ln-topic"><div class="ln-topic-head"><div><span>${esc(t.code)}</span><h3>${esc(t.title)}</h3></div><button type="button" data-ln-open-topic="${esc(t.id)}">Open topic →</button></div><div class="ln-list">${ls.map(l=>{const st=stateFor(l.id,map);return `<button type="button" class="ln-lesson" data-ln-lesson="${esc(l.id)}" data-status="${esc(st.key)}"><span class="ln-dot"></span><span class="ln-copy"><strong>${esc(l.title)}</strong><small>${esc(l.ref)} · ${esc(l.year)} · ${esc(l.type==='practical'?'Practical':l.type==='review'?'Mastery':l.type==='skills'?'Skills':'Lesson')}</small></span><span class="ln-score"><b>${esc(st.pct)}</b><small>${esc(st.label)}</small></span><span class="ln-arrow">→</span></button>`;}).join('')}</div></section>`;}).join('');shell.querySelector('[data-ln-results]').innerHTML=html||'<div class="ln-empty">No lessons match those filters.</div>';
+  }
+  function open(options={}){ensure();ensureButtons();if(options.topic){topic=options.topic;shell.querySelector('[data-ln-topic]').value=topic;}if(options.status){status=options.status;shell.querySelector('[data-ln-status]').value=status;}render();shell.hidden=false;document.body.classList.add('lesson-navigator-open');setTimeout(()=>shell.querySelector('[data-ln-search]')?.focus(),40);}
+  function close(){if(!shell)return;shell.hidden=true;document.body.classList.remove('lesson-navigator-open');}
+  document.addEventListener('click',e=>{if(e.target.closest('[data-lesson-navigator-open]'))open();});
+  document.addEventListener('keydown',e=>{if(e.target?.closest?.('input,textarea,select,[contenteditable="true"]'))return;if((e.key==='l'||e.key==='L')&&!e.ctrlKey&&!e.metaKey&&!e.altKey){e.preventDefault();shell&&!shell.hidden?close():open();}if(e.key==='Escape'&&shell&&!shell.hidden){e.preventDefault();close();}});
+  window.addEventListener('alevel:lesson-selected',()=>{ensureButtons();render();});window.addEventListener('coursecontextchange',ensureButtons);
+  const start=()=>{ensure();ensureButtons();render();new MutationObserver(ensureButtons).observe(document.body,{childList:true,subtree:true});};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
+  window.ALEVEL_LESSON_NAVIGATOR={open,close,refresh:render};
+})();
