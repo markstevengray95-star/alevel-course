@@ -6,7 +6,8 @@
     'lesson-spec-depth.css',
     'lesson-deepening.css',
     'lesson-presentation-primary.css',
-    'lesson-presentation-phase3.css'
+    'lesson-presentation-phase3.css',
+    'lesson-presentation-controls.css'
   ];
   const extraStyles = [
     'lesson-activities.css',
@@ -21,7 +22,8 @@
     {src:'lesson-phase3.js', ready:()=>!!window.ALEVEL_PHASE3},
     {src:'lesson-spec-depth.js', ready:()=>!!window.ALEVEL_SPEC_DEPTH},
     {src:'lesson-deepening.js', ready:()=>!!window.ALEVEL_DEEPENING},
-    {src:'lesson-presentation-primary.js', ready:()=>!!window.ALEVEL_PRIMARY_PRESENTATION}
+    {src:'lesson-presentation-primary.js', ready:()=>!!window.ALEVEL_PRIMARY_PRESENTATION},
+    {src:'lesson-presentation-controls.js', ready:()=>!!window.ALEVEL_PRESENTATION_CONTROLS}
   ];
   const extraScripts = [
     {src:'lesson-activities.js', ready:()=>!!window.ALEVEL_ACTIVITIES},
