@@ -17,6 +17,12 @@
   }
   function sourceDeck(){ const id=activeId(); return id ? window.ALEVEL_DEEPENING?.deck?.(id) : null; }
   function formatElapsed(ms){ const s=Math.max(0,Math.floor(ms/1000)); return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; }
+  function activeLibraryId(){
+    const candidate=window.ALEVEL_ACTIVE_LIBRARY_DECK_ID;
+    if(!candidate) return activeId();
+    const entry=window.ALEVEL_PRESENTATION_LIBRARY?.getEntry?.(candidate);
+    return entry?.sourceId===activeId() ? candidate : activeId();
+  }
 
   function ensureToggle(){
     const bar=dock();
@@ -52,6 +58,7 @@
       <header class="p8-head"><div><span>Presenter view</span><strong data-p8-position></strong></div><button type="button" data-p8-close aria-label="Close presenter view">×</button></header>
       <section class="p8-section p8-next"><span class="p8-label">Next slide</span><div data-p8-next-preview></div></section>
       <section class="p8-section"><span class="p8-label">Teacher note</span><p data-p8-note></p></section>
+      <section class="p8-section" data-p8-library-note-section hidden><span class="p8-label">Library note</span><p data-p8-library-note></p></section>
       <section class="p8-section"><span class="p8-label">AQA focus</span><p data-p8-spec></p></section>
       <section class="p8-section"><span class="p8-label">Misconception watch</span><ul data-p8-misconceptions></ul></section>
       <section class="p8-metrics">
@@ -82,6 +89,9 @@
     panel.querySelector('[data-p8-position]').textContent=`${index+1} / ${slides.length || '?'}`;
     panel.querySelector('[data-p8-next-preview]').innerHTML=renderNextSlide(next);
     panel.querySelector('[data-p8-note]').textContent=current?.note || 'No additional teacher note for this slide.';
+    const libraryNote=window.ALEVEL_PRESENTATION_LIBRARY?.getNotes?.(activeLibraryId()) || '';
+    const librarySection=panel.querySelector('[data-p8-library-note-section]');
+    if(librarySection){librarySection.hidden=!libraryNote;panel.querySelector('[data-p8-library-note]').textContent=libraryNote;}
     panel.querySelector('[data-p8-spec]').textContent=p ? `AQA ${p.ref || ''} — ${p.focus || p.title}` : 'Mapped lesson focus unavailable.';
     const misconceptions=list(p?.misconceptions).length ? list(p.misconceptions) : [p?.concept?.pitfall].filter(Boolean);
     panel.querySelector('[data-p8-misconceptions]').innerHTML=misconceptions.slice(0,3).map(item=>`<li>${esc(item)}</li>`).join('') || '<li>Check students are linking claims to evidence.</li>';
