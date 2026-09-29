@@ -9,7 +9,9 @@
     'lesson-presentation-phase3.css',
     'lesson-presentation-controls.css',
     'lesson-presentation-progressive.css',
-    'lesson-presentation-visuals.css'
+    'lesson-presentation-visuals.css',
+    'lesson-presentation-practical.css',
+    'lesson-presenter-view.css'
   ];
   const extraStyles = [
     'lesson-activities.css',
@@ -27,7 +29,9 @@
     {src:'lesson-presentation-primary.js', ready:()=>!!window.ALEVEL_PRIMARY_PRESENTATION},
     {src:'lesson-presentation-controls.js', ready:()=>!!window.ALEVEL_PRESENTATION_CONTROLS},
     {src:'lesson-presentation-progressive.js', ready:()=>!!window.ALEVEL_PROGRESSIVE_REVEAL},
-    {src:'lesson-presentation-visuals.js', ready:()=>!!window.ALEVEL_PRESENTATION_VISUALS}
+    {src:'lesson-presentation-visuals.js', ready:()=>!!window.ALEVEL_PRESENTATION_VISUALS},
+    {src:'lesson-presentation-practical.js', ready:()=>!!window.ALEVEL_PRACTICAL_PRESENTATION},
+    {src:'lesson-presenter-view.js', ready:()=>!!window.ALEVEL_PRESENTER_VIEW}
   ];
   const extraScripts = [
     {src:'lesson-activities.js', ready:()=>!!window.ALEVEL_ACTIVITIES},
