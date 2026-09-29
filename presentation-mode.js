@@ -8,7 +8,8 @@
     'lesson-presentation-primary.css',
     'lesson-presentation-phase3.css',
     'lesson-presentation-controls.css',
-    'lesson-presentation-progressive.css'
+    'lesson-presentation-progressive.css',
+    'lesson-presentation-visuals.css'
   ];
   const extraStyles = [
     'lesson-activities.css',
@@ -25,7 +26,8 @@
     {src:'lesson-deepening.js', ready:()=>!!window.ALEVEL_DEEPENING},
     {src:'lesson-presentation-primary.js', ready:()=>!!window.ALEVEL_PRIMARY_PRESENTATION},
     {src:'lesson-presentation-controls.js', ready:()=>!!window.ALEVEL_PRESENTATION_CONTROLS},
-    {src:'lesson-presentation-progressive.js', ready:()=>!!window.ALEVEL_PROGRESSIVE_REVEAL}
+    {src:'lesson-presentation-progressive.js', ready:()=>!!window.ALEVEL_PROGRESSIVE_REVEAL},
+    {src:'lesson-presentation-visuals.js', ready:()=>!!window.ALEVEL_PRESENTATION_VISUALS}
   ];
   const extraScripts = [
     {src:'lesson-activities.js', ready:()=>!!window.ALEVEL_ACTIVITIES},
