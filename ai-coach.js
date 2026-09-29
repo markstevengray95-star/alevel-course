@@ -10,9 +10,10 @@
   const statusEl=document.getElementById('coachStatus');
   const contextLabel=document.getElementById('coachContextLabel');
   const sendBtn=document.getElementById('coachSend');
-  const historyKey='alevel-physics-coach-history-v1';
+  const historyKey='alevel-physics-coach-history-v2';
   let history=loadHistory();
   let busy=false;
+  let pendingQuiz=null;
 
   const fallbackKnowledge={
     measurements:{ideas:['Use SI units consistently and convert prefixes before substituting into equations.','Random uncertainty affects spread; systematic error shifts readings in the same direction.','Percentage uncertainty is especially useful when combining measured quantities.'],mistakes:['mixing absolute and percentage uncertainty','using too many significant figures','forgetting uncertainty in gradients or derived quantities'],calc:'A length is measured as 0.842 m ± 0.003 m. Calculate its percentage uncertainty.'},
@@ -25,8 +26,8 @@
     nuclear:{ideas:['Radioactive decay is random for an individual nucleus but predictable statistically for a large sample.','Activity obeys A = λN and half-life is related to decay constant by t½ = ln2/λ.','Binding energy comes from mass defect through E = mc².'],mistakes:['treating half-life as a linear decrease','confusing activity with number of undecayed nuclei','mixing atomic mass units and kilograms without conversion'],calc:'A source has a half-life of 6.0 h. What fraction of the original nuclei remain after 18 h?'}
   };
 
-  function loadHistory(){try{const parsed=JSON.parse(localStorage.getItem(historyKey)||'[]');return Array.isArray(parsed)?parsed.slice(-16):[];}catch{return []}}
-  function saveHistory(){localStorage.setItem(historyKey,JSON.stringify(history.slice(-16)));}
+  function loadHistory(){try{const parsed=JSON.parse(localStorage.getItem(historyKey)||'[]');return Array.isArray(parsed)?parsed.slice(-24):[];}catch{return []}}
+  function saveHistory(){try{localStorage.setItem(historyKey,JSON.stringify(history.slice(-24)));}catch{}}
   function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
   function formatText(text){return escapeHtml(text).replace(/\n/g,'<br>');}
   function appendMessage(role,text,persist=true){
@@ -41,42 +42,93 @@
     return box;
   }
   function restoreMessages(){if(!history.length)return;messagesEl.innerHTML='';history.forEach(m=>appendMessage(m.role,m.text,false));}
-  function setStatus(label,state='ready'){statusEl.classList.toggle('thinking',state==='thinking');statusEl.classList.toggle('offline',state==='offline');statusEl.querySelector('span:last-child').textContent=label;}
+  function setStatus(label,state='ready'){if(!statusEl)return;statusEl.classList.toggle('thinking',state==='thinking');statusEl.classList.toggle('offline',state==='offline');statusEl.querySelector('span:last-child').textContent=label;}
   function openCoach(){window.CourseNotebook?.close?.();panel.classList.add('open');panel.setAttribute('aria-hidden','false');backdrop.hidden=false;updateContextLabel();setTimeout(()=>input.focus(),80);}
   function closeCoach(){panel.classList.remove('open');panel.setAttribute('aria-hidden','true');backdrop.hidden=true;}
   function context(){return window.CourseApp?.getActiveContext?.()||{topicId:'measurements',code:'AQA 3.1',title:'Measurements and their errors',moduleLabel:'Measurements & Errors',pageText:''};}
-  function updateContextLabel(){const c=context();contextLabel.textContent=`${c.code} · ${c.title}${c.moduleLabel?` · ${c.moduleLabel}`:''}`;}
+  function lesson(){return window.ALEVEL_ACTIVE_LESSON||null;}
+  function updateContextLabel(){const c=context(),l=lesson();contextLabel.textContent=l?`${l.topicCode||c.code} · ${l.title} · ${l.ref}`:`${c.code} · ${c.title}${c.moduleLabel?` · ${c.moduleLabel}`:''}`;}
+  function clean(s){return String(s??'').replace(/\s+/g,' ').trim();}
+  function lessonBundle(){
+    const l=lesson();if(!l)return null;
+    return {id:l.id,title:l.title,ref:l.ref,focus:l.focus,objectives:l.objectives||[],keywords:l.keywords||[],equations:l.equations||[],chunks:l.chunks||[],worked:l.worked||{},checks:l.checks||[],exam:l.exam||[],misconceptions:l.misconceptions||[],concept:l.concept||{}};
+  }
+  function relevantSentences(message,bundle){
+    if(!bundle)return[];const terms=clean(message).toLowerCase().split(/[^a-z0-9]+/).filter(x=>x.length>3);
+    const pool=[bundle.focus,...bundle.objectives,...bundle.chunks.flatMap(c=>c.text||[]),...bundle.equations.flatMap(e=>[e[0],e[2]]),...bundle.misconceptions].filter(Boolean);
+    return pool.map(text=>({text,score:terms.reduce((n,t)=>n+(String(text).toLowerCase().includes(t)?1:0),0)})).sort((a,b)=>b.score-a.score).slice(0,3).map(x=>x.text);
+  }
+  function equationFor(message,bundle){
+    if(!bundle?.equations?.length)return null;const q=clean(message).toLowerCase();return bundle.equations.find(e=>String(e.join(' ')).toLowerCase().split(/\s+/).some(t=>t.length>4&&q.includes(t)))||bundle.equations[0];
+  }
 
   async function askLiveAI(payload){
-    const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),30000);
+    if(navigator.onLine===false)throw new Error('offline');
+    const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),9000);
     try{const res=await fetch('/api/physics-coach',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),signal:controller.signal});if(!res.ok)throw new Error(`AI endpoint ${res.status}`);const data=await res.json();if(!data?.answer)throw new Error('AI response missing answer');return data;}finally{clearTimeout(timeout);}
   }
 
-  function offlineCoach(payload){
-    const c=payload.context||context();const k=fallbackKnowledge[c.topicId]||fallbackKnowledge.measurements;const q=payload.message.toLowerCase();const mode=payload.mode;
-    if(mode==='quiz'||/quiz|question|test me|retrieval/.test(q))return `Built-in course coach · ${c.code}\n\nQuestion: ${k.ideas[Math.floor(Math.random()*k.ideas.length)].replace(/\.$/,'')} — explain why this is important and give one equation or example linked to it.\n\nI will check your reasoning when you reply.`;
-    if(mode==='hint')return `Built-in course coach · ${c.code}\n\nHint 1: identify the quantity you are trying to find and write down the relevant relationship before putting numbers in.\n\nHint 2: check every value is in SI units.\n\nFor this topic, remember: ${k.ideas[0]}\n\nSend me your next step and I will guide you from there.`;
-    if(mode==='worked'||/calculation|calculate|worked|example/.test(q))return `Built-in course coach · ${c.code}\n\nPractice calculation: ${k.calc}\n\nMethod:\n1. List the known quantities with units.\n2. Write the equation before substituting.\n3. Convert to SI units if needed.\n4. Substitute and calculate.\n5. Give the final unit and sensible significant figures.\n\nTry it first. If you send your working, I can check each step.`;
-    if(mode==='exam'||/exam|mistake|mark|feedback/.test(q))return `Built-in course coach · ${c.code}\n\nCommon exam traps in this topic:\n• ${k.mistakes[0]}\n• ${k.mistakes[1]}\n• ${k.mistakes[2]}\n\nFor a strong answer, define the physics clearly, use the correct equation or principle, show working, include units, and link each statement to the question rather than listing facts.`;
-    const pageHint=c.pageText?`\n\nI can also see the current lesson page, so ask me about a specific equation, paragraph or activity shown there.`:'';
-    return `Built-in course coach · ${c.code} ${c.title}\n\nKey ideas:\n• ${k.ideas[0]}\n• ${k.ideas[1]}\n• ${k.ideas[2]}${pageHint}\n\nAsk me to explain one of these, quiz you, or give you a calculation.`;
+  function localMark(question,answer,marks){
+    if(window.ALEVEL_AUTOMARK?.mark)return window.ALEVEL_AUTOMARK.mark(question,answer,marks,lesson());
+    const key=clean(question).toLowerCase().split(/[^a-z0-9]+/).filter(w=>w.length>4);const a=clean(answer).toLowerCase();const hits=key.filter(k=>a.includes(k)).length;const max=Math.max(1,marks||2);const score=Math.min(max,Math.round((hits/Math.max(1,Math.min(4,key.length)))*max));return{score,max,missing:[],matched:[]};
+  }
+  function quizFeedback(answer){
+    if(!pendingQuiz)return null;const q=pendingQuiz;const result=localMark(q.question,answer,q.marks);
+    pendingQuiz=null;
+    const missing=(result.missing||[]).slice(0,3);return `Offline Tutor · answer check\n\nIndicative mark: ${result.score}/${result.max}.\n\n${result.score===result.max?'Strong response — the main physics points were detected.':'You have some of the physics, but it can be strengthened.'}${missing.length?`\n\nAdd or improve:\n• ${missing.join('\n• ')}`:''}\n\nThis is an offline indicative check, so use the official mark scheme for final exam marking.`;
+  }
+  function chooseQuiz(bundle,k){
+    const pool=[];if(bundle){(bundle.checks||[]).forEach(q=>pool.push({question:q,marks:2}));(bundle.exam||[]).forEach(q=>pool.push({question:q.q,marks:q.marks||4}));}
+    if(!pool.length)pool.push({question:`Explain why this idea matters: ${k.ideas[Math.floor(Math.random()*k.ideas.length)]}`,marks:3});
+    const chosen=pool[Math.floor(Math.random()*pool.length)];pendingQuiz=chosen;return chosen;
   }
 
-  async function send(message){
-    if(busy)return;const clean=String(message||'').trim();if(!clean)return;
-    busy=true;sendBtn.disabled=true;appendMessage('user',clean);input.value='';setStatus('Thinking…','thinking');
+  function offlineCoach(payload){
+    const c=payload.context||context();const bundle=lessonBundle();const k=fallbackKnowledge[c.topicId]||fallbackKnowledge.measurements;const q=payload.message.toLowerCase();const mode=payload.mode;
+    if(pendingQuiz&&!/hint|skip|new question|explain/.test(q))return quizFeedback(payload.message);
+
+    const eq=equationFor(payload.message,bundle);const relevant=relevantSentences(payload.message,bundle);
+    if(mode==='quiz'||/quiz|question|test me|retrieval/.test(q)){
+      const chosen=chooseQuiz(bundle,k);return `Offline Tutor · ${bundle?`${bundle.title} · AQA ${bundle.ref}`:c.code}\n\nQuestion (${chosen.marks} marks): ${chosen.question}\n\nWrite your answer and I will mark it locally.`;
+    }
+    if(mode==='hint'){
+      const focus=bundle?.focus||k.ideas[0];return `Offline Tutor · hint-first mode\n\nHint 1: identify the physics principle linked to: ${focus}\n${eq?`\nHint 2: consider whether ${eq[1]} is relevant. ${eq[2]||''}`:''}\n${relevant[0]?`\nLesson clue: ${relevant[0]}`:''}\n\nSend your next step rather than the final answer and I will respond to that step.`;
+    }
+    if(mode==='worked'||/calculation|calculate|worked|example/.test(q)){
+      if(bundle?.worked?.question){return `Offline Tutor · worked example from this lesson\n\nQuestion: ${bundle.worked.question}\n\n${(bundle.worked.steps||[]).map((s,i)=>`${i+1}. ${s}`).join('\n')}\n\nCheck: ${bundle.worked.answer||'Check units, sign and significant figures.'}`;}
+      return `Offline Tutor · ${c.code}\n\nPractice calculation: ${k.calc}\n\nMethod:\n1. List known quantities and units.\n2. Write the relationship before substituting.\n3. Convert to SI units.\n4. Substitute and calculate.\n5. Check units and significant figures.`;
+    }
+    if(mode==='exam'||/exam|mistake|mark|feedback/.test(q)){
+      if(bundle?.exam?.length&&payload.message.length<120){const ex=bundle.exam[0];pendingQuiz={question:ex.q,marks:ex.marks||4};return `Offline Tutor · exam practice\n\n${ex.marks||4}-mark question: ${ex.q}\n\nSend your answer and I will give an indicative offline mark with missing points.`;}
+      const mistakes=bundle?.misconceptions?.length?bundle.misconceptions:k.mistakes;return `Offline Tutor · exam feedback mode\n\nCommon traps:\n• ${mistakes.slice(0,3).join('\n• ')}\n\nA strong response should use precise physics, show equations/workings where relevant, include units, and link each point directly to the question.`;
+    }
+    if(bundle){
+      const lines=relevant.length?relevant:[bundle.focus,...bundle.objectives.slice(0,2)].filter(Boolean);
+      return `Offline Tutor · ${bundle.title} · AQA ${bundle.ref}\n\n${lines.map((x,i)=>`${i+1}. ${x}`).join('\n')}\n${eq?`\nUseful relationship: ${eq[0]} — ${eq[1]}\n${eq[2]||''}`:''}\n${bundle.misconceptions?.[0]?`\nWatch out for: ${bundle.misconceptions[0]}`:''}\n\nI can explain this more simply, give a hint, quiz you, show a worked example, or mark an answer — all offline.`;
+    }
+    return `Offline Tutor · ${c.code} ${c.title}\n\nKey ideas:\n• ${k.ideas[0]}\n• ${k.ideas[1]}\n• ${k.ideas[2]}\n\nAsk me to explain one, quiz you, give a calculation, or check an answer.`;
+  }
+
+  async function send(message,options={}){
+    if(busy)return;const text=String(message||'').trim();if(!text)return;
+    busy=true;sendBtn.disabled=true;if(!options.silentUser)appendMessage('user',text);input.value='';setStatus(navigator.onLine===false?'Offline Tutor…':'Thinking…','thinking');
     const typing=document.createElement('div');typing.className='coach-message assistant';typing.innerHTML='<strong>Physics Coach</strong><div class="coach-thinking" aria-label="Thinking"><span></span><span></span><span></span></div>';messagesEl.appendChild(typing);messagesEl.scrollTop=messagesEl.scrollHeight;
-    const payload={message:clean,mode:modeEl.value,context:context(),history:history.slice(-8)};
+    const payload={message:text,mode:options.mode||modeEl.value,context:context(),lesson:lessonBundle(),history:history.slice(-10)};
     try{const live=await askLiveAI(payload);typing.remove();appendMessage('assistant',live.answer);setStatus(live.model?`Live AI · ${String(live.model).split('/').pop()}`:'Live AI');}
-    catch{typing.remove();appendMessage('assistant',offlineCoach(payload));setStatus('Built-in coach','offline');}
+    catch{typing.remove();appendMessage('assistant',offlineCoach(payload));setStatus('Offline Tutor · lesson-aware','offline');}
     finally{busy=false;sendBtn.disabled=false;input.focus();}
   }
 
   form.addEventListener('submit',e=>{e.preventDefault();send(input.value);});
   input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();form.requestSubmit();}});
   document.getElementById('coachToggle').addEventListener('click',openCoach);document.getElementById('coachFab').addEventListener('click',openCoach);document.getElementById('heroCoachBtn').addEventListener('click',openCoach);document.getElementById('workspaceCoachBtn').addEventListener('click',openCoach);document.getElementById('coachClose').addEventListener('click',closeCoach);backdrop.addEventListener('click',closeCoach);
-  document.getElementById('coachClear').addEventListener('click',()=>{history=[];saveHistory();messagesEl.innerHTML='';appendMessage('assistant','Chat cleared. I am ready to help with the current AQA Physics topic.',false);setStatus('Ready');});
+  document.getElementById('coachClear').addEventListener('click',()=>{history=[];pendingQuiz=null;saveHistory();messagesEl.innerHTML='';appendMessage('assistant','Chat cleared. I can help with the current AQA Physics lesson online or offline.',false);setStatus(navigator.onLine===false?'Offline Tutor':'Ready',navigator.onLine===false?'offline':'ready');});
   document.querySelectorAll('[data-coach-prompt]').forEach(btn=>btn.addEventListener('click',()=>{const text=btn.dataset.coachPrompt;if(/Quiz me/i.test(btn.textContent))modeEl.value='quiz';if(/Calculation/i.test(btn.textContent))modeEl.value='worked';openCoach();send(text);}));
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&panel.classList.contains('open'))closeCoach();});window.addEventListener('coursecontextchange',updateContextLabel);
-  restoreMessages();updateContextLabel();
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&panel.classList.contains('open'))closeCoach();});
+  window.addEventListener('coursecontextchange',updateContextLabel);window.addEventListener('alevel:lesson-selected',updateContextLabel);
+  window.addEventListener('online',()=>setStatus('Ready · live AI available'));window.addEventListener('offline',()=>setStatus('Offline Tutor · lesson-aware','offline'));
+  window.addEventListener('alevel:tutor-feedback',event=>{const d=event.detail||{};openCoach();modeEl.value='exam';const missing=(d.result?.missing||[]).slice(0,4).join('; ');send(`Review my answer to this question: ${d.question}\n\nMy answer: ${d.answer}\n\nIndicative mark: ${d.result?.score}/${d.result?.max}. Missing points detected: ${missing||'none'}. Explain how I can improve it without just repeating the mark.`,{mode:'exam'});});
+  restoreMessages();updateContextLabel();setStatus(navigator.onLine===false?'Offline Tutor · lesson-aware':'Ready',navigator.onLine===false?'offline':'ready');
+  input.placeholder='Ask about this lesson — works offline too…';
+  window.ALEVEL_AI_TUTOR={open:openCoach,send,offline:(message,mode='explain')=>offlineCoach({message,mode,context:context(),lesson:lessonBundle()})};
 })();
