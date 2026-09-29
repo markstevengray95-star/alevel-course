@@ -5,7 +5,8 @@
     'lesson-phase3.css',
     'lesson-spec-depth.css',
     'lesson-deepening.css',
-    'lesson-presentation-primary.css'
+    'lesson-presentation-primary.css',
+    'lesson-presentation-phase3.css'
   ];
   const extraStyles = [
     'lesson-activities.css',
