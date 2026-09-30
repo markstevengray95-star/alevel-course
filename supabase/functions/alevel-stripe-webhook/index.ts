@@ -145,7 +145,7 @@ Deno.serve(async (req:Request) => {
       }
       await patchUser(userId, {
         plan_tier: plan,
-        subscription_status: "active",
+        subscription_status: "trialing",
         stripe_customer_id: object.customer || null,
         stripe_subscription_id: object.subscription || null,
         billing_interval: ["monthly","annual"].includes(billing) ? billing : null,
@@ -175,13 +175,11 @@ Deno.serve(async (req:Request) => {
         else if (["plus","pro","teacher"].includes(plan)) patch.plan_tier = plan;
         await patchUser(userId, patch);
       }
-    } else if (["invoice.payment_failed","invoice.payment_succeeded","invoice.paid"].includes(eventType)) {
+    } else if (eventType === "invoice.payment_failed") {
       const subId = String(object?.subscription || object?.parent?.subscription_details?.subscription || "");
       if (subId) {
         const userId = await findBySubscription(subId);
-        if (userId) await patchUser(userId, {
-          subscription_status: eventType === "invoice.payment_failed" ? "past_due" : "active"
-        });
+        if (userId) await patchUser(userId, { subscription_status: "past_due" });
       }
     }
 
