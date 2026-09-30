@@ -1,30 +1,17 @@
 (() => {
   'use strict';
 
-  // Stability-first startup: load only the small set required for the core
-  // lesson presentation. Advanced presentation add-ons remain available in the
-  // repository but no longer attach global pointer/DOM handlers automatically.
-  const homeStyles = [
-    'lesson-automarking.css',
-    'lesson-navigator.css'
-  ];
+  // Stability-first startup: keep the presentation engine small, then load
+  // only the lesson extras included in the learner's current access tier.
+  const homeStyles = ['lesson-navigator.css'];
   const coreStyles = [
     'lesson-phase3.css',
     'lesson-deepening.css',
     'lesson-presentation-primary.css',
     'lesson-presentation-phase3.css'
   ];
-  const extraStyles = [
-    'lesson-activities.css',
-    'lesson-simulations.css',
-    'lesson-assessment.css',
-    'lesson-progression.css',
-    'lesson-teacher-tools.css',
-    'lesson-astar.css'
-  ];
 
   const homeScripts = [
-    {src:'lesson-automarking.js', ready:()=>!!window.ALEVEL_AUTOMARK},
     {src:'lesson-navigator.js', ready:()=>!!window.ALEVEL_LESSON_NAVIGATOR},
     {src:'lesson-reader-quicknav.js', ready:()=>!!window.ALEVEL_LESSON_QUICKNAV}
   ];
@@ -33,19 +20,40 @@
     {src:'lesson-deepening.js', ready:()=>!!window.ALEVEL_DEEPENING},
     {src:'lesson-presentation-primary.js', ready:()=>!!window.ALEVEL_PRIMARY_PRESENTATION}
   ];
-  const extraScripts = [
-    {src:'lesson-activities.js', ready:()=>!!window.ALEVEL_ACTIVITIES},
-    {src:'lesson-simulations.js', ready:()=>!!window.ALEVEL_SIMULATIONS},
-    {src:'lesson-assessment.js', ready:()=>!!window.ALEVEL_ASSESSMENT},
-    {src:'lesson-progression.js', ready:()=>!!window.ALEVEL_PROGRESSION},
-    {src:'lesson-teacher-tools.js', ready:()=>!!window.ALEVEL_TEACHER_TOOLS},
-    {src:'lesson-astar.js', ready:()=>!!window.ALEVEL_ASTAR}
+
+  const extraDefinitions = [
+    {feature:'simulations',style:'lesson-simulations.css',script:{src:'lesson-simulations.js',ready:()=>!!window.ALEVEL_SIMULATIONS}},
+    {feature:'activities',style:'lesson-activities.css',script:{src:'lesson-activities.js',ready:()=>!!window.ALEVEL_ACTIVITIES}},
+    {feature:'automarking',style:'lesson-automarking.css',script:{src:'lesson-automarking.js',ready:()=>!!window.ALEVEL_AUTOMARK}},
+    {feature:'mastery',style:'lesson-assessment.css',script:{src:'lesson-assessment.js',ready:()=>!!window.ALEVEL_ASSESSMENT}},
+    {feature:'progression',style:'lesson-progression.css',script:{src:'lesson-progression.js',ready:()=>!!window.ALEVEL_PROGRESSION}},
+    {feature:'astar',style:'lesson-astar.css',script:{src:'lesson-astar.js',ready:()=>!!window.ALEVEL_ASTAR}},
+    {feature:'teacherTools',style:'lesson-teacher-tools.css',script:{src:'lesson-teacher-tools.js',ready:()=>!!window.ALEVEL_TEACHER_TOOLS}}
   ];
 
+  let accessPromise=null;
   let homeLoading=false, homeLoaded=false;
   let coreLoading=false, coreLoaded=false;
-  let extraLoading=false, extraLoaded=false;
+  let extraLoading=false, extraLoaded=false, extrasForPlan='';
   const homeCallbacks=[], coreCallbacks=[], extraCallbacks=[];
+
+  function ensureAccessLayer(){
+    if(!document.querySelector('link[href="pricing-access.css"]')){
+      const link=document.createElement('link');link.rel='stylesheet';link.href='pricing-access.css';document.head.appendChild(link);
+    }
+    if(window.ALEVEL_ACCESS)return Promise.resolve(window.ALEVEL_ACCESS);
+    if(accessPromise)return accessPromise;
+    accessPromise=new Promise(resolve=>{
+      const existing=document.querySelector('script[src="pricing-access.js"]');
+      let finished=false;
+      const finish=()=>{if(finished)return;finished=true;resolve(window.ALEVEL_ACCESS||null);};
+      if(existing){existing.addEventListener('load',finish,{once:true});existing.addEventListener('error',finish,{once:true});window.setTimeout(finish,4000);return;}
+      const script=document.createElement('script');script.src='pricing-access.js';script.async=false;
+      script.addEventListener('load',finish,{once:true});script.addEventListener('error',finish,{once:true});window.setTimeout(finish,4000);
+      document.body.appendChild(script);
+    });
+    return accessPromise;
+  }
 
   function addStyles(files){
     files.forEach(href=>{
@@ -104,7 +112,7 @@
 
   function finishHome(){
     homeLoaded=true;homeLoading=false;
-    document.documentElement.classList.add('lesson-automarking-ready','lesson-navigation-ready');
+    document.documentElement.classList.add('lesson-navigation-ready');
     runCallbacks(homeCallbacks);
   }
   function finishCore(){
@@ -114,8 +122,8 @@
     window.dispatchEvent(new CustomEvent('alevel:presentation-engine-ready'));
     runCallbacks(coreCallbacks);
   }
-  function finishExtras(){
-    extraLoaded=true;extraLoading=false;
+  function finishExtras(plan){
+    extraLoaded=true;extraLoading=false;extrasForPlan=plan;
     document.documentElement.classList.add('lesson-enhancements-ready');
     runCallbacks(extraCallbacks);replayActiveLesson();
   }
@@ -132,16 +140,29 @@
     if(coreLoading)return;
     coreLoading=true;addStyles(coreStyles);loadSequence(coreScripts,0,finishCore);
   }
+  function allowedExtras(){
+    const access=window.ALEVEL_ACCESS;
+    if(!access?.has)return [];
+    return extraDefinitions.filter(item=>access.has(item.feature));
+  }
   function loadExtras(callback){
-    if(extraLoaded){if(callback)try{callback();}catch{};return;}
+    const plan=window.ALEVEL_ACCESS?.plan||'free';
+    if(extraLoaded&&extrasForPlan===plan){if(callback)try{callback();}catch{};return;}
     if(callback)extraCallbacks.push(callback);
     if(extraLoading)return;
-    extraLoading=true;addStyles(extraStyles);loadSequence(extraScripts,0,finishExtras);
+    extraLoading=true;
+    const allowed=allowedExtras();
+    if(!allowed.length){finishExtras(plan);return;}
+    addStyles(allowed.map(item=>item.style));
+    loadSequence(allowed.map(item=>item.script),0,()=>finishExtras(plan));
   }
 
   function activateLessonPresentation(){
     loadHome();
-    loadCore(()=>replayActiveLesson());
+    loadCore(()=>{
+      replayActiveLesson();
+      if(window.ALEVEL_ACCESS?.has?.('simulations'))window.setTimeout(()=>loadExtras(),0);
+    });
   }
 
   async function registerOfflineSupport(){
@@ -194,13 +215,23 @@
   }
 
   window.addEventListener('alevel:lesson-selected',()=>{
-    if(!coreLoaded&&!coreLoading)activateLessonPresentation();
+    ensureAccessLayer().then(()=>{
+      if(!coreLoaded&&!coreLoading)activateLessonPresentation();
+      else if(window.ALEVEL_ACCESS?.has?.('simulations'))loadExtras();
+    });
+  });
+
+  window.addEventListener('alevel:plan-changed',()=>{
+    extraLoaded=false;extrasForPlan='';
+    if(window.ALEVEL_ACTIVE_LESSON&&window.ALEVEL_ACCESS?.has?.('simulations'))window.setTimeout(()=>loadExtras(),0);
   });
 
   const start=()=>{
-    registerOfflineSupport();
-    installLoadingFailsafe();
-    if(window.ALEVEL_ACTIVE_LESSON||location.hash.startsWith('#lesson='))activateLessonPresentation();
+    ensureAccessLayer().finally(()=>{
+      registerOfflineSupport();
+      installLoadingFailsafe();
+      if(window.ALEVEL_ACTIVE_LESSON||location.hash.startsWith('#lesson='))activateLessonPresentation();
+    });
   };
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});
   else start();
@@ -209,6 +240,7 @@
     load:loadCore,
     loadHome,
     loadExtras,
+    ensureAccess:ensureAccessLayer,
     get homeLoaded(){return homeLoaded;},
     get loaded(){return coreLoaded;},
     get extrasLoaded(){return extraLoaded;}
