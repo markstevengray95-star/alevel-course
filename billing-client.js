@@ -1,3 +1,4 @@
+import './admin-promos.js';
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/+esm';
 
 const SUPABASE_URL='https://emjmvgginijkupwuflla.supabase.co';
