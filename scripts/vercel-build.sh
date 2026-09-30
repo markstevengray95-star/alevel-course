@@ -16,37 +16,21 @@ required=(
   "topics/07-fields/index.html"
   "topics/08-nuclear/index.html"
 )
-
 for file in "${required[@]}"; do
-  if [[ ! -f "$file" ]]; then
-    echo "Missing required course module: $file" >&2
-    exit 1
-  fi
+  if [[ ! -f "$file" ]]; then echo "Missing required course module: $file" >&2; exit 1; fi
 done
-
-if [[ ! -f "tools/practicals/index.html" ]]; then
-  echo "Missing bundled A-Level practical app: tools/practicals/index.html" >&2
-  exit 1
-fi
+if [[ ! -f "tools/practicals/index.html" ]]; then echo "Missing bundled A-Level practical app: tools/practicals/index.html" >&2; exit 1; fi
 
 echo "Applying verified integration compatibility fixes..."
 python3 scripts/apply-integration-fixes.py
-
 echo "Applying focused unified visual system to all topic apps..."
 python3 scripts/apply-unified-topic-theme.py
-
 for file in "${required[@]}"; do
   dir="$(dirname "$file")"
   for asset in unified-course-theme.css unified-course-focus.css unified-course-embedded.js unified-course-navigation.css unified-course-navigation.js unified-course-presentation.css unified-course-presentation.js; do
-    if [[ ! -f "$dir/$asset" ]]; then
-      echo "Missing unified topic asset: $dir/$asset" >&2
-      exit 1
-    fi
+    if [[ ! -f "$dir/$asset" ]]; then echo "Missing unified topic asset: $dir/$asset" >&2; exit 1; fi
   done
-  if ! grep -q "unified-course-topic-theme" "$file"; then
-    echo "Unified topic UI was not injected into: $file" >&2
-    exit 1
-  fi
+  if ! grep -q "unified-course-topic-theme" "$file"; then echo "Unified topic UI was not injected into: $file" >&2; exit 1; fi
 done
 
 materials_dir="topics/04-mechanics-materials/materials"
@@ -54,20 +38,10 @@ if [[ ! -f "$materials_dir/vendor/three.module.min.js" || ! -f "$materials_dir/v
   echo "Generating Materials local vendor assets for embedded deployment..."
   npm install --prefix "$materials_dir" --ignore-scripts --no-audit --no-fund
   npm --prefix "$materials_dir" run vendor
-  if [[ -f "$materials_dir/node_modules/three/build/three.core.js" ]]; then
-    cp "$materials_dir/node_modules/three/build/three.core.js" "$materials_dir/vendor/three.core.js"
-  fi
+  if [[ -f "$materials_dir/node_modules/three/build/three.core.js" ]]; then cp "$materials_dir/node_modules/three/build/three.core.js" "$materials_dir/vendor/three.core.js"; fi
 fi
-
-for file in \
-  "$materials_dir/three-performance-v10.js" \
-  "$materials_dir/vendor/three.module.min.js" \
-  "$materials_dir/vendor/three.core.js" \
-  "$materials_dir/vendor/xlsx.full.min.js"; do
-  if [[ ! -f "$file" ]]; then
-    echo "Missing generated Materials runtime dependency: $file" >&2
-    exit 1
-  fi
+for file in "$materials_dir/three-performance-v10.js" "$materials_dir/vendor/three.module.min.js" "$materials_dir/vendor/three.core.js" "$materials_dir/vendor/xlsx.full.min.js"; do
+  if [[ ! -f "$file" ]]; then echo "Missing generated Materials runtime dependency: $file" >&2; exit 1; fi
 done
 
 shell_assets=(
@@ -75,46 +49,33 @@ shell_assets=(
   course-tools.js course-tools.css
   mobile-mode.js mobile-mode.css
   experience-polish.css
-  textbook-data.js textbook.js textbook.css textbook-phase1.js textbook-phase1.css textbook-phase2.js textbook-phase2.css textbook-phase3.js textbook-phase3.css textbook-phase4.js textbook-phase4.css textbook-phase5.js textbook-phase5.css
+  textbook-data.js textbook.js textbook.css
+  textbook-phase1.js textbook-phase1.css textbook-phase2.js textbook-phase2.css textbook-phase3.js textbook-phase3.css
+  textbook-phase4.js textbook-phase4.css textbook-phase5.js textbook-phase5.css textbook-phase6.js textbook-phase6.css
   lesson-enrichment.js lesson-enrichment.css
   curriculum-map.js curriculum-map.css
   lesson-content.js lesson-content.css
   lesson-automarking.js lesson-automarking.css
   lesson-quality-audit.js lesson-quality-audit.css
   guided-tutor-dashboard.js guided-tutor-dashboard.css
-  lesson-navigator.js lesson-navigator.css
-  guided-tutor-mode.js guided-tutor-mode.css
-  lesson-reader-quicknav.js
-  presentation-library.js presentation-library.css
-  presentation-mode.js
-  lesson-phase3.js lesson-phase3.css
-  lesson-spec-depth.js lesson-spec-depth.css
-  lesson-deepening.js lesson-deepening.css
-  lesson-presentation-primary.js lesson-presentation-primary.css
-  lesson-presentation-phase3.css
-  lesson-presentation-controls.js lesson-presentation-controls.css
-  lesson-presentation-progressive.js lesson-presentation-progressive.css
-  lesson-presentation-visuals.js lesson-presentation-visuals.css
-  lesson-presentation-practical.js lesson-presentation-practical.css
+  lesson-navigator.js lesson-navigator.css guided-tutor-mode.js guided-tutor-mode.css lesson-reader-quicknav.js
+  presentation-library.js presentation-library.css presentation-mode.js
+  lesson-phase3.js lesson-phase3.css lesson-spec-depth.js lesson-spec-depth.css lesson-deepening.js lesson-deepening.css
+  lesson-presentation-primary.js lesson-presentation-primary.css lesson-presentation-phase3.css
+  lesson-presentation-controls.js lesson-presentation-controls.css lesson-presentation-progressive.js lesson-presentation-progressive.css
+  lesson-presentation-visuals.js lesson-presentation-visuals.css lesson-presentation-practical.js lesson-presentation-practical.css
   lesson-presenter-view.js lesson-presenter-view.css
-  lesson-activities.js lesson-activities.css
-  lesson-simulations.js lesson-simulations.css
-  lesson-assessment.js lesson-assessment.css
-  lesson-progression.js lesson-progression.css
-  lesson-teacher-tools.js lesson-teacher-tools.css
-  lesson-astar.js lesson-astar.css
+  lesson-activities.js lesson-activities.css lesson-simulations.js lesson-simulations.css lesson-assessment.js lesson-assessment.css
+  lesson-progression.js lesson-progression.css lesson-teacher-tools.js lesson-teacher-tools.css lesson-astar.js lesson-astar.css
   sw.js
 )
-
 for file in "${shell_assets[@]}"; do
-  if [[ ! -f "$file" ]]; then
-    echo "Missing course-wide shell asset: $file" >&2
-    exit 1
-  fi
+  if [[ ! -f "$file" ]]; then echo "Missing course-wide shell asset: $file" >&2; exit 1; fi
 done
 
 for file in \
-  app.js student-notebook.js ai-coach.js course-tools.js mobile-mode.js textbook-data.js textbook.js textbook-phase1.js textbook-phase2.js textbook-phase3.js textbook-phase4.js textbook-phase5.js lesson-enrichment.js \
+  app.js student-notebook.js ai-coach.js course-tools.js mobile-mode.js textbook-data.js textbook.js \
+  textbook-phase1.js textbook-phase2.js textbook-phase3.js textbook-phase4.js textbook-phase5.js textbook-phase6.js lesson-enrichment.js \
   curriculum-map.js lesson-content.js lesson-automarking.js lesson-quality-audit.js guided-tutor-dashboard.js lesson-navigator.js guided-tutor-mode.js lesson-reader-quicknav.js presentation-library.js \
   presentation-mode.js lesson-phase3.js lesson-spec-depth.js lesson-deepening.js lesson-presentation-primary.js lesson-presentation-controls.js lesson-presentation-progressive.js lesson-presentation-visuals.js lesson-presentation-practical.js lesson-presenter-view.js \
   lesson-activities.js lesson-simulations.js lesson-assessment.js lesson-progression.js lesson-teacher-tools.js lesson-astar.js sw.js \
@@ -129,32 +90,22 @@ cp "${shell_assets[@]}" dist/
 cp -R topics dist/topics
 cp -R tools/practicals dist/tools/practicals
 
-# Textbook enhancement phases are appended to the existing textbook runtime/style so
-# every current textbook entry point gains the complete adaptive teaching system.
-printf '\n/* textbook-phase1-runtime */\n' >> dist/textbook.js
-cat textbook-phase1.js >> dist/textbook.js
-printf '\n/* textbook-phase2-runtime */\n' >> dist/textbook.js
-cat textbook-phase2.js >> dist/textbook.js
-printf '\n/* textbook-phase3-runtime */\n' >> dist/textbook.js
-cat textbook-phase3.js >> dist/textbook.js
-printf '\n/* textbook-phase4-runtime */\n' >> dist/textbook.js
-cat textbook-phase4.js >> dist/textbook.js
-printf '\n/* textbook-phase5-runtime */\n' >> dist/textbook.js
-cat textbook-phase5.js >> dist/textbook.js
-printf '\n/* textbook-phase1-styles */\n' >> dist/textbook.css
-cat textbook-phase1.css >> dist/textbook.css
-printf '\n/* textbook-phase2-styles */\n' >> dist/textbook.css
-cat textbook-phase2.css >> dist/textbook.css
-printf '\n/* textbook-phase3-styles */\n' >> dist/textbook.css
-cat textbook-phase3.css >> dist/textbook.css
-printf '\n/* textbook-phase4-styles */\n' >> dist/textbook.css
-cat textbook-phase4.css >> dist/textbook.css
-printf '\n/* textbook-phase5-styles */\n' >> dist/textbook.css
-cat textbook-phase5.css >> dist/textbook.css
+printf '\n/* textbook-phase1-runtime */\n' >> dist/textbook.js; cat textbook-phase1.js >> dist/textbook.js
+printf '\n/* textbook-phase2-runtime */\n' >> dist/textbook.js; cat textbook-phase2.js >> dist/textbook.js
+printf '\n/* textbook-phase3-runtime */\n' >> dist/textbook.js; cat textbook-phase3.js >> dist/textbook.js
+printf '\n/* textbook-phase4-runtime */\n' >> dist/textbook.js; cat textbook-phase4.js >> dist/textbook.js
+printf '\n/* textbook-phase5-runtime */\n' >> dist/textbook.js; cat textbook-phase5.js >> dist/textbook.js
+printf '\n/* textbook-phase6-runtime */\n' >> dist/textbook.js; cat textbook-phase6.js >> dist/textbook.js
+printf '\n/* textbook-phase1-styles */\n' >> dist/textbook.css; cat textbook-phase1.css >> dist/textbook.css
+printf '\n/* textbook-phase2-styles */\n' >> dist/textbook.css; cat textbook-phase2.css >> dist/textbook.css
+printf '\n/* textbook-phase3-styles */\n' >> dist/textbook.css; cat textbook-phase3.css >> dist/textbook.css
+printf '\n/* textbook-phase4-styles */\n' >> dist/textbook.css; cat textbook-phase4.css >> dist/textbook.css
+printf '\n/* textbook-phase5-styles */\n' >> dist/textbook.css; cat textbook-phase5.css >> dist/textbook.css
+printf '\n/* textbook-phase6-styles */\n' >> dist/textbook.css; cat textbook-phase6.css >> dist/textbook.css
 
 find dist/topics -name .git -exec rm -rf {} + 2>/dev/null || true
 find dist/topics -type d -name node_modules -prune -exec rm -rf {} + 2>/dev/null || true
 find dist/tools -name .git -exec rm -rf {} + 2>/dev/null || true
 find dist/tools -type d -name node_modules -prune -exec rm -rf {} + 2>/dev/null || true
 
-echo "Unified A-Level Physics course assembled in dist/ with the guided tutor, adaptive marking, and the Phase 1–5 adaptive tutor-integrated AQA textbook."
+echo "Unified A-Level Physics course assembled in dist/ with the complete Phase 1–6 adaptive, searchable and personal AQA textbook."
