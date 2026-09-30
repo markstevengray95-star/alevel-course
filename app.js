@@ -1,16 +1,10 @@
-const topics=[
-{id:'measurements',code:'AQA 3.1',title:'Measurements and their errors',short:'Measurements',year:'Year 12',description:'SI units, prefixes, uncertainty, error, significant figures, gradients, logs and practical data handling.',modules:[{label:'Measurements & Errors',path:'topics/01-measurements/index.html',repo:'https://github.com/markstevengray95-star/Alevelmesurments-and-erros'}]},
-{id:'particles',code:'AQA 3.2',title:'Particles and radiation',short:'Particles',year:'Year 12',description:'Particles, antiparticles, photons, particle interactions, quarks, conservation laws and wave–particle duality.',modules:[{label:'Particles & Radiation',path:'topics/02-particles-radiation/index.html',repo:'https://github.com/markstevengray95-star/Practical-and-radiation'}]},
-{id:'waves',code:'AQA 3.3',title:'Waves',short:'Waves',year:'Year 12',description:'Progressive and stationary waves, interference, diffraction, refraction, optics and wave behaviour.',modules:[{label:'Waves',path:'topics/03-waves/index.html',repo:'https://github.com/markstevengray95-star/alevel-Wave'}]},
-{id:'mechanics-materials',code:'AQA 3.4',title:'Mechanics and materials',short:'Mechanics',year:'Year 12',description:'Vectors, motion, forces, momentum, work and energy, followed by materials, stress, strain and Young modulus.',modules:[{label:'Mechanics',path:'topics/04-mechanics-materials/mechanics/index.html',repo:'https://github.com/markstevengray95-star/mechanicsnew'},{label:'Materials',path:'topics/04-mechanics-materials/materials/index.html',repo:'https://github.com/markstevengray95-star/Alevelmaterials'}]},
-{id:'electricity',code:'AQA 3.5',title:'Electricity',short:'Electricity',year:'Year 12',description:'Current, charge, potential difference, resistance, resistivity, circuits, power, emf and internal resistance.',modules:[{label:'Electricity',path:'topics/05-electricity/index.html',repo:'https://github.com/markstevengray95-star/alevel-electricity'}]},
-{id:'further-mechanics',code:'AQA 3.6',title:'Further mechanics and thermal physics',short:'Further mechanics',year:'Year 13',description:'Circular motion, SHM, resonance, thermal physics, ideal gases and kinetic theory.',modules:[{label:'Further Mechanics & Thermal',path:'topics/06-further-mechanics-thermal/index.html',repo:'https://github.com/markstevengray95-star/furthermechanics'}]},
-{id:'fields',code:'AQA 3.7',title:'Fields and their consequences',short:'Fields',year:'Year 13',description:'Gravitational, electric and magnetic fields, orbits, capacitance and electromagnetic induction.',modules:[{label:'Fields',path:'topics/07-fields/index.html',repo:'https://github.com/markstevengray95-star/alevel-fields-'}]},
-{id:'nuclear',code:'AQA 3.8',title:'Nuclear physics',short:'Nuclear',year:'Year 13',description:'Rutherford scattering, radioactivity, nuclear radius and density, mass–energy, fission, fusion and reactors.',modules:[{label:'Nuclear Physics',path:'topics/08-nuclear/index.html',repo:'https://github.com/markstevengray95-star/nuclear-physicsalevel'}]}
-];
+const courseConfig=window.ALEVEL_COURSE_CONFIG;
+if(!courseConfig||!Array.isArray(courseConfig.topics)||!courseConfig.topics.length){throw new Error('A valid A-Level course configuration must be loaded before app.js');}
 
-const progressKey='alevel-course-progress-v1';
-const locationKey='alevel-course-location-v2';
+const topics=courseConfig.topics;
+const storageKeys=courseConfig.storage||{};
+const progressKey=storageKeys.progress||`alevel-${courseConfig.id||'course'}-progress-v1`;
+const locationKey=storageKeys.location||`alevel-${courseConfig.id||'course'}-location-v1`;
 let progress=safeJson(localStorage.getItem(progressKey),{});
 let activeTopic=topics[0];
 let activeModule=0;
@@ -31,13 +25,45 @@ function topicIndex(){return Math.max(0,topics.findIndex(t=>t.id===activeTopic.i
 function moduleUrl(){return activeTopic.modules[activeModule]?.path||activeTopic.modules[0].path;}
 function dispatchContext(){window.dispatchEvent(new CustomEvent('coursecontextchange',{detail:getState()}));}
 
+function applyCourseIdentity(){
+  const subject=courseConfig.subject||'Course';
+  const board=courseConfig.board||'';
+  const specCode=courseConfig.specCode||'';
+  document.body.dataset.subject=courseConfig.id||subject.toLowerCase();
+  document.body.dataset.examBoard=board.toLowerCase();
+  if(courseConfig.metaTitle)document.title=courseConfig.metaTitle;
+  const meta=document.querySelector('meta[name="description"]');
+  if(meta&&courseConfig.metaDescription)meta.setAttribute('content',courseConfig.metaDescription);
+  const mark=document.querySelector('#brandHome .brand-mark');
+  const brand=document.querySelector('#brandHome .brand');
+  const brandSpec=document.querySelector('#brandHome small');
+  if(mark)mark.textContent=courseConfig.brandMark||mark.textContent;
+  if(brand)brand.textContent=courseConfig.displayName||`A-Level ${subject}`;
+  if(brandSpec)brandSpec.textContent=[board,specCode].filter(Boolean).join(' ');
+  const intro=document.querySelector('.home-intro');
+  if(intro){
+    const eyebrow=intro.querySelector('.eyebrow');
+    const title=intro.querySelector('h1');
+    const description=intro.querySelector('p');
+    if(eyebrow)eyebrow.textContent=courseConfig.heroEyebrow||`${board} A-level ${subject} ${specCode}`.trim();
+    if(title)title.textContent=courseConfig.heroTitle||`Your ${subject} course.`;
+    if(description&&courseConfig.heroDescription)description.textContent=courseConfig.heroDescription;
+  }
+  const map=document.getElementById('courseMap');
+  if(map)map.setAttribute('aria-label',`${board} ${subject} core topics`.trim());
+  if(frame)frame.title=`A-level ${subject} topic app`;
+  const toolEyebrow=document.getElementById('toolEyebrow');
+  if(toolEyebrow)toolEyebrow.textContent=[board,subject,specCode].filter(Boolean).join(' ');
+}
+
 function writeCourseUrl(mode='replace'){
-  const state={topic:activeTopic.id,module:activeModule,view:'course'};
+  const state={subject:courseConfig.id,topic:activeTopic.id,module:activeModule,view:'course'};
   localStorage.setItem(locationKey,JSON.stringify({topic:activeTopic.id,module:activeModule}));
   const url=new URL(location.href);
   url.searchParams.set('view','course');
   url.searchParams.set('topic',activeTopic.id);
   url.searchParams.set('module',String(activeModule));
+  if(courseConfig.id&&courseConfig.id!=='physics')url.searchParams.set('subject',courseConfig.id);
   history[mode==='push'?'pushState':'replaceState'](state,'',url);
 }
 
@@ -46,7 +72,7 @@ function writeHomeUrl(){
   url.searchParams.delete('view');
   url.searchParams.delete('topic');
   url.searchParams.delete('module');
-  history.replaceState({view:'home'},'',url);
+  history.replaceState({subject:courseConfig.id,view:'home'},'',url);
 }
 
 function setCourseMode(open,{scroll=true,updateUrl=true}={}){
@@ -69,7 +95,8 @@ function setCourseMode(open,{scroll=true,updateUrl=true}={}){
 function renderHomeSummary(){
   const done=topics.filter(t=>progress[t.id]).length;
   const summary=document.getElementById('homeProgressSummary');
-  if(summary)summary.textContent=done?`${done} of ${topics.length} complete · AQA 3.1–3.8`:`${topics.length} topics · AQA 3.1–3.8`;
+  const range=courseConfig.topicRange||`${topics.length} topics`;
+  if(summary)summary.textContent=done?`${done} of ${topics.length} complete · ${range}`:`${topics.length} topics · ${range}`;
   const stored=safeJson(localStorage.getItem(locationKey),{});
   const resume=topics.find(t=>t.id===stored.topic)||topics.find(t=>!progress[t.id])||topics[0];
   const continueBtn=document.getElementById('continueBtn');
@@ -100,7 +127,7 @@ function renderGrid(){
 }
 
 function renderQuickNavigation(){
- quickSelect.innerHTML=topics.map((t,i)=>`<option value="${t.id}">${i+1}. ${t.code.replace('AQA ','')} · ${t.title}</option>`).join('');
+ quickSelect.innerHTML=topics.map((t,i)=>`<option value="${t.id}">${i+1}. ${t.code.replace(`${courseConfig.board||'AQA'} `,'')} · ${t.title}</option>`).join('');
  quickSelect.value=activeTopic.id;
  const i=topicIndex();
  document.getElementById('coursePosition').textContent=`${i+1} / ${topics.length}`;
@@ -157,7 +184,7 @@ function renderTabs(){
  document.getElementById('moduleNext').hidden=count<2;
  if(count<2){tabs.classList.add('hidden');tabs.innerHTML='';return;}
  tabs.classList.remove('hidden');
- tabs.setAttribute('aria-label','Mechanics and materials modules');
+ tabs.setAttribute('aria-label',`${activeTopic.title} modules`);
  tabs.innerHTML=activeTopic.modules.map((m,i)=>`<button type="button" class="${i===activeModule?'active':''}" data-index="${i}" aria-pressed="${i===activeModule}">${m.label}</button>`).join('');
  tabs.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>changeModule(Number(b.dataset.index))));
 }
@@ -180,7 +207,7 @@ function nextModule(){if(activeModule<activeTopic.modules.length-1)changeModule(
 
 function getState(){
  const m=activeTopic.modules[activeModule];
- return {topicId:activeTopic.id,topicIndex:topicIndex(),code:activeTopic.code,title:activeTopic.title,short:activeTopic.short,year:activeTopic.year,description:activeTopic.description,moduleIndex:activeModule,moduleLabel:m.label,modulePath:m.path,complete:!!progress[activeTopic.id],courseOpen};
+ return {subjectId:courseConfig.id,subject:courseConfig.subject,board:courseConfig.board,specCode:courseConfig.specCode,topicId:activeTopic.id,topicIndex:topicIndex(),code:activeTopic.code,title:activeTopic.title,short:activeTopic.short,year:activeTopic.year,description:activeTopic.description,moduleIndex:activeModule,moduleLabel:m.label,modulePath:m.path,complete:!!progress[activeTopic.id],courseOpen};
 }
 
 function getActiveContext(){
@@ -239,8 +266,9 @@ document.addEventListener('keydown',e=>{
  if(e.altKey&&e.key==='ArrowRight'){e.preventDefault();nextTopic();}
 });
 
-window.CourseApp={topics,getState,getActiveContext,openTopic,exitCourse,previousTopic,nextTopic,changeModule};
+window.CourseApp={config:courseConfig,topics,storageKeys,getState,getActiveContext,openTopic,exitCourse,previousTopic,nextTopic,changeModule};
 
+applyCourseIdentity();
 const restored=restoreLocation();
 activeTopic=topics.find(t=>t.id===restored.topic)||topics[0];
 activeModule=Math.min(Math.max(Number(restored.module)||0,0),activeTopic.modules.length-1);
