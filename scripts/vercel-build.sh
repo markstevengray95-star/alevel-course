@@ -88,14 +88,15 @@ cp -R topics dist/topics
 cp -R tools/practicals dist/tools/practicals
 
 printf '\n/* paper3-option-data */\n' >> dist/textbook.js; cat textbook-options.js >> dist/textbook.js
+# Install the stability guard before every enhancement runtime. It temporarily
+# suppresses enhancer MutationObservers during synchronous module initialisation
+# and replaces them with explicit chapter/topic refresh events.
+printf '\n/* textbook-stability-guard */\n' >> dist/textbook.js; cat textbook-stability-guard.js >> dist/textbook.js
 printf '\n/* paper3-option-adapter */\n' >> dist/textbook.js; cat textbook-options-adapter.js >> dist/textbook.js
 printf '\n/* textbook-phase1-runtime */\n' >> dist/textbook.js; cat textbook-phase1.js >> dist/textbook.js
 printf '\n/* textbook-phase2-runtime */\n' >> dist/textbook.js; cat textbook-phase2.js >> dist/textbook.js
 printf '\n/* textbook-phase3-runtime */\n' >> dist/textbook.js; cat textbook-phase3.js >> dist/textbook.js
 printf '\n/* textbook-phase4-runtime */\n' >> dist/textbook.js; cat textbook-phase4.js >> dist/textbook.js
-# Install the mutation stability guard before the adaptive Phase 5 runtime so
-# repeated identical renders cannot create a MutationObserver feedback loop.
-printf '\n/* textbook-stability-guard */\n' >> dist/textbook.js; cat textbook-stability-guard.js >> dist/textbook.js
 printf '\n/* textbook-phase5-runtime */\n' >> dist/textbook.js; cat textbook-phase5.js >> dist/textbook.js
 printf '\n/* textbook-phase6-runtime */\n' >> dist/textbook.js; cat textbook-phase6-runtime.js >> dist/textbook.js
 printf '\n/* textbook-phase7-runtime */\n' >> dist/textbook.js; cat textbook-phase7.js >> dist/textbook.js
@@ -115,4 +116,4 @@ find dist/topics -type d -name node_modules -prune -exec rm -rf {} + 2>/dev/null
 find dist/tools -name .git -exec rm -rf {} + 2>/dev/null || true
 find dist/tools -type d -name node_modules -prune -exec rm -rf {} + 2>/dev/null || true
 
-echo "Unified A-Level Physics course assembled in dist/ with core 3.1–3.8, all five Paper 3 option textbooks 3.9–3.13, the complete Phase 1–8 adaptive textbook system, and observer-loop stability hardening."
+echo "Unified A-Level Physics course assembled in dist/ with observer-free textbook enhancement refresh scheduling, core 3.1–3.8, all Paper 3 options, and Phase 1–8 tools."
