@@ -3,48 +3,49 @@
 if(window.__ALEVEL_TEXTBOOK_STABILITY_GUARD__)return;
 window.__ALEVEL_TEXTBOOK_STABILITY_GUARD__=true;
 
-// The textbook enhancement phases were originally written with independent
-// MutationObservers that watch and also mutate #textbookArticle. When several
-// phases are active together those observers can repeatedly wake one another
-// and saturate the main thread. Give only the textbook boot sequence inert
-// observers, then restore the native browser implementation after every phase
-// has completed its startup path.
+// Several textbook enhancement phases both observe and mutate #textbookArticle.
+// With all phases enabled those observers can wake one another indefinitely and
+// saturate the main thread. Keep MutationObserver fully functional everywhere
+// else in the app, but make observation of the textbook article a no-op.
 const NativeMutationObserver=window.MutationObserver;
-class InertMutationObserver{
-  constructor(){ }
-  observe(){ }
-  disconnect(){ }
-  takeRecords(){return[];}
-}
-window.MutationObserver=InertMutationObserver;
-
-let restored=false;
-function restoreNativeObserver(){
-  if(restored)return;
-  restored=true;
-  window.MutationObserver=NativeMutationObserver;
-}
-// If the bundle runs while the document is still loading, phase modules add
-// their own DOMContentLoaded handlers after this guard. Restore on the next
-// task so all of those handlers construct inert observers first.
-if(document.readyState==='loading'){
-  document.addEventListener('DOMContentLoaded',()=>setTimeout(restoreNativeObserver,0),{once:true});
-}else{
-  setTimeout(restoreNativeObserver,0);
+if(typeof NativeMutationObserver==='function'){
+  class TextbookSafeMutationObserver{
+    constructor(callback){
+      this._native=new NativeMutationObserver(callback);
+      this._blocked=false;
+    }
+    observe(target,options){
+      if(target?.id==='textbookArticle'){
+        this._blocked=true;
+        return;
+      }
+      this._native.observe(target,options);
+    }
+    disconnect(){this._native.disconnect();}
+    takeRecords(){return this._native.takeRecords();}
+  }
+  window.MutationObserver=TextbookSafeMutationObserver;
 }
 
 let refreshTimer=0;
 function detail(){
   const s=window.CourseTextbook?.getState?.()||{};
-  return{open:!document.getElementById('textbookWorkspace')?.hidden,topicId:s.topicId,chapterIndex:Number(s.chapterIndex)||0,stabilityRefresh:true};
+  return{
+    open:!document.getElementById('textbookWorkspace')?.hidden,
+    topicId:s.topicId,
+    chapterIndex:Number(s.chapterIndex)||0,
+    stabilityRefresh:true
+  };
 }
-function refreshSoon(delay=35){
+function refreshSoon(delay=40){
   clearTimeout(refreshTimer);
-  refreshTimer=setTimeout(()=>window.dispatchEvent(new CustomEvent('textbookchange',{detail:detail()})),delay);
+  refreshTimer=setTimeout(()=>{
+    window.dispatchEvent(new CustomEvent('textbookchange',{detail:detail()}));
+  },delay);
 }
 
-// The base textbook replaces the article synchronously. Re-run enhancements
-// only after actual navigation, never after arbitrary child-list mutations.
+// The base textbook replaces the article synchronously. Refresh enhancements
+// only after genuine navigation, never after arbitrary article DOM mutations.
 document.addEventListener('click',event=>{
   if(event.target.closest('#textbookNext,#textbookPrevious,.textbook-chapter-button'))refreshSoon();
 });
@@ -52,6 +53,8 @@ document.addEventListener('change',event=>{
   if(event.target.closest('#textbookMobileChapter,#textbookTopicSelect'))refreshSoon();
 });
 
+// Search, highlights and the Paper 3 map navigate through the public API rather
+// than the visible controls, so wrap those calls with the same debounced refresh.
 const api=window.CourseTextbook;
 if(api&&!api.__stabilityWrapped){
   ['open','setTopic','setChapter'].forEach(name=>{
@@ -59,12 +62,12 @@ if(api&&!api.__stabilityWrapped){
     if(typeof original!=='function')return;
     api[name]=function(...args){
       const result=original.apply(this,args);
-      refreshSoon(name==='open'?80:35);
+      refreshSoon(name==='open'?90:40);
       return result;
     };
   });
   Object.defineProperty(api,'__stabilityWrapped',{value:true,configurable:false});
 }
 
-window.ALEVEL_TEXTBOOK_STABILITY={refresh:refreshSoon,restore:restoreNativeObserver};
+window.ALEVEL_TEXTBOOK_STABILITY={refresh:refreshSoon};
 })();
