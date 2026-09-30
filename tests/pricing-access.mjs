@@ -30,7 +30,8 @@ requireText(presentation,"feature:'automarking'",'Pro auto-marking is not tier-l
 requireText(presentation,"feature:'teacherTools'",'Teacher tools are not tier-loaded');
 requireText(presentation,"window.ALEVEL_ACCESS?.has?.('simulations')",'Lesson extras are not gated by access');
 requireText(build,'pricing-access.js pricing-access.css','Pricing assets are not included in Vercel shell assets');
-requireText(build,'app.js pricing-access.js student-notebook.js','Pricing JavaScript is not syntax-checked in the build');
+const syntaxLoop=build.match(/for file in \\[\s\S]*?do\s+node --check "\$file"/g)?.at(-1)||'';
+requireText(syntaxLoop,'pricing-access.js','Pricing JavaScript is not syntax-checked in the build');
 
 if(failures.length){
   console.error('Pricing/access validation failed:');

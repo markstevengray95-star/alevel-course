@@ -46,7 +46,7 @@ done
 
 shell_assets=(
   lesson-slide-design.js lesson-slide-design.css
-  pricing-access.js pricing-access.css billing-client.js
+  pricing-access.js pricing-access.css billing-client.js admin-promos.js
   auth.js auth.css
   student-notebook.js student-notebook.css
   course-tools.js course-tools.css
@@ -75,7 +75,7 @@ for file in "${shell_assets[@]}"; do
 done
 
 for file in \
-  app.js pricing-access.js billing-client.js auth.js student-notebook.js ai-coach.js course-tools.js mobile-mode.js textbook-data.js textbook.js textbook-options.js textbook-safe-options.js textbook-option-glossary.js \
+  app.js pricing-access.js billing-client.js admin-promos.js auth.js student-notebook.js ai-coach.js course-tools.js mobile-mode.js textbook-data.js textbook.js textbook-options.js textbook-safe-options.js textbook-option-glossary.js \
   lesson-slide-design.js lesson-enrichment.js curriculum-map.js lesson-content.js lesson-automarking.js lesson-quality-audit.js guided-tutor-dashboard.js lesson-navigator.js guided-tutor-mode.js lesson-reader-quicknav.js presentation-library.js \
   presentation-mode.js lesson-phase3.js lesson-spec-depth.js lesson-deepening.js lesson-presentation-primary.js lesson-presentation-controls.js lesson-presentation-progressive.js lesson-presentation-visuals.js lesson-presentation-practical.js lesson-presenter-view.js \
   lesson-activities.js lesson-simulations.js lesson-assessment.js lesson-progression.js lesson-teacher-tools.js lesson-astar.js sw.js \
