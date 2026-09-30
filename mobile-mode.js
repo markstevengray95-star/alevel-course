@@ -109,4 +109,10 @@
     auth.src='auth.js';
     document.body.appendChild(auth);
   }
+  if(!document.querySelector('script[src="billing.js"]')){
+    const billing=document.createElement('script');
+    billing.type='module';
+    billing.src='billing.js';
+    document.body.appendChild(billing);
+  }
 })();
