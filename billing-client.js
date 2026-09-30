@@ -9,6 +9,8 @@ const PAYMENT_LINKS={
   pro:{monthly:'https://buy.stripe.com/4gMaEYbWrgXsdcR2KR5AQ0d',annual:'https://buy.stripe.com/8x24gA3pVaz41u9gBH5AQ0e'},
   teacher:{annual:'https://buy.stripe.com/bJecN67Gb9v05Kp85b5AQ0f'}
 };
+const PORTAL_URL='https://billing.stripe.com/p/login/bJe6oI8Kf5eK8WBetz5AQ00';
+const TRIAL_DAYS=7;
 let currentUser=null;
 let checkoutReference='';
 let configureVersion=0;
@@ -18,15 +20,53 @@ function withReference(base,reference){
   url.searchParams.set('client_reference_id',reference);
   return url.toString();
 }
+function openPortal(){
+  location.href=PORTAL_URL;
+}
 function clearCheckout(){
   checkoutReference='';
   window.ALEVEL_CHECKOUT_URLS={};
   document.documentElement.dataset.billingReady='false';
 }
+function ensureManageButton(){
+  const signOut=document.getElementById('signOutButton');
+  if(!signOut)return null;
+  let button=document.getElementById('manageSubscriptionButton');
+  if(button)return button;
+  button=document.createElement('button');
+  button.type='button';
+  button.id='manageSubscriptionButton';
+  button.className='button quiet account-manage-billing';
+  button.textContent='Manage subscription / cancel';
+  button.hidden=true;
+  button.addEventListener('click',openPortal);
+  signOut.before(button);
+  return button;
+}
+function ensureTrialNotice(){
+  const section=document.getElementById('pricingSection');
+  if(!section||document.getElementById('billingTrialNote'))return;
+  const note=document.createElement('p');
+  note.id='billingTrialNote';
+  note.className='pricing-note billing-trial-note';
+  note.textContent=`Plus, Pro and Teacher include a ${TRIAL_DAYS}-day free trial. A payment method is collected at checkout and billing starts automatically when the trial ends unless you cancel first. Promo codes can be entered at checkout. Free stays £0 and is never auto-charged.`;
+  const existing=section.querySelector('.pricing-note');
+  if(existing)existing.before(note);else section.appendChild(note);
+}
+function syncBillingUi(plan=document.documentElement.dataset.accessPlan||'free'){
+  const button=ensureManageButton();
+  if(button){
+    const adminEntry=document.getElementById('adminEntry');
+    const isAdmin=!!adminEntry&&!adminEntry.hidden;
+    button.hidden=!currentUser||isAdmin||plan==='free';
+  }
+  ensureTrialNotice();
+}
 async function configure(user){
   const version=++configureVersion;
   currentUser=user||null;
   clearCheckout();
+  syncBillingUi();
   if(!currentUser?.id)return;
   try{
     const {data,error}=await supabase.rpc('alevel_create_checkout_reference');
@@ -41,7 +81,8 @@ async function configure(user){
       teacher:{annual:withReference(PAYMENT_LINKS.teacher.annual,reference)}
     };
     document.documentElement.dataset.billingReady='true';
-    window.dispatchEvent(new CustomEvent('alevel:billing-ready',{detail:{ready:true}}));
+    window.dispatchEvent(new CustomEvent('alevel:billing-ready',{detail:{ready:true,trialDays:TRIAL_DAYS}}));
+    window.setTimeout(()=>syncBillingUi(),0);
   }catch(error){
     console.error('Secure checkout setup failed:',error);
     clearCheckout();
@@ -54,5 +95,13 @@ async function boot(){
   supabase.auth.onAuthStateChange((_event,session)=>window.setTimeout(()=>configure(session?.user||null),0));
 }
 
-window.ALEVEL_BILLING={paymentLinks:PAYMENT_LINKS,get ready(){return !!checkoutReference;}};
+window.addEventListener('alevel:plan-changed',event=>syncBillingUi(event.detail?.plan||'free'));
+window.addEventListener('alevel:billing-ready',()=>syncBillingUi());
+window.addEventListener('alevel:plan-downgrade-requested',()=>{
+  if(currentUser)openPortal();
+});
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>syncBillingUi(),{once:true});
+else syncBillingUi();
+
+window.ALEVEL_BILLING={paymentLinks:PAYMENT_LINKS,portalUrl:PORTAL_URL,trialDays:TRIAL_DAYS,openPortal,get ready(){return !!checkoutReference;}};
 boot();
