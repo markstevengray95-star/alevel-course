@@ -49,10 +49,13 @@ jobs:
         timeout-minutes: 3
         run: node tests/theme-smoke.mjs
 
-      - name: Verify simplified lesson navigation
-        continue-on-error: true
+      - name: Verify lessons open as presentations
         timeout-minutes: 3
-        run: node tests/simple-navigation.mjs
+        run: node tests/default-lesson-presentation.mjs
+
+      - name: Verify Paper 3 option textbooks
+        timeout-minutes: 3
+        run: node tests/textbook-options-smoke.mjs
 
       - name: Diagnose mobile overflow
         timeout-minutes: 3
