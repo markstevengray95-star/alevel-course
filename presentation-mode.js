@@ -102,6 +102,42 @@
     if(lesson)queueMicrotask(()=>window.dispatchEvent(new CustomEvent('alevel:lesson-selected',{detail:lesson})));
   }
 
+  function installPresentationInteractionFix(){
+    if(document.documentElement.dataset.presentationInteractionFix==='1')return;
+    document.documentElement.dataset.presentationInteractionFix='1';
+    const style=document.createElement('style');
+    style.id='lesson-presentation-interaction-fix';
+    style.textContent=`
+      .lesson-presentation-primary .lesson-presentation-shell .phase3-deck-side{position:relative;z-index:120;pointer-events:auto!important}
+      .lesson-presentation-primary .lesson-presentation-shell .phase3-deck-tools{position:relative;z-index:130;pointer-events:auto!important}
+      .lesson-presentation-primary .lesson-presentation-shell .phase3-deck-tools button{position:relative;z-index:131;pointer-events:auto!important}
+      .lesson-presentation-primary .lesson-presentation-shell .phase3-deck-tools [data-deep-close]{display:inline-flex!important;align-items:center;justify-content:center}
+    `;
+    document.head.appendChild(style);
+
+    // The presentation is assembled by several modules. Handle the primary
+    // "Lesson notes" action at window-capture level so overlays/drawing tools
+    // cannot swallow it before the deck's own delegated click handler runs.
+    window.addEventListener('click',event=>{
+      const button=event.target?.closest?.('.lesson-presentation-shell [data-deep-close]');
+      if(!button)return;
+      const presentation=document.querySelector('.lesson-presentation-shell');
+      if(!presentation||presentation.hidden)return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      presentation.hidden=true;
+      document.body.classList.remove('deep-deck-open','lesson-presentation-primary');
+      document.documentElement.classList.remove('lesson-presentation-active');
+      const reader=document.querySelector('.lesson-reader-shell:not([hidden])');
+      if(reader){
+        document.body.classList.add('lesson-reader-open');
+        reader.style.removeProperty('visibility');
+        reader.style.removeProperty('pointer-events');
+        reader.querySelector('.lesson-reader-body')?.focus?.({preventScroll:true});
+      }
+    },true);
+  }
+
   function finishHome(){
     homeLoaded=true;homeLoading=false;
     document.documentElement.classList.add('lesson-automarking-ready','lesson-navigation-ready');
@@ -109,6 +145,7 @@
   }
   function finishCore(){
     coreLoaded=true;coreLoading=false;
+    installPresentationInteractionFix();
     document.documentElement.classList.add('lesson-presentation-engine-ready');
     window.dispatchEvent(new CustomEvent('alevel:presentation-engine-ready'));
     runCallbacks(coreCallbacks);
