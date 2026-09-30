@@ -1,25 +1,18 @@
 (() => {
   'use strict';
 
-  // Keep first paint deliberately small. Teacher-wide audits, the presentation
-  // library and the adaptive dashboard used to synchronously rebuild/audit the
-  // entire course before the home screen could paint. Those tools remain in the
-  // repository but are no longer part of automatic application startup.
+  // Stability-first startup: load only the small set required for the core
+  // lesson presentation. Advanced presentation add-ons remain available in the
+  // repository but no longer attach global pointer/DOM handlers automatically.
   const homeStyles = [
     'lesson-automarking.css',
     'lesson-navigator.css'
   ];
   const coreStyles = [
     'lesson-phase3.css',
-    'lesson-spec-depth.css',
     'lesson-deepening.css',
     'lesson-presentation-primary.css',
-    'lesson-presentation-phase3.css',
-    'lesson-presentation-controls.css',
-    'lesson-presentation-progressive.css',
-    'lesson-presentation-visuals.css',
-    'lesson-presentation-practical.css',
-    'lesson-presenter-view.css'
+    'lesson-presentation-phase3.css'
   ];
   const extraStyles = [
     'lesson-activities.css',
@@ -37,14 +30,8 @@
   ];
   const coreScripts = [
     {src:'lesson-phase3.js', ready:()=>!!window.ALEVEL_PHASE3},
-    {src:'lesson-spec-depth.js', ready:()=>!!window.ALEVEL_SPEC_DEPTH},
     {src:'lesson-deepening.js', ready:()=>!!window.ALEVEL_DEEPENING},
-    {src:'lesson-presentation-primary.js', ready:()=>!!window.ALEVEL_PRIMARY_PRESENTATION},
-    {src:'lesson-presentation-controls.js', ready:()=>!!window.ALEVEL_PRESENTATION_CONTROLS},
-    {src:'lesson-presentation-progressive.js', ready:()=>!!window.ALEVEL_PROGRESSIVE_REVEAL},
-    {src:'lesson-presentation-visuals.js', ready:()=>!!window.ALEVEL_PRESENTATION_VISUALS},
-    {src:'lesson-presentation-practical.js', ready:()=>!!window.ALEVEL_PRACTICAL_PRESENTATION},
-    {src:'lesson-presenter-view.js', ready:()=>!!window.ALEVEL_PRESENTER_VIEW}
+    {src:'lesson-presentation-primary.js', ready:()=>!!window.ALEVEL_PRIMARY_PRESENTATION}
   ];
   const extraScripts = [
     {src:'lesson-activities.js', ready:()=>!!window.ALEVEL_ACTIVITIES},
@@ -108,15 +95,9 @@
     const style=document.createElement('style');
     style.id='lesson-presentation-interaction-fix';
     style.textContent=`
-      .lesson-presentation-primary .lesson-presentation-shell .phase3-deck-side{position:relative;z-index:2147483000;pointer-events:auto!important}
-      .lesson-presentation-primary .lesson-presentation-shell .phase3-deck-tools{position:relative;z-index:2147483001;pointer-events:auto!important}
-      .lesson-presentation-primary .lesson-presentation-shell .phase3-deck-tools button{position:relative;z-index:2147483002;pointer-events:auto!important}
-      .lesson-presentation-primary .lesson-presentation-shell .phase3-deck-tools [data-deep-close]{
-        display:inline-flex!important;align-items:center;justify-content:center;
-        position:fixed!important;top:14px!important;right:18px!important;
-        z-index:2147483646!important;pointer-events:auto!important;visibility:visible!important;
-        opacity:1!important;transform:none!important;min-width:118px!important;min-height:44px!important;
-      }
+      .lesson-presentation-primary .lesson-presentation-shell .phase3-deck-side{position:relative;z-index:50;pointer-events:auto!important}
+      .lesson-presentation-primary .lesson-presentation-shell .phase3-deck-tools{position:relative;z-index:60;pointer-events:auto!important}
+      .lesson-presentation-primary .lesson-presentation-shell .phase3-deck-tools button{pointer-events:auto!important}
     `;
     document.head.appendChild(style);
   }
