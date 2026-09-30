@@ -45,6 +45,7 @@ for file in "$materials_dir/three-performance-v10.js" "$materials_dir/vendor/thr
 done
 
 shell_assets=(
+  pricing-access.js pricing-access.css
   student-notebook.js student-notebook.css
   course-tools.js course-tools.css
   mobile-mode.js mobile-mode.css
@@ -72,7 +73,7 @@ for file in "${shell_assets[@]}"; do
 done
 
 for file in \
-  app.js student-notebook.js ai-coach.js course-tools.js mobile-mode.js textbook-data.js textbook.js textbook-options.js textbook-safe-options.js textbook-option-glossary.js \
+  app.js pricing-access.js student-notebook.js ai-coach.js course-tools.js mobile-mode.js textbook-data.js textbook.js textbook-options.js textbook-safe-options.js textbook-option-glossary.js \
   lesson-enrichment.js curriculum-map.js lesson-content.js lesson-automarking.js lesson-quality-audit.js guided-tutor-dashboard.js lesson-navigator.js guided-tutor-mode.js lesson-reader-quicknav.js presentation-library.js \
   presentation-mode.js lesson-phase3.js lesson-spec-depth.js lesson-deepening.js lesson-presentation-primary.js lesson-presentation-controls.js lesson-presentation-progressive.js lesson-presentation-visuals.js lesson-presentation-practical.js lesson-presenter-view.js \
   lesson-activities.js lesson-simulations.js lesson-assessment.js lesson-progression.js lesson-teacher-tools.js lesson-astar.js sw.js \
@@ -100,4 +101,4 @@ find dist/topics -type d -name node_modules -prune -exec rm -rf {} + 2>/dev/null
 find dist/tools -name .git -exec rm -rf {} + 2>/dev/null || true
 find dist/tools -type d -name node_modules -prune -exec rm -rf {} + 2>/dev/null || true
 
-echo "Unified A-Level Physics course assembled in stable safe mode: fast parent startup, observer-free topic shell, core 3.1–3.8, Paper 3 options 3.9–3.13 and enriched option terminology."
+echo "Unified A-Level Physics course assembled in stable safe mode with Free, Plus, Pro and Teacher access assets included."
