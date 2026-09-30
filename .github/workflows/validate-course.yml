@@ -24,6 +24,8 @@ jobs:
           test -f dist/app.js
           test -f dist/styles.css
           test -f dist/experience-polish.css
+          test -f dist/pricing-access.js
+          test -f dist/pricing-access.css
           test -f dist/lesson-enrichment.js
           test -f dist/lesson-enrichment.css
           test -f dist/lesson-spec-depth.js
@@ -45,6 +47,9 @@ jobs:
 
       - name: Run comprehensive static audit
         run: node scripts/full-audit.mjs dist
+
+      - name: Verify pricing and access tiers
+        run: node tests/pricing-access.mjs
 
       - name: Verify lesson uniqueness and presentation depth
         continue-on-error: true
