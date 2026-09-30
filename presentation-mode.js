@@ -192,12 +192,27 @@
     });
   }
 
-  function registerOfflineSupport(){
+  async function registerOfflineSupport(){
     if(!('serviceWorker' in navigator) || location.protocol==='file:') return;
-    navigator.serviceWorker.register('sw.js').then(reg=>{
-      document.documentElement.classList.add('offline-support-ready');
-      reg.update?.().catch(()=>{});
-    }).catch(()=>{});
+    // Recovery safe mode: stale service workers were able to keep an older,
+    // observer-heavy textbook bundle controlling an already-open tab. Remove
+    // them and clear only this app's offline caches, then perform one clean
+    // reload if the current page is still controlled by an old worker.
+    try{
+      const hadController=!!navigator.serviceWorker.controller;
+      const registrations=await navigator.serviceWorker.getRegistrations();
+      await Promise.all(registrations.map(reg=>reg.unregister().catch(()=>false)));
+      if('caches' in window){
+        const keys=await caches.keys();
+        await Promise.all(keys.filter(key=>key.startsWith('alevel-physics-offline-')).map(key=>caches.delete(key)));
+      }
+      document.documentElement.classList.add('offline-recovery-mode');
+      const reloadKey='alevel-recovery-network-reload-v1';
+      if(hadController&&!sessionStorage.getItem(reloadKey)){
+        sessionStorage.setItem(reloadKey,'1');
+        location.reload();
+      }
+    }catch{}
   }
 
   function installLoadingFailsafe(){
