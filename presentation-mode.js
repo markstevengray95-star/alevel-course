@@ -200,6 +200,47 @@
     }).catch(()=>{});
   }
 
+  function installLoadingFailsafe(){
+    const topicFrame=document.getElementById('topicFrame');
+    const topicShell=document.querySelector('.workspace-shell');
+    let topicTimer=0;
+    const clearTopic=()=>{
+      if(topicTimer) clearTimeout(topicTimer);
+      topicTimer=0;
+      topicShell?.classList.remove('topic-loading');
+      topicShell?.setAttribute('aria-busy','false');
+    };
+    const armTopic=()=>{
+      if(topicTimer) clearTimeout(topicTimer);
+      topicTimer=window.setTimeout(clearTopic,5000);
+    };
+    if(topicFrame){
+      topicFrame.addEventListener('load',clearTopic);
+      new MutationObserver(mutations=>{
+        if(mutations.some(m=>m.type==='attributes'&&m.attributeName==='src')) armTopic();
+      }).observe(topicFrame,{attributes:true,attributeFilter:['src']});
+      if(topicShell?.classList.contains('topic-loading')) armTopic();
+    }
+
+    const toolFrame=document.getElementById('toolFrame');
+    const toolLoading=document.getElementById('toolLoading');
+    let toolTimer=0;
+    const clearTool=()=>{
+      if(toolTimer) clearTimeout(toolTimer);
+      toolTimer=0;
+      if(toolLoading) toolLoading.hidden=true;
+    };
+    const armTool=()=>{
+      if(toolTimer) clearTimeout(toolTimer);
+      toolTimer=window.setTimeout(clearTool,6500);
+    };
+    toolFrame?.addEventListener('load',clearTool);
+    window.addEventListener('coursetoolchange',event=>{
+      if(event.detail?.open) armTool(); else clearTool();
+    });
+    if(toolLoading&&!toolLoading.hidden) armTool();
+  }
+
   window.addEventListener('alevel:lesson-selected',()=>{
     if(!coreLoaded&&!coreLoading) activateLessonPresentation();
     else if(coreLoaded) deferExtras();
@@ -207,6 +248,7 @@
 
   const start=()=>{
     registerOfflineSupport();
+    installLoadingFailsafe();
     loadHome();
     if(window.ALEVEL_ACTIVE_LESSON||location.hash.startsWith('#lesson=')) activateLessonPresentation();
   };
