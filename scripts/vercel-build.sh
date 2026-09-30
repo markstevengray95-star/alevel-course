@@ -46,6 +46,7 @@ done
 
 shell_assets=(
   pricing-access.js pricing-access.css
+  auth.js auth.css
   student-notebook.js student-notebook.css
   course-tools.js course-tools.css
   mobile-mode.js mobile-mode.css
