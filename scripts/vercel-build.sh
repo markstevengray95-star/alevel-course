@@ -49,7 +49,8 @@ shell_assets=(
   course-tools.js course-tools.css
   mobile-mode.js mobile-mode.css
   experience-polish.css
-  textbook-data.js textbook.js textbook.css textbook-options.js textbook-options-adapter.js textbook-options.css textbook-stability-guard.js
+  textbook-data.js textbook.js textbook.css textbook-options.js textbook-options.css textbook-safe-options.js
+  textbook-options-adapter.js textbook-stability-guard.js
   textbook-phase1.js textbook-phase1.css textbook-phase2.js textbook-phase2.css textbook-phase3.js textbook-phase3.css
   textbook-phase4.js textbook-phase4.css textbook-phase5.js textbook-phase5.css textbook-phase6-runtime.js textbook-phase6.css
   textbook-phase7.js textbook-phase7.css textbook-phase8.js textbook-phase8.css
@@ -71,9 +72,8 @@ for file in "${shell_assets[@]}"; do
 done
 
 for file in \
-  app.js student-notebook.js ai-coach.js course-tools.js mobile-mode.js textbook-data.js textbook.js textbook-options.js textbook-options-adapter.js textbook-stability-guard.js \
-  textbook-phase1.js textbook-phase2.js textbook-phase3.js textbook-phase4.js textbook-phase5.js textbook-phase6-runtime.js textbook-phase7.js textbook-phase8.js lesson-enrichment.js \
-  curriculum-map.js lesson-content.js lesson-automarking.js lesson-quality-audit.js guided-tutor-dashboard.js lesson-navigator.js guided-tutor-mode.js lesson-reader-quicknav.js presentation-library.js \
+  app.js student-notebook.js ai-coach.js course-tools.js mobile-mode.js textbook-data.js textbook.js textbook-options.js textbook-safe-options.js \
+  lesson-enrichment.js curriculum-map.js lesson-content.js lesson-automarking.js lesson-quality-audit.js guided-tutor-dashboard.js lesson-navigator.js guided-tutor-mode.js lesson-reader-quicknav.js presentation-library.js \
   presentation-mode.js lesson-phase3.js lesson-spec-depth.js lesson-deepening.js lesson-presentation-primary.js lesson-presentation-controls.js lesson-presentation-progressive.js lesson-presentation-visuals.js lesson-presentation-practical.js lesson-presenter-view.js \
   lesson-activities.js lesson-simulations.js lesson-assessment.js lesson-progression.js lesson-teacher-tools.js lesson-astar.js sw.js \
   api/physics-coach.js shared/unified-topic-embedded.js shared/simple-lesson-navigation.js shared/lesson-presentation-enhancements.js; do
@@ -87,33 +87,16 @@ cp "${shell_assets[@]}" dist/
 cp -R topics dist/topics
 cp -R tools/practicals dist/tools/practicals
 
+# SAFE MODE: keep the proven base textbook renderer and all Paper 3 option
+# content, but do not execute the Phase 1–8 DOM enhancement runtimes while the
+# freeze is being isolated. The advanced source files are still shipped in
+# dist so no work is lost and they can be re-enabled incrementally.
 printf '\n/* paper3-option-data */\n' >> dist/textbook.js; cat textbook-options.js >> dist/textbook.js
-# Install the stability guard before every enhancement runtime. It temporarily
-# suppresses enhancer MutationObservers during synchronous module initialisation
-# and replaces them with explicit chapter/topic refresh events.
-printf '\n/* textbook-stability-guard */\n' >> dist/textbook.js; cat textbook-stability-guard.js >> dist/textbook.js
-printf '\n/* paper3-option-adapter */\n' >> dist/textbook.js; cat textbook-options-adapter.js >> dist/textbook.js
-printf '\n/* textbook-phase1-runtime */\n' >> dist/textbook.js; cat textbook-phase1.js >> dist/textbook.js
-printf '\n/* textbook-phase2-runtime */\n' >> dist/textbook.js; cat textbook-phase2.js >> dist/textbook.js
-printf '\n/* textbook-phase3-runtime */\n' >> dist/textbook.js; cat textbook-phase3.js >> dist/textbook.js
-printf '\n/* textbook-phase4-runtime */\n' >> dist/textbook.js; cat textbook-phase4.js >> dist/textbook.js
-printf '\n/* textbook-phase5-runtime */\n' >> dist/textbook.js; cat textbook-phase5.js >> dist/textbook.js
-printf '\n/* textbook-phase6-runtime */\n' >> dist/textbook.js; cat textbook-phase6-runtime.js >> dist/textbook.js
-printf '\n/* textbook-phase7-runtime */\n' >> dist/textbook.js; cat textbook-phase7.js >> dist/textbook.js
-printf '\n/* textbook-phase8-runtime */\n' >> dist/textbook.js; cat textbook-phase8.js >> dist/textbook.js
-printf '\n/* paper3-option-styles */\n' >> dist/textbook.css; cat textbook-options.css >> dist/textbook.css
-printf '\n/* textbook-phase1-styles */\n' >> dist/textbook.css; cat textbook-phase1.css >> dist/textbook.css
-printf '\n/* textbook-phase2-styles */\n' >> dist/textbook.css; cat textbook-phase2.css >> dist/textbook.css
-printf '\n/* textbook-phase3-styles */\n' >> dist/textbook.css; cat textbook-phase3.css >> dist/textbook.css
-printf '\n/* textbook-phase4-styles */\n' >> dist/textbook.css; cat textbook-phase4.css >> dist/textbook.css
-printf '\n/* textbook-phase5-styles */\n' >> dist/textbook.css; cat textbook-phase5.css >> dist/textbook.css
-printf '\n/* textbook-phase6-styles */\n' >> dist/textbook.css; cat textbook-phase6.css >> dist/textbook.css
-printf '\n/* textbook-phase7-styles */\n' >> dist/textbook.css; cat textbook-phase7.css >> dist/textbook.css
-printf '\n/* textbook-phase8-styles */\n' >> dist/textbook.css; cat textbook-phase8.css >> dist/textbook.css
+printf '\n/* lightweight-paper3-switcher */\n' >> dist/textbook.js; cat textbook-safe-options.js >> dist/textbook.js
 
 find dist/topics -name .git -exec rm -rf {} + 2>/dev/null || true
 find dist/topics -type d -name node_modules -prune -exec rm -rf {} + 2>/dev/null || true
 find dist/tools -name .git -exec rm -rf {} + 2>/dev/null || true
 find dist/tools -type d -name node_modules -prune -exec rm -rf {} + 2>/dev/null || true
 
-echo "Unified A-Level Physics course assembled in dist/ with observer-free textbook enhancement refresh scheduling, core 3.1–3.8, all Paper 3 options, and Phase 1–8 tools."
+echo "Unified A-Level Physics course assembled in textbook safe mode: base textbook + core 3.1–3.8 + Paper 3 options 3.9–3.13, with heavy textbook enhancement observers disabled."
