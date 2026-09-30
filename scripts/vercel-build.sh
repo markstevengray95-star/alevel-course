@@ -75,7 +75,7 @@ shell_assets=(
   course-tools.js course-tools.css
   mobile-mode.js mobile-mode.css
   experience-polish.css
-  textbook-data.js textbook.js textbook.css textbook-phase1.js textbook-phase1.css textbook-phase2.js textbook-phase2.css
+  textbook-data.js textbook.js textbook.css textbook-phase1.js textbook-phase1.css textbook-phase2.js textbook-phase2.css textbook-phase3.js textbook-phase3.css
   lesson-enrichment.js lesson-enrichment.css
   curriculum-map.js curriculum-map.css
   lesson-content.js lesson-content.css
@@ -114,7 +114,7 @@ for file in "${shell_assets[@]}"; do
 done
 
 for file in \
-  app.js student-notebook.js ai-coach.js course-tools.js mobile-mode.js textbook-data.js textbook.js textbook-phase1.js textbook-phase2.js lesson-enrichment.js \
+  app.js student-notebook.js ai-coach.js course-tools.js mobile-mode.js textbook-data.js textbook.js textbook-phase1.js textbook-phase2.js textbook-phase3.js lesson-enrichment.js \
   curriculum-map.js lesson-content.js lesson-automarking.js lesson-quality-audit.js guided-tutor-dashboard.js lesson-navigator.js guided-tutor-mode.js lesson-reader-quicknav.js presentation-library.js \
   presentation-mode.js lesson-phase3.js lesson-spec-depth.js lesson-deepening.js lesson-presentation-primary.js lesson-presentation-controls.js lesson-presentation-progressive.js lesson-presentation-visuals.js lesson-presentation-practical.js lesson-presenter-view.js \
   lesson-activities.js lesson-simulations.js lesson-assessment.js lesson-progression.js lesson-teacher-tools.js lesson-astar.js sw.js \
@@ -130,19 +130,23 @@ cp -R topics dist/topics
 cp -R tools/practicals dist/tools/practicals
 
 # Textbook enhancement phases are appended to the existing textbook runtime/style so
-# every current textbook entry point gains the upgraded teaching and visual system.
+# every current textbook entry point gains the upgraded teaching, visual and tutor system.
 printf '\n/* textbook-phase1-runtime */\n' >> dist/textbook.js
 cat textbook-phase1.js >> dist/textbook.js
 printf '\n/* textbook-phase2-runtime */\n' >> dist/textbook.js
 cat textbook-phase2.js >> dist/textbook.js
+printf '\n/* textbook-phase3-runtime */\n' >> dist/textbook.js
+cat textbook-phase3.js >> dist/textbook.js
 printf '\n/* textbook-phase1-styles */\n' >> dist/textbook.css
 cat textbook-phase1.css >> dist/textbook.css
 printf '\n/* textbook-phase2-styles */\n' >> dist/textbook.css
 cat textbook-phase2.css >> dist/textbook.css
+printf '\n/* textbook-phase3-styles */\n' >> dist/textbook.css
+cat textbook-phase3.css >> dist/textbook.css
 
 find dist/topics -name .git -exec rm -rf {} + 2>/dev/null || true
 find dist/topics -type d -name node_modules -prune -exec rm -rf {} + 2>/dev/null || true
 find dist/tools -name .git -exec rm -rf {} + 2>/dev/null || true
 find dist/tools -type d -name node_modules -prune -exec rm -rf {} + 2>/dev/null || true
 
-echo "Unified A-Level Physics course assembled in dist/ with the guided tutor, lesson navigator, full presentation system, adaptive marking, and the Phase 1 + Phase 2 interactive AQA textbook."
+echo "Unified A-Level Physics course assembled in dist/ with the guided tutor, lesson navigator, adaptive marking, and the Phase 1–3 interactive tutor-integrated AQA textbook."
