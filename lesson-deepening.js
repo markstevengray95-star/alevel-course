@@ -9,6 +9,10 @@
   let shell = null;
   let deck = null;
   let slideIndex = 0;
+  let returnFocus=null;
+  let teacherNotes=false;
+  const POSITION_KEY='alevel-slide-position-v2';
+  function positions(){try{return JSON.parse(localStorage.getItem(POSITION_KEY)||'{}')||{};}catch{return {};}}
 
   function profileFor(id){
     return window.ALEVEL_PHASE3?.profile?.(id) || null;
@@ -76,90 +80,8 @@
   }
 
   function buildPhase2Deck(id){
-    const p = profileFor(id);
-    if(!p) return null;
-
-    const chunks = list(p.chunks);
-    const chunk1 = chunks[0] || {title:'Build the core idea',text:[p.topicIntro,p.focus]};
-    const chunk2 = chunks[1] || chunks[0] || {title:'Connect and apply',text:[p.concept?.method,p.focus]};
-    const eq = p.primaryEquation || p.equations?.[0] || [p.concept?.model,p.concept?.model,p.concept?.method];
-    const keywords = list(p.keywords).slice(0,10);
-    const objectives = list(p.objectives).length ? p.objectives : [`Explain ${p.title}.`,'Apply the relevant model or equation.','Answer an AQA-style question using precise physics.'];
-    const checks = list(p.checks).length ? p.checks : list(p.checkpoints);
-    const misconceptions = list(p.misconceptions).length ? p.misconceptions : [p.concept?.pitfall];
-    const examQuestions = list(p.exam);
-    const exam = examQuestions.find(q=>Number(q.marks)>=4) || examQuestions[0] || {marks:4,q:`Explain the physics of ${p.title}.`};
-    const deep = deepeningFor(p);
-    const model = clean(eq?.[1] || p.concept?.model || 'Use the governing model for this lesson.');
-    const use = clean(eq?.[2] || p.concept?.method || p.focus);
-    const central = clean(p.concept?.key || p.title);
-    const pitfall = clean(p.concept?.pitfall || misconceptions[0] || 'State the physics explicitly rather than relying on an unsupported assertion.');
-
-    const starterAnswers = [
-      `Central idea to retrieve: ${central}.`,
-      `Useful model or relationship: ${model}.`,
-      `A strong explanation should include: ${use}`,
-      `Common trap to avoid: ${pitfall}`
-    ];
-
-    const taskPrompts = checks.slice(0,3);
-    while(taskPrompts.length<3) taskPrompts.push([
-      `State the principle that controls ${p.title.toLowerCase()}.`,
-      `Use ${model} to explain what changes and what stays constant.`,
-      `Identify one assumption or limitation in the model.`
-    ][taskPrompts.length]);
-
-    const taskAnswers = [
-      `Principle: ${central}.`,
-      `Model/equation: ${model}.`,
-      `Method or reasoning: ${use}`,
-      `Evidence should be linked back to the lesson focus: ${clean(p.focus)}.`,
-      `Do not make this mistake: ${pitfall}`
-    ];
-
-    const markPoints = [
-      `State the relevant principle: ${central}.`,
-      `Select and correctly use ${model}.`,
-      `Identify the relevant measurable quantities or evidence from ${clean(p.focus)}.`,
-      `Explain the reasoning chain rather than only quoting a formula.`,
-      'Use correct units, signs, directions and significant figures where relevant.',
-      `Address a limitation, assumption or misconception such as: ${pitfall}`
-    ].slice(0,Math.max(4,Math.min(6,Number(exam.marks)||6)));
-
-    const summary = [
-      `Core idea: ${central}.`,
-      `Model to remember: ${model}.`,
-      `How to use it: ${use}`,
-      `Evidence/application: ${clean(p.focus)}.`,
-      `Exam warning: ${pitfall}`
-    ];
-
-    return {
-      id:p.id,
-      title:p.title,
-      subtitle:`${p.topicCode} · ${p.ref} · ${p.year}`,
-      phase:'Phase 2',
-      slides:[
-        slide('title',`${p.topicCode} · ${p.ref}`,p.title,[p.hook,`Lesson focus: ${p.focus}`],'Begin with the question or image on screen. Do not explain the model immediately.'),
-        slide('retrieval','Retrieval starter','Do now',[...list(p.starter).slice(0,4)],'Give students 3–5 minutes of silent retrieval before revealing answers.'),
-        slide('answer','Starter answers','Check and improve',starterAnswers,'Reveal after students have committed to an answer. Ask them to correct in a different colour.'),
-        slide('objectives','Learning objectives','By the end of the lesson',objectives,'Keep these visible briefly, then return to them in the plenary.'),
-        slide('vocabulary','Key vocabulary','Language of the lesson',keywords.length?keywords.map((k,i)=>`${i+1}. ${k}`):[central,model],'Ask students to identify any terms they cannot yet define precisely.'),
-        slide('teach','Teach 1',clean(chunk1.title || 'Build the core idea'),list(chunk1.text).slice(0,4),'Explain one idea at a time. Use questioning before adding extra detail.'),
-        slide('worked','Worked example',p.worked?.question || `Apply ${model}.`,list(p.worked?.steps).slice(0,6),p.worked?.answer || 'Model the setup, substitution, units and final check.'),
-        slide('check','Check for understanding','Pause and check',list(p.checkpoints).length?p.checkpoints:taskPrompts,'Use mini-whiteboards or cold call. Do not move on until the key misconception is exposed.'),
-        slide('activity','Student task','Apply the new idea',taskPrompts,'Suggested time: 6–8 minutes. Students should show working and justify each choice.'),
-        slide('answer','Task answers','Self-check',taskAnswers,'Students should amend their own work rather than simply copy the model.'),
-        slide('teach','Teach 2',clean(chunk2.title || 'Connect the physics'),list(chunk2.text).slice(0,4),'Build from the first teaching chunk and explicitly connect the two ideas.'),
-        slide('application','Application','Use the physics in a new context',[clean(p.hook),`Predict what would happen if one relevant quantity changed.`,`Explain the prediction using ${model}.`,`State one assumption behind your answer.`],'Pair discussion first, then take a fully reasoned response.'),
-        slide('exam','AQA exam question',`${exam.marks || 4}-mark practice`,[clean(exam.q)],'Students answer independently under timed conditions before the mark scheme is shown.'),
-        slide('markscheme','Mark scheme / model answer','What earns the marks',markPoints,deep?.teacherAnswer || 'Award credit for correct physics, linked reasoning and appropriate evidence.'),
-        slide('misconception','Common misconceptions','Spot and repair the mistake',misconceptions.slice(0,4).concat([`Key lesson trap: ${pitfall}`]).filter((x,i,a)=>a.indexOf(x)===i),'Ask students to rewrite one incorrect statement as precise physics.'),
-        slide('stretch','A* stretch','Push the reasoning',deep?.representation || [`Explain ${central} in words.`,`Represent it with ${model}.`,'Connect it to a graph, diagram or experimental observation.','State where the model may stop being valid.'],'Require a justified answer, not just a more difficult calculation.'),
-        slide('plenary','Plenary','Exit ticket',[`Explain ${p.title} in one precise sentence.`,`Write ${model} and state when it applies.`,`Name one misconception you will now avoid.`,`Confidence check: what still needs clarification?`],'Collect one response or use mini-whiteboards before students leave.'),
-        slide('summary','Lesson summary','Five things to remember',summary,'Return to the objectives and identify which have been secured.')
-      ]
-    };
+    const profile=profileFor(id);
+    return profile ? window.ALEVEL_SLIDE_DESIGN.build(profile) : null;
   }
 
   function ensureShell(){
@@ -172,7 +94,8 @@
       <section class="phase3-deck deep-deck" role="dialog" aria-modal="true" aria-label="Lesson presentation">
         <aside class="phase3-deck-side">
           <div><span class="phase3-kicker">Lesson presentation</span><h2 data-deep-title></h2><p data-deep-subtitle></p></div>
-          <div class="phase3-slide-list" data-deep-list></div>
+          <button type="button" data-outline-toggle aria-expanded="false">☰ Slide outline</button>
+          <div class="phase3-slide-list" data-deep-list aria-label="Slide outline"></div>
           <div class="phase3-deck-tools">
             <button type="button" class="primary" data-deep-print>Print / PDF</button>
             <button type="button" data-deep-copy>Copy outline</button>
@@ -180,8 +103,9 @@
           </div>
         </aside>
         <main class="phase3-main">
-          <div class="phase3-top"><strong data-deep-count></strong><span>← / → change slide</span></div>
+          <div class="phase3-top"><strong data-deep-count role="status" aria-live="polite"></strong><label class="ls-jump-label">Jump to <select data-slide-jump aria-label="Jump to slide"></select></label><span>← / → change slide</span></div>
           <article class="phase3-slide deep-slide" tabindex="0"></article>
+          <div class="ls-support"><button type="button" data-slide-answer aria-expanded="false" aria-controls="ls-solution">Show solution</button><button type="button" data-teacher-notes aria-expanded="false" aria-controls="ls-teacher-note">Teacher notes</button><div id="ls-solution" class="ls-solution" hidden></div><div id="ls-teacher-note" class="ls-teacher-note" hidden></div></div>
           <footer class="phase3-bottom">
             <div class="phase3-progress"><span data-deep-progress></span></div>
             <nav class="phase3-nav"><button type="button" data-deep-prev>←</button><button type="button" data-deep-next>→</button></nav>
@@ -190,6 +114,17 @@
       </section>`;
     document.body.appendChild(shell);
     shell.addEventListener('click', event => {
+      if(event.target.closest('[data-outline-toggle]')){
+        const expanded=shell.classList.toggle('ls-outline-open');
+        shell.querySelector('[data-outline-toggle]').setAttribute('aria-expanded',String(expanded));
+      }
+      if(event.target.closest('[data-slide-answer]')){
+        const answer=shell.querySelector('#ls-solution');answer.hidden=!answer.hidden;
+        const button=shell.querySelector('[data-slide-answer]');button.setAttribute('aria-expanded',String(!answer.hidden));button.textContent=answer.hidden?'Show solution':'Hide solution';
+      }
+      if(event.target.closest('[data-teacher-notes]')){
+        teacherNotes=!teacherNotes;updateSupport();
+      }
       if(event.target.closest('[data-deep-close]')) close();
       if(event.target.closest('[data-deep-prev]')) move(-1);
       if(event.target.closest('[data-deep-next]')) move(1);
@@ -198,15 +133,20 @@
       const button = event.target.closest('[data-deep-index]');
       if(button){ slideIndex = Number(button.dataset.deepIndex); render(); }
     });
+    shell.querySelector('[data-slide-jump]').addEventListener('change',event=>{slideIndex=Number(event.target.value);render();});
     return shell;
   }
 
   function slideHtml(s){
-    const bullets = list(s?.bullets).map(item => `<li>${esc(item)}</li>`).join('');
-    const note = s?.note ? `<div class="phase3-note deep-teacher-note"><strong>Teacher note</strong><span>${esc(s.note)}</span></div>` : '';
-    if(s?.type === 'title') return `<div class="phase3-kicker">${esc(s.kicker)}</div><h1>${esc(s.title)}</h1><ul>${bullets}</ul>${note}`;
-    if(s?.type === 'equation') return `<div class="phase3-kicker">${esc(s.kicker)}</div><h2>${esc(s.title)}</h2><div class="phase3-equation">${esc(s.equation)}</div><ul>${bullets}</ul>${note}`;
-    return `<div class="phase3-kicker">${esc(s?.kicker)}</div><h2>${esc(s?.title)}</h2><ul>${bullets}</ul>${note}`;
+    return window.ALEVEL_SLIDE_DESIGN.html(s);
+  }
+  function updateSupport(resetAnswer=false){
+    const s=deck.slides[slideIndex];
+    const answer=shell.querySelector('#ls-solution');if(resetAnswer)answer.hidden=true;
+    answer.innerHTML=`<strong>Solution / key reasoning</strong><ol>${list(s.solution).map(item=>`<li>${esc(item)}</li>`).join('')}</ol>`;
+    const answerButton=shell.querySelector('[data-slide-answer]');answerButton.hidden=!s.solution?.length;answerButton.textContent=answer.hidden?'Show solution':'Hide solution';answerButton.setAttribute('aria-expanded',String(!answer.hidden));
+    const note=shell.querySelector('#ls-teacher-note');note.textContent=s.note||'Invite a precise explanation, then connect it to the lesson objective.';note.hidden=!teacherNotes;
+    shell.querySelector('[data-teacher-notes]').setAttribute('aria-expanded',String(teacherNotes));
   }
 
   function render(){
@@ -215,24 +155,30 @@
     slideIndex = Math.max(0,Math.min(deck.slides.length-1,slideIndex));
     const s = deck.slides[slideIndex] || deck.slides[0];
     host.querySelector('[data-deep-title]').textContent = deck.title || 'Lesson presentation';
-    host.querySelector('[data-deep-subtitle]').textContent = `${deck.subtitle || ''} · 18-slide lesson sequence`;
+    host.querySelector('[data-deep-subtitle]').textContent = `${deck.subtitle || ''} · ${deck.slides.length} slides`;
     host.querySelector('[data-deep-count]').textContent = `Slide ${slideIndex + 1} / ${deck.slides.length}`;
     const slideNode = host.querySelector('.deep-slide');
     slideNode.dataset.layout = s.layout || 'content';
     slideNode.innerHTML = slideHtml(s);
     host.querySelector('[data-deep-progress]').style.width = `${((slideIndex + 1) / deck.slides.length) * 100}%`;
-    host.querySelector('[data-deep-list]').innerHTML = deck.slides.map((item,index) => `<button type="button" data-deep-index="${index}" class="${index === slideIndex ? 'active' : ''}">${index + 1}. ${esc(item.title)}</button>`).join('');
+    host.querySelector('[data-deep-list]').innerHTML = deck.slides.map((item,index) => `${index===0||item.section!==deck.slides[index-1].section?`<strong class="ls-outline-section">${esc(item.section)}</strong>`:''}<button type="button" data-deep-index="${index}" aria-current="${index===slideIndex?'step':'false'}" class="${index === slideIndex ? 'active' : ''}"><small>${esc(item.kicker)}</small><span>${index + 1}. ${esc(item.title)}</span></button>`).join('');
+    const picker=host.querySelector('[data-slide-jump]');picker.innerHTML=deck.slides.map((item,index)=>`<option value="${index}">${index+1}. ${esc(item.kicker)}</option>`).join('');picker.value=String(slideIndex);
     host.querySelector('[data-deep-prev]').disabled = slideIndex === 0;
     host.querySelector('[data-deep-next]').disabled = slideIndex === deck.slides.length - 1;
+    updateSupport(true);
+    try{const saved=positions();saved[deck.id]=slideIndex;localStorage.setItem(POSITION_KEY,JSON.stringify(saved));}catch{}
+    slideNode.scrollTop=0;
     slideNode.focus({preventScroll:true});
+    window.dispatchEvent(new CustomEvent('alevel:slide-changed',{detail:{id:deck.id,index:slideIndex,total:deck.slides.length}}));
   }
 
-  function open(id){
+  function open(id,{restart=false}={}){
     const next = buildPhase2Deck(id);
     if(!next) return false;
     activeLessonId = id;
     deck = next;
-    slideIndex = 0;
+    if(!shell||shell.hidden)returnFocus=document.activeElement;
+    const saved=Number(positions()[id]);slideIndex=restart||!Number.isFinite(saved)?0:Math.min(Math.max(0,saved),deck.slides.length-1);
     ensureShell().hidden = false;
     document.body.classList.add('lesson-reader-open','deep-deck-open');
     render();
@@ -243,6 +189,7 @@
     if(shell) shell.hidden = true;
     document.body.classList.remove('deep-deck-open');
     if(!document.querySelector('.lesson-reader-shell:not([hidden])')) document.body.classList.remove('lesson-reader-open');
+    returnFocus?.focus?.({preventScroll:true});
   }
 
   function move(delta){
@@ -269,7 +216,7 @@
     const panel = document.createElement('section');
     panel.className = 'deep-understanding-panel';
     panel.innerHTML = `
-      <div class="deep-panel-heading"><div><span>PowerPoint-style lesson</span><h3>${esc(profile.title)}</h3></div><button type="button" data-open-deep-presentation="${esc(profile.id)}">Open 18-slide presentation</button></div>
+      <div class="deep-panel-heading"><div><span>PowerPoint-style lesson</span><h3>${esc(profile.title)}</h3></div><button type="button" data-open-deep-presentation="${esc(profile.id)}">Open lesson slides</button></div>
       <div class="deep-reasoning-grid">
         ${deep.reasoning.slice(0,4).map((item,index) => `<article><b>${index + 1}</b><p>${esc(item)}</p></article>`).join('')}
       </div>
@@ -305,6 +252,13 @@
 
   document.addEventListener('keydown', event => {
     if(!shell || shell.hidden) return;
+    if(event.target?.closest?.('input,textarea,select,[contenteditable="true"]'))return;
+    if(event.key==='Tab'){
+      const elements=Array.from(shell.querySelectorAll('button:not(:disabled),select,.deep-slide')).filter(el=>el.getClientRects().length);
+      const first=elements[0],last=elements.at(-1);
+      if(event.shiftKey&&document.activeElement===first){event.preventDefault();last?.focus();}
+      else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus();}
+    }
     if(event.key === 'Escape') close();
     if(event.key === 'ArrowLeft' || event.key === 'PageUp') move(-1);
     if(event.key === 'ArrowRight' || event.key === 'PageDown' || event.key === ' ') {

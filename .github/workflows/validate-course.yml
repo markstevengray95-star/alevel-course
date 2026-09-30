@@ -18,6 +18,9 @@ jobs:
       - name: Assemble Vercel output
         run: bash scripts/vercel-build.sh
 
+      - name: Verify presentation content and subject matching
+        run: node tests/lesson-slide-design.cjs
+
       - name: Verify course shell
         run: |
           test -f dist/index.html

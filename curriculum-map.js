@@ -185,9 +185,9 @@
     section.innerHTML = `
       <div class="curriculum-head">
         <div>
-          <span class="eyebrow">Phase 1 · lesson architecture</span>
+          <span class="eyebrow">Your lesson library</span>
           <h2>Complete lesson-by-lesson course map</h2>
-          <p>The AQA 7408 core is now broken into teachable lessons. This map becomes the source of truth for lesson pages, assessments, presentations and progress tracking.</p>
+          <p>Choose a lesson to learn through clear slides, labelled diagrams, worked examples and quick understanding checks.</p>
         </div>
         <div class="curriculum-stats" aria-label="Course map statistics">
           <div><strong>${total}</strong><span>lessons</span></div>
@@ -232,7 +232,7 @@
                 <div class="lesson-map-copy">
                   <div class="lesson-map-title"><strong>${escapeHtml(lesson.title)}</strong><span class="lesson-type ${escapeHtml(lesson.type)}">${typeLabel(lesson.type)}</span></div>
                   <p>${escapeHtml(lesson.focus)}</p>
-                  <div class="lesson-map-meta"><span>${escapeHtml(lesson.ref)}</span><span>~${lesson.minutes} min</span><span>Presentation planned</span></div>
+                  <div class="lesson-map-meta"><span>${escapeHtml(lesson.ref)}</span><span>~${lesson.minutes} min</span><span>Slide lesson</span></div>
                 </div>
               </article>`).join('')}
           </div>

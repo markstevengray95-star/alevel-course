@@ -219,7 +219,8 @@
     const restart=event.target.closest?.('[data-presentation-restart]');
     if(restart){
       event.preventDefault();
-      openPresentation(activeId,true);
+      window.ALEVEL_DEEPENING?.open(activeId,{restart:true});
+      enterPresentationState();decoratePresentation();
       return;
     }
     const fullscreen=event.target.closest?.('[data-presentation-fullscreen]');
@@ -253,6 +254,7 @@
       return;
     }
     if(event.key==='ArrowRight' || event.key==='PageDown' || event.key===' '){
+      if(event.key===' '&&event.target?.closest?.('button'))return;
       event.preventDefault();event.stopImmediatePropagation();
       presentationShell()?.querySelector('[data-deep-next]:not(:disabled)')?.click();
     }
@@ -260,6 +262,7 @@
 
   document.addEventListener('fullscreenchange',()=>{updateFullscreenButton(presentationShell());queuePresentationRefresh();});
   window.addEventListener('resize',()=>queuePresentationRefresh(),{passive:true});
+  window.addEventListener('alevel:slide-changed',()=>queuePresentationRefresh());
 
   window.addEventListener('alevel:lesson-selected',event=>{
     const id=event.detail?.id;
