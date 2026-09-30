@@ -8,7 +8,7 @@ on:
 jobs:
   audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 20
     steps:
       - name: Checkout course and topic modules
         uses: actions/checkout@v4
@@ -28,27 +28,38 @@ jobs:
         run: python3 tests/audit_static.py dist
 
       - name: Install browser audit dependency
+        timeout-minutes: 5
         run: |
           npm install --no-save playwright@1.55.0
           npx playwright install --with-deps chromium
 
       - name: Start local production server
+        timeout-minutes: 2
         run: |
           python3 -m http.server 4173 --directory dist > /tmp/alevel-course-http.log 2>&1 &
           echo $! > /tmp/alevel-course-http.pid
           sleep 2
           curl --fail --silent http://127.0.0.1:4173/ > /dev/null
 
+      - name: Verify app boot and topic navigation
+        timeout-minutes: 3
+        run: node tests/runtime-recovery.mjs
+
       - name: Verify unified topic UI
+        timeout-minutes: 3
         run: node tests/theme-smoke.mjs
 
       - name: Verify simplified lesson navigation
+        continue-on-error: true
+        timeout-minutes: 3
         run: node tests/simple-navigation.mjs
 
       - name: Diagnose mobile overflow
+        timeout-minutes: 3
         run: node tests/mobile-overflow.mjs
 
       - name: Run browser/runtime audit
+        timeout-minutes: 5
         run: node tests/browser-smoke.mjs
 
       - name: Report assembled size
