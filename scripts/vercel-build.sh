@@ -51,22 +51,18 @@ shell_assets=(
   experience-polish.css
   textbook-data.js textbook.js textbook.css
   textbook-phase1.js textbook-phase1.css textbook-phase2.js textbook-phase2.css textbook-phase3.js textbook-phase3.css
-  textbook-phase4.js textbook-phase4.css textbook-phase5.js textbook-phase5.css textbook-phase6.js textbook-phase6.css
+  textbook-phase4.js textbook-phase4.css textbook-phase5.js textbook-phase5.css textbook-phase6-runtime.js textbook-phase6.css
   lesson-enrichment.js lesson-enrichment.css
-  curriculum-map.js curriculum-map.css
-  lesson-content.js lesson-content.css
-  lesson-automarking.js lesson-automarking.css
-  lesson-quality-audit.js lesson-quality-audit.css
-  guided-tutor-dashboard.js guided-tutor-dashboard.css
+  curriculum-map.js curriculum-map.css lesson-content.js lesson-content.css lesson-automarking.js lesson-automarking.css
+  lesson-quality-audit.js lesson-quality-audit.css guided-tutor-dashboard.js guided-tutor-dashboard.css
   lesson-navigator.js lesson-navigator.css guided-tutor-mode.js guided-tutor-mode.css lesson-reader-quicknav.js
   presentation-library.js presentation-library.css presentation-mode.js
   lesson-phase3.js lesson-phase3.css lesson-spec-depth.js lesson-spec-depth.css lesson-deepening.js lesson-deepening.css
   lesson-presentation-primary.js lesson-presentation-primary.css lesson-presentation-phase3.css
   lesson-presentation-controls.js lesson-presentation-controls.css lesson-presentation-progressive.js lesson-presentation-progressive.css
   lesson-presentation-visuals.js lesson-presentation-visuals.css lesson-presentation-practical.js lesson-presentation-practical.css
-  lesson-presenter-view.js lesson-presenter-view.css
-  lesson-activities.js lesson-activities.css lesson-simulations.js lesson-simulations.css lesson-assessment.js lesson-assessment.css
-  lesson-progression.js lesson-progression.css lesson-teacher-tools.js lesson-teacher-tools.css lesson-astar.js lesson-astar.css
+  lesson-presenter-view.js lesson-presenter-view.css lesson-activities.js lesson-activities.css lesson-simulations.js lesson-simulations.css
+  lesson-assessment.js lesson-assessment.css lesson-progression.js lesson-progression.css lesson-teacher-tools.js lesson-teacher-tools.css lesson-astar.js lesson-astar.css
   sw.js
 )
 for file in "${shell_assets[@]}"; do
@@ -75,7 +71,7 @@ done
 
 for file in \
   app.js student-notebook.js ai-coach.js course-tools.js mobile-mode.js textbook-data.js textbook.js \
-  textbook-phase1.js textbook-phase2.js textbook-phase3.js textbook-phase4.js textbook-phase5.js textbook-phase6.js lesson-enrichment.js \
+  textbook-phase1.js textbook-phase2.js textbook-phase3.js textbook-phase4.js textbook-phase5.js textbook-phase6-runtime.js lesson-enrichment.js \
   curriculum-map.js lesson-content.js lesson-automarking.js lesson-quality-audit.js guided-tutor-dashboard.js lesson-navigator.js guided-tutor-mode.js lesson-reader-quicknav.js presentation-library.js \
   presentation-mode.js lesson-phase3.js lesson-spec-depth.js lesson-deepening.js lesson-presentation-primary.js lesson-presentation-controls.js lesson-presentation-progressive.js lesson-presentation-visuals.js lesson-presentation-practical.js lesson-presenter-view.js \
   lesson-activities.js lesson-simulations.js lesson-assessment.js lesson-progression.js lesson-teacher-tools.js lesson-astar.js sw.js \
@@ -95,7 +91,7 @@ printf '\n/* textbook-phase2-runtime */\n' >> dist/textbook.js; cat textbook-pha
 printf '\n/* textbook-phase3-runtime */\n' >> dist/textbook.js; cat textbook-phase3.js >> dist/textbook.js
 printf '\n/* textbook-phase4-runtime */\n' >> dist/textbook.js; cat textbook-phase4.js >> dist/textbook.js
 printf '\n/* textbook-phase5-runtime */\n' >> dist/textbook.js; cat textbook-phase5.js >> dist/textbook.js
-printf '\n/* textbook-phase6-runtime */\n' >> dist/textbook.js; cat textbook-phase6.js >> dist/textbook.js
+printf '\n/* textbook-phase6-runtime */\n' >> dist/textbook.js; cat textbook-phase6-runtime.js >> dist/textbook.js
 printf '\n/* textbook-phase1-styles */\n' >> dist/textbook.css; cat textbook-phase1.css >> dist/textbook.css
 printf '\n/* textbook-phase2-styles */\n' >> dist/textbook.css; cat textbook-phase2.css >> dist/textbook.css
 printf '\n/* textbook-phase3-styles */\n' >> dist/textbook.css; cat textbook-phase3.css >> dist/textbook.css
