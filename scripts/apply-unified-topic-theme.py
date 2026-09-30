@@ -21,15 +21,16 @@ TARGETS = [
 ]
 
 MARKER = '<!-- unified-course-topic-theme -->'
+# Runtime recovery: only the visual theme/focus layer and the small observer-free
+# embedded shell are loaded. The navigation/presentation enhancement assets are
+# still copied for standalone use and later staged re-enablement, but are not
+# executed inside the course iframe because their overlapping MutationObservers
+# could lock the renderer when a topic opened.
 INJECTION = f'''{MARKER}
-<link rel="stylesheet" href="unified-course-theme.css?v=21">
-<link rel="stylesheet" href="unified-course-focus.css?v=21">
-<link rel="stylesheet" href="unified-course-navigation.css?v=21">
-<link rel="stylesheet" href="unified-course-presentation.css?v=21">
+<link rel="stylesheet" href="unified-course-theme.css?v=22">
+<link rel="stylesheet" href="unified-course-focus.css?v=22">
 <script>if(window.self!==window.top)document.documentElement.classList.add('unified-course-embedded');</script>
-<script src="unified-course-embedded.js?v=21" defer></script>
-<script src="unified-course-navigation.js?v=21" defer></script>
-<script src="unified-course-presentation.js?v=21" defer></script>'''
+<script src="unified-course-embedded.js?v=22" defer></script>'''
 
 for source in (THEME_SOURCE, FOCUS_SOURCE, EMBEDDED_SCRIPT_SOURCE, NAV_STYLE_SOURCE, NAV_SCRIPT_SOURCE, PRESENTATION_STYLE_SOURCE, PRESENTATION_SCRIPT_SOURCE):
     if not source.exists():
@@ -69,6 +70,6 @@ for index in TARGETS:
         html = html.replace('</head>', f'  {INJECTION}\n</head>', 1)
     index.write_text(html, 'utf-8')
 
-    print(f'Applied focused unified topic UI to {index.parent}')
+    print(f'Applied stable focused topic UI to {index.parent}')
 
-print(f'Focused visual system applied to {len(TARGETS)} topic modules.')
+print(f'Stable observer-free embedded UI applied to {len(TARGETS)} topic modules.')
