@@ -108,16 +108,21 @@
     const style=document.createElement('style');
     style.id='lesson-presentation-interaction-fix';
     style.textContent=`
-      .lesson-presentation-primary .lesson-presentation-shell .phase3-deck-side{position:relative;z-index:120;pointer-events:auto!important}
-      .lesson-presentation-primary .lesson-presentation-shell .phase3-deck-tools{position:relative;z-index:130;pointer-events:auto!important}
-      .lesson-presentation-primary .lesson-presentation-shell .phase3-deck-tools button{position:relative;z-index:131;pointer-events:auto!important}
-      .lesson-presentation-primary .lesson-presentation-shell .phase3-deck-tools [data-deep-close]{display:inline-flex!important;align-items:center;justify-content:center}
+      .lesson-presentation-primary .lesson-presentation-shell .phase3-deck-side{position:relative;z-index:2147483000;pointer-events:auto!important}
+      .lesson-presentation-primary .lesson-presentation-shell .phase3-deck-tools{position:relative;z-index:2147483001;pointer-events:auto!important}
+      .lesson-presentation-primary .lesson-presentation-shell .phase3-deck-tools button{position:relative;z-index:2147483002;pointer-events:auto!important}
+      .lesson-presentation-primary .lesson-presentation-shell .phase3-deck-tools [data-deep-close]{
+        display:inline-flex!important;align-items:center;justify-content:center;
+        position:fixed!important;top:14px!important;right:18px!important;
+        z-index:2147483646!important;pointer-events:auto!important;visibility:visible!important;
+        opacity:1!important;transform:none!important;min-width:118px!important;min-height:44px!important;
+      }
     `;
     document.head.appendChild(style);
 
-    // The presentation is assembled by several modules. Handle the primary
-    // "Lesson notes" action at window-capture level so overlays/drawing tools
-    // cannot swallow it before the deck's own delegated click handler runs.
+    // Handle the primary "Lesson notes" action at window-capture level so
+    // overlays, drawing canvases and progressive-reveal layers cannot swallow
+    // the action before the deck's own delegated click handler runs.
     window.addEventListener('click',event=>{
       const button=event.target?.closest?.('.lesson-presentation-shell [data-deep-close]');
       if(!button)return;
@@ -176,8 +181,6 @@
   }
 
   function activateLessonPresentation(){
-    // Load only lesson-scoped helpers once a lesson actually exists. Do not
-    // auto-load the old whole-course teacher audit/dashboard on the home page.
     loadHome();
     loadCore(()=>replayActiveLesson());
   }
@@ -238,8 +241,6 @@
   const start=()=>{
     registerOfflineSupport();
     installLoadingFailsafe();
-    // Intentionally no loadHome() here. First paint must never depend on
-    // course-wide audit/library/dashboard work.
     if(window.ALEVEL_ACTIVE_LESSON||location.hash.startsWith('#lesson='))activateLessonPresentation();
   };
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});
