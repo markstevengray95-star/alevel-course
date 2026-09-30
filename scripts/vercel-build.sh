@@ -49,7 +49,7 @@ shell_assets=(
   course-tools.js course-tools.css
   mobile-mode.js mobile-mode.css
   experience-polish.css
-  textbook-data.js textbook.js textbook.css textbook-options.js textbook-options-adapter.js textbook-options.css
+  textbook-data.js textbook.js textbook.css textbook-options.js textbook-options-adapter.js textbook-options.css textbook-stability-guard.js
   textbook-phase1.js textbook-phase1.css textbook-phase2.js textbook-phase2.css textbook-phase3.js textbook-phase3.css
   textbook-phase4.js textbook-phase4.css textbook-phase5.js textbook-phase5.css textbook-phase6-runtime.js textbook-phase6.css
   textbook-phase7.js textbook-phase7.css textbook-phase8.js textbook-phase8.css
@@ -71,7 +71,7 @@ for file in "${shell_assets[@]}"; do
 done
 
 for file in \
-  app.js student-notebook.js ai-coach.js course-tools.js mobile-mode.js textbook-data.js textbook.js textbook-options.js textbook-options-adapter.js \
+  app.js student-notebook.js ai-coach.js course-tools.js mobile-mode.js textbook-data.js textbook.js textbook-options.js textbook-options-adapter.js textbook-stability-guard.js \
   textbook-phase1.js textbook-phase2.js textbook-phase3.js textbook-phase4.js textbook-phase5.js textbook-phase6-runtime.js textbook-phase7.js textbook-phase8.js lesson-enrichment.js \
   curriculum-map.js lesson-content.js lesson-automarking.js lesson-quality-audit.js guided-tutor-dashboard.js lesson-navigator.js guided-tutor-mode.js lesson-reader-quicknav.js presentation-library.js \
   presentation-mode.js lesson-phase3.js lesson-spec-depth.js lesson-deepening.js lesson-presentation-primary.js lesson-presentation-controls.js lesson-presentation-progressive.js lesson-presentation-visuals.js lesson-presentation-practical.js lesson-presenter-view.js \
@@ -93,6 +93,9 @@ printf '\n/* textbook-phase1-runtime */\n' >> dist/textbook.js; cat textbook-pha
 printf '\n/* textbook-phase2-runtime */\n' >> dist/textbook.js; cat textbook-phase2.js >> dist/textbook.js
 printf '\n/* textbook-phase3-runtime */\n' >> dist/textbook.js; cat textbook-phase3.js >> dist/textbook.js
 printf '\n/* textbook-phase4-runtime */\n' >> dist/textbook.js; cat textbook-phase4.js >> dist/textbook.js
+# Install the mutation stability guard before the adaptive Phase 5 runtime so
+# repeated identical renders cannot create a MutationObserver feedback loop.
+printf '\n/* textbook-stability-guard */\n' >> dist/textbook.js; cat textbook-stability-guard.js >> dist/textbook.js
 printf '\n/* textbook-phase5-runtime */\n' >> dist/textbook.js; cat textbook-phase5.js >> dist/textbook.js
 printf '\n/* textbook-phase6-runtime */\n' >> dist/textbook.js; cat textbook-phase6-runtime.js >> dist/textbook.js
 printf '\n/* textbook-phase7-runtime */\n' >> dist/textbook.js; cat textbook-phase7.js >> dist/textbook.js
@@ -112,4 +115,4 @@ find dist/topics -type d -name node_modules -prune -exec rm -rf {} + 2>/dev/null
 find dist/tools -name .git -exec rm -rf {} + 2>/dev/null || true
 find dist/tools -type d -name node_modules -prune -exec rm -rf {} + 2>/dev/null || true
 
-echo "Unified A-Level Physics course assembled in dist/ with core 3.1–3.8, all five Paper 3 option textbooks 3.9–3.13, and the complete Phase 1–8 adaptive textbook system."
+echo "Unified A-Level Physics course assembled in dist/ with core 3.1–3.8, all five Paper 3 option textbooks 3.9–3.13, the complete Phase 1–8 adaptive textbook system, and observer-loop stability hardening."
