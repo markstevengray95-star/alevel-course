@@ -84,7 +84,7 @@ shell_assets=(
   guided-tutor-dashboard.js guided-tutor-dashboard.css
   lesson-navigator.js lesson-navigator.css
   guided-tutor-mode.js guided-tutor-mode.css
-  lesson-reader-navigation.js lesson-reader-navigation.css
+  lesson-reader-quicknav.js
   presentation-library.js presentation-library.css
   presentation-mode.js
   lesson-phase3.js lesson-phase3.css
@@ -115,7 +115,7 @@ done
 
 for file in \
   app.js student-notebook.js ai-coach.js course-tools.js mobile-mode.js textbook-data.js textbook.js textbook-phase1.js lesson-enrichment.js \
-  curriculum-map.js lesson-content.js lesson-automarking.js lesson-quality-audit.js guided-tutor-dashboard.js lesson-navigator.js guided-tutor-mode.js lesson-reader-navigation.js presentation-library.js \
+  curriculum-map.js lesson-content.js lesson-automarking.js lesson-quality-audit.js guided-tutor-dashboard.js lesson-navigator.js guided-tutor-mode.js lesson-reader-quicknav.js presentation-library.js \
   presentation-mode.js lesson-phase3.js lesson-spec-depth.js lesson-deepening.js lesson-presentation-primary.js lesson-presentation-controls.js lesson-presentation-progressive.js lesson-presentation-visuals.js lesson-presentation-practical.js lesson-presenter-view.js \
   lesson-activities.js lesson-simulations.js lesson-assessment.js lesson-progression.js lesson-teacher-tools.js lesson-astar.js sw.js \
   api/physics-coach.js shared/unified-topic-embedded.js shared/simple-lesson-navigation.js shared/lesson-presentation-enhancements.js; do
