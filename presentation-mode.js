@@ -32,21 +32,40 @@
   ];
 
   let accessPromise=null;
+  let billingPromise=null;
   let homeLoading=false, homeLoaded=false;
   let coreLoading=false, coreLoaded=false;
   let extraLoading=false, extraLoaded=false, extrasForPlan='';
   const homeCallbacks=[], coreCallbacks=[], extraCallbacks=[];
 
+  function ensureBillingLayer(){
+    if(window.ALEVEL_BILLING)return Promise.resolve(window.ALEVEL_BILLING);
+    if(billingPromise)return billingPromise;
+    billingPromise=new Promise(resolve=>{
+      const existing=document.querySelector('script[src="billing-client.js"]');
+      let finished=false;
+      const finish=()=>{if(finished)return;finished=true;resolve(window.ALEVEL_BILLING||null);};
+      if(existing){existing.addEventListener('load',finish,{once:true});existing.addEventListener('error',finish,{once:true});window.setTimeout(finish,4000);return;}
+      const script=document.createElement('script');script.src='billing-client.js';script.async=false;
+      script.addEventListener('load',finish,{once:true});script.addEventListener('error',finish,{once:true});window.setTimeout(finish,4000);
+      document.body.appendChild(script);
+    });
+    return billingPromise;
+  }
+
   function ensureAccessLayer(){
     if(!document.querySelector('link[href="pricing-access.css"]')){
       const link=document.createElement('link');link.rel='stylesheet';link.href='pricing-access.css';document.head.appendChild(link);
     }
-    if(window.ALEVEL_ACCESS)return Promise.resolve(window.ALEVEL_ACCESS);
+    if(window.ALEVEL_ACCESS)return ensureBillingLayer().then(()=>window.ALEVEL_ACCESS);
     if(accessPromise)return accessPromise;
     accessPromise=new Promise(resolve=>{
       const existing=document.querySelector('script[src="pricing-access.js"]');
       let finished=false;
-      const finish=()=>{if(finished)return;finished=true;resolve(window.ALEVEL_ACCESS||null);};
+      const finish=()=>{
+        if(finished)return;finished=true;
+        ensureBillingLayer().finally(()=>resolve(window.ALEVEL_ACCESS||null));
+      };
       if(existing){existing.addEventListener('load',finish,{once:true});existing.addEventListener('error',finish,{once:true});window.setTimeout(finish,4000);return;}
       const script=document.createElement('script');script.src='pricing-access.js';script.async=false;
       script.addEventListener('load',finish,{once:true});script.addEventListener('error',finish,{once:true});window.setTimeout(finish,4000);
