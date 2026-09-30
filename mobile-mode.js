@@ -95,3 +95,18 @@
   apply(preferred());
   loadTextbook();
 })();
+
+(()=>{
+  if(!document.querySelector('link[href="auth.css"]')){
+    const style=document.createElement('link');
+    style.rel='stylesheet';
+    style.href='auth.css';
+    document.head.appendChild(style);
+  }
+  if(!document.querySelector('script[src="auth.js"]')){
+    const auth=document.createElement('script');
+    auth.type='module';
+    auth.src='auth.js';
+    document.body.appendChild(auth);
+  }
+})();
