@@ -3,11 +3,12 @@
 if(window.__ALEVEL_TEXTBOOK_STABILITY_GUARD__)return;
 window.__ALEVEL_TEXTBOOK_STABILITY_GUARD__=true;
 
-// The Phase 1–8 textbook enhancers were originally written with their own
-// MutationObservers. Several of those enhancers also mutate textbookArticle,
-// so many observers could wake one another repeatedly and peg the main thread.
-// During the synchronous enhancer boot sequence we temporarily give those
-// modules inert observers, then restore the browser implementation immediately.
+// The textbook enhancement phases were originally written with independent
+// MutationObservers that watch and also mutate #textbookArticle. When several
+// phases are active together those observers can repeatedly wake one another
+// and saturate the main thread. Give only the textbook boot sequence inert
+// observers, then restore the native browser implementation after every phase
+// has completed its startup path.
 const NativeMutationObserver=window.MutationObserver;
 class InertMutationObserver{
   constructor(){ }
@@ -16,7 +17,21 @@ class InertMutationObserver{
   takeRecords(){return[];}
 }
 window.MutationObserver=InertMutationObserver;
-queueMicrotask(()=>{window.MutationObserver=NativeMutationObserver;});
+
+let restored=false;
+function restoreNativeObserver(){
+  if(restored)return;
+  restored=true;
+  window.MutationObserver=NativeMutationObserver;
+}
+// If the bundle runs while the document is still loading, phase modules add
+// their own DOMContentLoaded handlers after this guard. Restore on the next
+// task so all of those handlers construct inert observers first.
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded',()=>setTimeout(restoreNativeObserver,0),{once:true});
+}else{
+  setTimeout(restoreNativeObserver,0);
+}
 
 let refreshTimer=0;
 function detail(){
@@ -25,13 +40,11 @@ function detail(){
 }
 function refreshSoon(delay=35){
   clearTimeout(refreshTimer);
-  refreshTimer=setTimeout(()=>{
-    window.dispatchEvent(new CustomEvent('textbookchange',{detail:detail()}));
-  },delay);
+  refreshTimer=setTimeout(()=>window.dispatchEvent(new CustomEvent('textbookchange',{detail:detail()})),delay);
 }
 
-// The core textbook renders chapters synchronously. Refresh enhancements only
-// after genuine navigation actions rather than after every DOM mutation.
+// The base textbook replaces the article synchronously. Re-run enhancements
+// only after actual navigation, never after arbitrary child-list mutations.
 document.addEventListener('click',event=>{
   if(event.target.closest('#textbookNext,#textbookPrevious,.textbook-chapter-button'))refreshSoon();
 });
@@ -39,7 +52,6 @@ document.addEventListener('change',event=>{
   if(event.target.closest('#textbookMobileChapter,#textbookTopicSelect'))refreshSoon();
 });
 
-// Public open/set methods are also used by search, highlights and Paper 3.
 const api=window.CourseTextbook;
 if(api&&!api.__stabilityWrapped){
   ['open','setTopic','setChapter'].forEach(name=>{
@@ -54,5 +66,5 @@ if(api&&!api.__stabilityWrapped){
   Object.defineProperty(api,'__stabilityWrapped',{value:true,configurable:false});
 }
 
-window.ALEVEL_TEXTBOOK_STABILITY={refresh:refreshSoon};
+window.ALEVEL_TEXTBOOK_STABILITY={refresh:refreshSoon,restore:restoreNativeObserver};
 })();
