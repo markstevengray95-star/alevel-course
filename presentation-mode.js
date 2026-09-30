@@ -1,13 +1,13 @@
 (() => {
   'use strict';
 
+  // Keep first paint deliberately small. Teacher-wide audits, the presentation
+  // library and the adaptive dashboard used to synchronously rebuild/audit the
+  // entire course before the home screen could paint. Those tools remain in the
+  // repository but are no longer part of automatic application startup.
   const homeStyles = [
-    'lesson-quality-audit.css',
-    'presentation-library.css',
     'lesson-automarking.css',
-    'guided-tutor-dashboard.css',
-    'lesson-navigator.css',
-    'guided-tutor-mode.css'
+    'lesson-navigator.css'
   ];
   const coreStyles = [
     'lesson-phase3.css',
@@ -31,13 +31,9 @@
   ];
 
   const homeScripts = [
-    {src:'lesson-quality-audit.js', ready:()=>!!window.ALEVEL_QUALITY_AUDIT},
-    {src:'presentation-library.js', ready:()=>!!window.ALEVEL_PRESENTATION_LIBRARY},
     {src:'lesson-automarking.js', ready:()=>!!window.ALEVEL_AUTOMARK},
-    {src:'guided-tutor-dashboard.js', ready:()=>!!window.ALEVEL_GUIDED_TUTOR},
     {src:'lesson-navigator.js', ready:()=>!!window.ALEVEL_LESSON_NAVIGATOR},
-    {src:'lesson-reader-quicknav.js', ready:()=>!!window.ALEVEL_LESSON_QUICKNAV},
-    {src:'guided-tutor-mode.js', ready:()=>!!window.ALEVEL_GUIDED_TUTOR_MODE}
+    {src:'lesson-reader-quicknav.js', ready:()=>!!window.ALEVEL_LESSON_QUICKNAV}
   ];
   const coreScripts = [
     {src:'lesson-phase3.js', ready:()=>!!window.ALEVEL_PHASE3},
@@ -59,19 +55,14 @@
     {src:'lesson-astar.js', ready:()=>!!window.ALEVEL_ASTAR}
   ];
 
-  let homeLoading=false;
-  let homeLoaded=false;
-  let coreLoading=false;
-  let coreLoaded=false;
-  let extraLoading=false;
-  let extraLoaded=false;
-  const homeCallbacks=[];
-  const coreCallbacks=[];
-  const extraCallbacks=[];
+  let homeLoading=false, homeLoaded=false;
+  let coreLoading=false, coreLoaded=false;
+  let extraLoading=false, extraLoaded=false;
+  const homeCallbacks=[], coreCallbacks=[], extraCallbacks=[];
 
   function addStyles(files){
     files.forEach(href=>{
-      if(document.querySelector(`link[href="${href}"]`)) return;
+      if(document.querySelector(`link[href="${href}"]`))return;
       const link=document.createElement('link');
       link.rel='stylesheet';
       link.href=href;
@@ -80,124 +71,82 @@
   }
 
   function loadSequence(items,index,onDone){
-    if(index>=items.length){ onDone(); return; }
+    if(index>=items.length){onDone();return;}
     const item=items[index];
-    if(item.ready()){
-      loadSequence(items,index+1,onDone);
-      return;
-    }
+    if(item.ready()){loadSequence(items,index+1,onDone);return;}
+    const next=()=>loadSequence(items,index+1,onDone);
     const existing=document.querySelector(`script[src="${item.src}"]`);
     if(existing){
-      if(item.ready()){
-        loadSequence(items,index+1,onDone);
-        return;
-      }
-      const next=()=>loadSequence(items,index+1,onDone);
-      existing.addEventListener('load',next,{once:true});
-      existing.addEventListener('error',next,{once:true});
+      if(item.ready()){next();return;}
+      let finished=false;
+      const finish=()=>{if(finished)return;finished=true;next();};
+      existing.addEventListener('load',finish,{once:true});
+      existing.addEventListener('error',finish,{once:true});
+      window.setTimeout(finish,4000);
       return;
     }
     const script=document.createElement('script');
     script.src=item.src;
     script.async=false;
-    const next=()=>loadSequence(items,index+1,onDone);
-    script.addEventListener('load',next,{once:true});
-    script.addEventListener('error',next,{once:true});
+    let finished=false;
+    const finish=()=>{if(finished)return;finished=true;next();};
+    script.addEventListener('load',finish,{once:true});
+    script.addEventListener('error',finish,{once:true});
+    window.setTimeout(finish,4000);
     document.body.appendChild(script);
   }
 
-  function runCallbacks(queue){
-    queue.splice(0).forEach(fn=>{try{fn();}catch{}});
-  }
-
+  function runCallbacks(queue){queue.splice(0).forEach(fn=>{try{fn();}catch{}});}
   function replayActiveLesson(){
     const lesson=window.ALEVEL_ACTIVE_LESSON;
-    if(!lesson) return;
-    queueMicrotask(()=>window.dispatchEvent(new CustomEvent('alevel:lesson-selected',{detail:lesson})));
+    if(lesson)queueMicrotask(()=>window.dispatchEvent(new CustomEvent('alevel:lesson-selected',{detail:lesson})));
   }
 
   function finishHome(){
-    homeLoaded=true;
-    homeLoading=false;
-    document.documentElement.classList.add('presentation-library-ready');
-    document.documentElement.classList.add('lesson-automarking-ready');
-    document.documentElement.classList.add('guided-tutor-ready');
-    document.documentElement.classList.add('lesson-navigation-ready');
+    homeLoaded=true;homeLoading=false;
+    document.documentElement.classList.add('lesson-automarking-ready','lesson-navigation-ready');
     runCallbacks(homeCallbacks);
   }
-
   function finishCore(){
-    coreLoaded=true;
-    coreLoading=false;
+    coreLoaded=true;coreLoading=false;
     document.documentElement.classList.add('lesson-presentation-engine-ready');
     window.dispatchEvent(new CustomEvent('alevel:presentation-engine-ready'));
     runCallbacks(coreCallbacks);
   }
-
   function finishExtras(){
-    extraLoaded=true;
-    extraLoading=false;
+    extraLoaded=true;extraLoading=false;
     document.documentElement.classList.add('lesson-enhancements-ready');
-    runCallbacks(extraCallbacks);
-    replayActiveLesson();
+    runCallbacks(extraCallbacks);replayActiveLesson();
   }
 
   function loadHome(callback){
-    if(homeLoaded){
-      if(callback){try{callback();}catch{}}
-      return;
-    }
-    if(callback) homeCallbacks.push(callback);
-    if(homeLoading) return;
-    homeLoading=true;
-    addStyles(homeStyles);
-    loadSequence(homeScripts,0,finishHome);
+    if(homeLoaded){if(callback)try{callback();}catch{};return;}
+    if(callback)homeCallbacks.push(callback);
+    if(homeLoading)return;
+    homeLoading=true;addStyles(homeStyles);loadSequence(homeScripts,0,finishHome);
   }
-
   function loadCore(callback){
-    if(coreLoaded){
-      if(callback){try{callback();}catch{}}
-      return;
-    }
-    if(callback) coreCallbacks.push(callback);
-    if(coreLoading) return;
-    coreLoading=true;
-    addStyles(coreStyles);
-    loadSequence(coreScripts,0,finishCore);
+    if(coreLoaded){if(callback)try{callback();}catch{};return;}
+    if(callback)coreCallbacks.push(callback);
+    if(coreLoading)return;
+    coreLoading=true;addStyles(coreStyles);loadSequence(coreScripts,0,finishCore);
   }
-
   function loadExtras(callback){
-    if(extraLoaded){
-      if(callback){try{callback();}catch{}}
-      return;
-    }
-    if(callback) extraCallbacks.push(callback);
-    if(extraLoading) return;
-    extraLoading=true;
-    addStyles(extraStyles);
-    loadSequence(extraScripts,0,finishExtras);
-  }
-
-  function deferExtras(){
-    if(extraLoaded||extraLoading) return;
-    const run=()=>loadExtras();
-    if('requestIdleCallback' in window) window.requestIdleCallback(run,{timeout:1800});
-    else window.setTimeout(run,700);
+    if(extraLoaded){if(callback)try{callback();}catch{};return;}
+    if(callback)extraCallbacks.push(callback);
+    if(extraLoading)return;
+    extraLoading=true;addStyles(extraStyles);loadSequence(extraScripts,0,finishExtras);
   }
 
   function activateLessonPresentation(){
-    loadCore(()=>{
-      replayActiveLesson();
-      deferExtras();
-    });
+    // Load only lesson-scoped helpers once a lesson actually exists. Do not
+    // auto-load the old whole-course teacher audit/dashboard on the home page.
+    loadHome();
+    loadCore(()=>replayActiveLesson());
   }
 
   async function registerOfflineSupport(){
-    if(!('serviceWorker' in navigator) || location.protocol==='file:') return;
-    // Recovery safe mode: stale service workers were able to keep an older,
-    // observer-heavy textbook bundle controlling an already-open tab. Remove
-    // them and clear only this app's offline caches, then perform one clean
-    // reload if the current page is still controlled by an old worker.
+    if(!('serviceWorker' in navigator)||location.protocol==='file:')return;
     try{
       const hadController=!!navigator.serviceWorker.controller;
       const registrations=await navigator.serviceWorker.getRegistrations();
@@ -207,7 +156,7 @@
         await Promise.all(keys.filter(key=>key.startsWith('alevel-physics-offline-')).map(key=>caches.delete(key)));
       }
       document.documentElement.classList.add('offline-recovery-mode');
-      const reloadKey='alevel-recovery-network-reload-v1';
+      const reloadKey='alevel-recovery-network-reload-v2';
       if(hadController&&!sessionStorage.getItem(reloadKey)){
         sessionStorage.setItem(reloadKey,'1');
         location.reload();
@@ -220,54 +169,43 @@
     const topicShell=document.querySelector('.workspace-shell');
     let topicTimer=0;
     const clearTopic=()=>{
-      if(topicTimer) clearTimeout(topicTimer);
+      if(topicTimer)clearTimeout(topicTimer);
       topicTimer=0;
       topicShell?.classList.remove('topic-loading');
       topicShell?.setAttribute('aria-busy','false');
     };
     const armTopic=()=>{
-      if(topicTimer) clearTimeout(topicTimer);
+      if(topicTimer)clearTimeout(topicTimer);
       topicTimer=window.setTimeout(clearTopic,5000);
     };
     if(topicFrame){
       topicFrame.addEventListener('load',clearTopic);
       new MutationObserver(mutations=>{
-        if(mutations.some(m=>m.type==='attributes'&&m.attributeName==='src')) armTopic();
+        if(mutations.some(m=>m.type==='attributes'&&m.attributeName==='src'))armTopic();
       }).observe(topicFrame,{attributes:true,attributeFilter:['src']});
-      if(topicShell?.classList.contains('topic-loading')) armTopic();
     }
 
     const toolFrame=document.getElementById('toolFrame');
     const toolLoading=document.getElementById('toolLoading');
     let toolTimer=0;
-    const clearTool=()=>{
-      if(toolTimer) clearTimeout(toolTimer);
-      toolTimer=0;
-      if(toolLoading) toolLoading.hidden=true;
-    };
-    const armTool=()=>{
-      if(toolTimer) clearTimeout(toolTimer);
-      toolTimer=window.setTimeout(clearTool,6500);
-    };
+    const clearTool=()=>{if(toolTimer)clearTimeout(toolTimer);toolTimer=0;if(toolLoading)toolLoading.hidden=true;};
+    const armTool=()=>{if(toolTimer)clearTimeout(toolTimer);toolTimer=window.setTimeout(clearTool,6500);};
     toolFrame?.addEventListener('load',clearTool);
-    window.addEventListener('coursetoolchange',event=>{
-      if(event.detail?.open) armTool(); else clearTool();
-    });
-    if(toolLoading&&!toolLoading.hidden) armTool();
+    window.addEventListener('coursetoolchange',event=>event.detail?.open?armTool():clearTool());
   }
 
   window.addEventListener('alevel:lesson-selected',()=>{
-    if(!coreLoaded&&!coreLoading) activateLessonPresentation();
-    else if(coreLoaded) deferExtras();
+    if(!coreLoaded&&!coreLoading)activateLessonPresentation();
   });
 
   const start=()=>{
     registerOfflineSupport();
     installLoadingFailsafe();
-    loadHome();
-    if(window.ALEVEL_ACTIVE_LESSON||location.hash.startsWith('#lesson=')) activateLessonPresentation();
+    // Intentionally no loadHome() here. First paint must never depend on
+    // course-wide audit/library/dashboard work.
+    if(window.ALEVEL_ACTIVE_LESSON||location.hash.startsWith('#lesson='))activateLessonPresentation();
   };
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start,{once:true});
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});
   else start();
 
   window.ALEVEL_PRESENTATION_MODE={
