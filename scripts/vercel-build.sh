@@ -52,6 +52,7 @@ shell_assets=(
   textbook-data.js textbook.js textbook.css
   textbook-phase1.js textbook-phase1.css textbook-phase2.js textbook-phase2.css textbook-phase3.js textbook-phase3.css
   textbook-phase4.js textbook-phase4.css textbook-phase5.js textbook-phase5.css textbook-phase6-runtime.js textbook-phase6.css
+  textbook-phase7.js textbook-phase7.css textbook-phase8.js textbook-phase8.css
   lesson-enrichment.js lesson-enrichment.css
   curriculum-map.js curriculum-map.css lesson-content.js lesson-content.css lesson-automarking.js lesson-automarking.css
   lesson-quality-audit.js lesson-quality-audit.css guided-tutor-dashboard.js guided-tutor-dashboard.css
@@ -71,7 +72,7 @@ done
 
 for file in \
   app.js student-notebook.js ai-coach.js course-tools.js mobile-mode.js textbook-data.js textbook.js \
-  textbook-phase1.js textbook-phase2.js textbook-phase3.js textbook-phase4.js textbook-phase5.js textbook-phase6-runtime.js lesson-enrichment.js \
+  textbook-phase1.js textbook-phase2.js textbook-phase3.js textbook-phase4.js textbook-phase5.js textbook-phase6-runtime.js textbook-phase7.js textbook-phase8.js lesson-enrichment.js \
   curriculum-map.js lesson-content.js lesson-automarking.js lesson-quality-audit.js guided-tutor-dashboard.js lesson-navigator.js guided-tutor-mode.js lesson-reader-quicknav.js presentation-library.js \
   presentation-mode.js lesson-phase3.js lesson-spec-depth.js lesson-deepening.js lesson-presentation-primary.js lesson-presentation-controls.js lesson-presentation-progressive.js lesson-presentation-visuals.js lesson-presentation-practical.js lesson-presenter-view.js \
   lesson-activities.js lesson-simulations.js lesson-assessment.js lesson-progression.js lesson-teacher-tools.js lesson-astar.js sw.js \
@@ -92,16 +93,20 @@ printf '\n/* textbook-phase3-runtime */\n' >> dist/textbook.js; cat textbook-pha
 printf '\n/* textbook-phase4-runtime */\n' >> dist/textbook.js; cat textbook-phase4.js >> dist/textbook.js
 printf '\n/* textbook-phase5-runtime */\n' >> dist/textbook.js; cat textbook-phase5.js >> dist/textbook.js
 printf '\n/* textbook-phase6-runtime */\n' >> dist/textbook.js; cat textbook-phase6-runtime.js >> dist/textbook.js
+printf '\n/* textbook-phase7-runtime */\n' >> dist/textbook.js; cat textbook-phase7.js >> dist/textbook.js
+printf '\n/* textbook-phase8-runtime */\n' >> dist/textbook.js; cat textbook-phase8.js >> dist/textbook.js
 printf '\n/* textbook-phase1-styles */\n' >> dist/textbook.css; cat textbook-phase1.css >> dist/textbook.css
 printf '\n/* textbook-phase2-styles */\n' >> dist/textbook.css; cat textbook-phase2.css >> dist/textbook.css
 printf '\n/* textbook-phase3-styles */\n' >> dist/textbook.css; cat textbook-phase3.css >> dist/textbook.css
 printf '\n/* textbook-phase4-styles */\n' >> dist/textbook.css; cat textbook-phase4.css >> dist/textbook.css
 printf '\n/* textbook-phase5-styles */\n' >> dist/textbook.css; cat textbook-phase5.css >> dist/textbook.css
 printf '\n/* textbook-phase6-styles */\n' >> dist/textbook.css; cat textbook-phase6.css >> dist/textbook.css
+printf '\n/* textbook-phase7-styles */\n' >> dist/textbook.css; cat textbook-phase7.css >> dist/textbook.css
+printf '\n/* textbook-phase8-styles */\n' >> dist/textbook.css; cat textbook-phase8.css >> dist/textbook.css
 
 find dist/topics -name .git -exec rm -rf {} + 2>/dev/null || true
 find dist/topics -type d -name node_modules -prune -exec rm -rf {} + 2>/dev/null || true
 find dist/tools -name .git -exec rm -rf {} + 2>/dev/null || true
 find dist/tools -type d -name node_modules -prune -exec rm -rf {} + 2>/dev/null || true
 
-echo "Unified A-Level Physics course assembled in dist/ with the complete Phase 1–6 adaptive, searchable and personal AQA textbook."
+echo "Unified A-Level Physics course assembled in dist/ with the complete Phase 1–8 adaptive, searchable, specification-aware and hardened AQA textbook."
