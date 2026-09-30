@@ -75,21 +75,35 @@ shell_assets=(
   course-tools.js course-tools.css
   mobile-mode.js mobile-mode.css
   experience-polish.css
-  textbook-data.js textbook.js textbook.css
+  textbook-data.js textbook.js textbook.css textbook-phase1.js textbook-phase1.css
   lesson-enrichment.js lesson-enrichment.css
   curriculum-map.js curriculum-map.css
   lesson-content.js lesson-content.css
+  lesson-automarking.js lesson-automarking.css
+  lesson-quality-audit.js lesson-quality-audit.css
+  guided-tutor-dashboard.js guided-tutor-dashboard.css
+  lesson-navigator.js lesson-navigator.css
+  guided-tutor-mode.js guided-tutor-mode.css
+  lesson-reader-navigation.js lesson-reader-navigation.css
+  presentation-library.js presentation-library.css
   presentation-mode.js
   lesson-phase3.js lesson-phase3.css
   lesson-spec-depth.js lesson-spec-depth.css
   lesson-deepening.js lesson-deepening.css
   lesson-presentation-primary.js lesson-presentation-primary.css
+  lesson-presentation-phase3.css
+  lesson-presentation-controls.js lesson-presentation-controls.css
+  lesson-presentation-progressive.js lesson-presentation-progressive.css
+  lesson-presentation-visuals.js lesson-presentation-visuals.css
+  lesson-presentation-practical.js lesson-presentation-practical.css
+  lesson-presenter-view.js lesson-presenter-view.css
   lesson-activities.js lesson-activities.css
   lesson-simulations.js lesson-simulations.css
   lesson-assessment.js lesson-assessment.css
   lesson-progression.js lesson-progression.css
   lesson-teacher-tools.js lesson-teacher-tools.css
   lesson-astar.js lesson-astar.css
+  sw.js
 )
 
 for file in "${shell_assets[@]}"; do
@@ -100,9 +114,10 @@ for file in "${shell_assets[@]}"; do
 done
 
 for file in \
-  app.js student-notebook.js ai-coach.js course-tools.js mobile-mode.js textbook-data.js textbook.js lesson-enrichment.js \
-  curriculum-map.js lesson-content.js presentation-mode.js lesson-phase3.js lesson-spec-depth.js lesson-deepening.js lesson-presentation-primary.js lesson-activities.js lesson-simulations.js \
-  lesson-assessment.js lesson-progression.js lesson-teacher-tools.js lesson-astar.js \
+  app.js student-notebook.js ai-coach.js course-tools.js mobile-mode.js textbook-data.js textbook.js textbook-phase1.js lesson-enrichment.js \
+  curriculum-map.js lesson-content.js lesson-automarking.js lesson-quality-audit.js guided-tutor-dashboard.js lesson-navigator.js guided-tutor-mode.js lesson-reader-navigation.js presentation-library.js \
+  presentation-mode.js lesson-phase3.js lesson-spec-depth.js lesson-deepening.js lesson-presentation-primary.js lesson-presentation-controls.js lesson-presentation-progressive.js lesson-presentation-visuals.js lesson-presentation-practical.js lesson-presenter-view.js \
+  lesson-activities.js lesson-simulations.js lesson-assessment.js lesson-progression.js lesson-teacher-tools.js lesson-astar.js sw.js \
   api/physics-coach.js shared/unified-topic-embedded.js shared/simple-lesson-navigation.js shared/lesson-presentation-enhancements.js; do
   node --check "$file"
 done
@@ -114,9 +129,16 @@ cp "${shell_assets[@]}" dist/
 cp -R topics dist/topics
 cp -R tools/practicals dist/tools/practicals
 
+# Phase 1 textbook enhancement is appended to the existing textbook runtime/style so
+# every current textbook entry point gains the new teaching structure automatically.
+printf '\n/* textbook-phase1-runtime */\n' >> dist/textbook.js
+cat textbook-phase1.js >> dist/textbook.js
+printf '\n/* textbook-phase1-styles */\n' >> dist/textbook.css
+cat textbook-phase1.css >> dist/textbook.css
+
 find dist/topics -name .git -exec rm -rf {} + 2>/dev/null || true
 find dist/topics -type d -name node_modules -prune -exec rm -rf {} + 2>/dev/null || true
 find dist/tools -name .git -exec rm -rf {} + 2>/dev/null || true
 find dist/tools -type d -name node_modules -prune -exec rm -rf {} + 2>/dev/null || true
 
-echo "Unified A-Level Physics course assembled in dist/ with every lesson opening as a full-screen slide presentation by default, exact mapped AQA depth, deeper reasoning and justification slides, curriculum map, lesson notes, activity/simulation/assessment suite, richer topic visuals, shared Learn, Practise and Assess navigation, the full AQA textbook and contextual lesson enrichment."
+echo "Unified A-Level Physics course assembled in dist/ with the guided tutor, lesson navigator, full presentation system, adaptive marking, the full AQA textbook and Phase 1 guided textbook teaching structure."
