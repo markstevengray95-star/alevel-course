@@ -45,6 +45,7 @@ for file in "$materials_dir/three-performance-v10.js" "$materials_dir/vendor/thr
 done
 
 shell_assets=(
+  lesson-slide-design.js lesson-slide-design.css
   pricing-access.js pricing-access.css billing-client.js admin-promos.js
   auth.js auth.css
   student-notebook.js student-notebook.css
@@ -75,7 +76,7 @@ done
 
 for file in \
   app.js pricing-access.js billing-client.js admin-promos.js auth.js student-notebook.js ai-coach.js course-tools.js mobile-mode.js textbook-data.js textbook.js textbook-options.js textbook-safe-options.js textbook-option-glossary.js \
-  lesson-enrichment.js curriculum-map.js lesson-content.js lesson-automarking.js lesson-quality-audit.js guided-tutor-dashboard.js lesson-navigator.js guided-tutor-mode.js lesson-reader-quicknav.js presentation-library.js \
+  lesson-slide-design.js lesson-enrichment.js curriculum-map.js lesson-content.js lesson-automarking.js lesson-quality-audit.js guided-tutor-dashboard.js lesson-navigator.js guided-tutor-mode.js lesson-reader-quicknav.js presentation-library.js \
   presentation-mode.js lesson-phase3.js lesson-spec-depth.js lesson-deepening.js lesson-presentation-primary.js lesson-presentation-controls.js lesson-presentation-progressive.js lesson-presentation-visuals.js lesson-presentation-practical.js lesson-presenter-view.js \
   lesson-activities.js lesson-simulations.js lesson-assessment.js lesson-progression.js lesson-teacher-tools.js lesson-astar.js sw.js \
   api/physics-coach.js api/create-checkout-session.js api/checkout-status.js api/entitlement.js shared/unified-topic-embedded.js shared/simple-lesson-navigation.js shared/lesson-presentation-enhancements.js; do

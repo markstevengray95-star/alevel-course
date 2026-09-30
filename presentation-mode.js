@@ -8,7 +8,8 @@
     'lesson-phase3.css',
     'lesson-deepening.css',
     'lesson-presentation-primary.css',
-    'lesson-presentation-phase3.css'
+    'lesson-presentation-phase3.css',
+    'lesson-slide-design.css'
   ];
 
   const homeScripts = [
@@ -17,6 +18,7 @@
   ];
   const coreScripts = [
     {src:'lesson-phase3.js', ready:()=>!!window.ALEVEL_PHASE3},
+    {src:'lesson-slide-design.js', ready:()=>!!window.ALEVEL_SLIDE_DESIGN},
     {src:'lesson-deepening.js', ready:()=>!!window.ALEVEL_DEEPENING},
     {src:'lesson-presentation-primary.js', ready:()=>!!window.ALEVEL_PRIMARY_PRESENTATION}
   ];
@@ -246,6 +248,7 @@
   });
 
   const start=()=>{
+    loadHome();
     ensureAccessLayer().finally(()=>{
       registerOfflineSupport();
       installLoadingFailsafe();

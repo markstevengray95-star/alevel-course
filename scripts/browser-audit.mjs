@@ -1,3 +1,4 @@
+import { installAuditAccount } from '../tests/audit-account.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import { chromium } from 'playwright';
@@ -23,6 +24,7 @@ for (const file of walk(root)) {
 
 const browser = await chromium.launch({ headless: true });
 const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+await installAuditAccount(context, base);
 
 async function evaluateStable(frame, evaluator, attempts=6) {
   let lastError;

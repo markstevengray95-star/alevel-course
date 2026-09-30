@@ -58,7 +58,25 @@
   ];
   function C(match,key,hook,starter,model,method,pitfall){return {match,key,hook,starter,model,method,pitfall};}
   const defaultConcept = C(/.*/,'AQA physics','This lesson connects a specification statement to the way AQA asks students to reason, calculate and evaluate evidence.','Start by asking students to define the central idea, identify a quantity that can be measured and predict one common trap.','principle → quantities → evidence','State the principle, choose the quantities, apply the equation if needed, then interpret the answer.','Giving a formula answer without explaining the physics.');
-  function conceptFor(lesson){const text = `${lesson.title} ${lesson.focus} ${lesson.topicTitle}`; return CONCEPTS.find(c => c.match.test(text)) || defaultConcept;}
+  function conceptFor(lesson){
+    // Match the lesson itself first: broad topic names (e.g. "fields") must
+    // never select a different concept for every lesson in that topic.
+    const eligible=CONCEPTS.filter(c=>{
+      const scope={
+        'wave quantities':'waves','wave type':'waves','phase':'waves','interference':'waves','stationary waves':'waves','refraction':'waves','double-slit interference':'waves','diffraction':'waves',
+        'vector reasoning':'mechanics-materials','kinematics':'mechanics-materials','projectiles':'mechanics-materials','forces and motion':'mechanics-materials','momentum':'mechanics-materials','energy mechanics':'mechanics-materials','moments':'mechanics-materials','materials':'mechanics-materials',
+        'circuit basics':'electricity','resistivity':'electricity','circuit networks':'electricity','potential dividers':'electricity','emf and internal resistance':'electricity',
+        'SHM':'further-mechanics','thermal physics':'further-mechanics','particle classification':'particles','particles and photons':'particles','wave-particle duality':'particles'
+      };
+      if(scope[c.key]&&scope[c.key]!==lesson.topicId)return false;
+      if(['data quality','error analysis','units and prefixes','estimation'].includes(c.key)&&lesson.topicId!=='measurements')return false;
+      if(c.key==='gravitational fields')return lesson.topicId==='fields'&&/gravit|orbit|Kepler|field concept/i.test(lesson.title);
+      return true;
+    });
+    const specific=[[/EMF|internal resistance/i,'emf and internal resistance'],[/Young double-slit/i,'double-slit interference'],[/nuclear radius|Closest approach/i,'nuclear scale']].find(([match,key])=>match.test(lesson.title)&&eligible.some(c=>c.key===key));
+    if(specific)return eligible.find(c=>c.key===specific[1]);
+    return eligible.find(c=>c.match.test(lesson.title)) || eligible.find(c=>c.match.test(lesson.focus)) || defaultConcept;
+  }
   function profileFor(id){
     const raw = typeof id === 'string' ? getLesson(id) : id;
     if(!raw) return null;
@@ -144,7 +162,6 @@
   function enhanceMap(){
     document.querySelectorAll('.curriculum-lesson[data-lesson-id]').forEach(card=>{
       if(card.dataset.phase3Ready) return; card.dataset.phase3Ready='1';
-      const meta=card.querySelector('.lesson-map-meta'); if(meta) meta.insertAdjacentHTML('beforeend','<span class="phase3-ready">Presentation ready</span>');
       const copy=card.querySelector('.lesson-map-copy'); if(copy) copy.insertAdjacentHTML('beforeend',`<button type="button" class="phase3-map-present" data-present-lesson="${esc(card.dataset.lessonId)}">Open teacher presentation</button>`);
     });
   }

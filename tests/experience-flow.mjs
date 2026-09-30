@@ -1,8 +1,10 @@
+import { installAuditAccount } from './audit-account.mjs';
 import { chromium } from 'playwright';
 
 const base=process.env.AUDIT_BASE_URL||'http://127.0.0.1:4173';
 const browser=await chromium.launch({headless:true});
 const context=await browser.newContext({viewport:{width:1440,height:960},serviceWorkers:'block'});
+await installAuditAccount(context, base);
 const page=await context.newPage();
 const failures=[];
 const fail=(message)=>failures.push(message);
