@@ -1,4 +1,4 @@
-const CACHE='alevel-physics-offline-v13';
+const CACHE='alevel-physics-offline-v14';
 const CORE=[
   './','./index.html','./styles.css','./course-enhancements.css','./focus-layout.css','./student-notebook.css','./course-tools.css','./mobile-mode.css','./experience-polish.css','./curriculum-map.css','./lesson-content.css','./textbook.css',
   './app.js','./curriculum-map.js','./lesson-content.js','./student-notebook.js','./ai-coach.js','./course-tools.js','./mobile-mode.js','./presentation-mode.js','./textbook-data.js','./textbook.js','./textbook-options.js','./textbook-options-adapter.js','./textbook-options.css','./textbook-stability-guard.js',
