@@ -10,33 +10,49 @@ const PAYMENT_LINKS={
   teacher:{annual:'https://buy.stripe.com/bJecN67Gb9v05Kp85b5AQ0f'}
 };
 let currentUser=null;
+let checkoutReference='';
+let configureVersion=0;
 
-function withReference(base,userId){
+function withReference(base,reference){
   const url=new URL(base);
-  url.searchParams.set('client_reference_id',userId);
+  url.searchParams.set('client_reference_id',reference);
   return url.toString();
 }
-function configure(user){
+function clearCheckout(){
+  checkoutReference='';
+  window.ALEVEL_CHECKOUT_URLS={};
+  document.documentElement.dataset.billingReady='false';
+}
+async function configure(user){
+  const version=++configureVersion;
   currentUser=user||null;
-  if(!currentUser?.id){
-    window.ALEVEL_CHECKOUT_URLS={};
-    document.documentElement.dataset.billingReady='false';
-    return;
+  clearCheckout();
+  if(!currentUser?.id)return;
+  try{
+    const {data,error}=await supabase.rpc('alevel_create_checkout_reference');
+    if(error)throw error;
+    if(version!==configureVersion||currentUser?.id!==user.id)return;
+    const reference=String(data||'');
+    if(!/^[0-9a-f]{64}$/i.test(reference))throw new Error('Invalid checkout reference');
+    checkoutReference=reference;
+    window.ALEVEL_CHECKOUT_URLS={
+      plus:{monthly:withReference(PAYMENT_LINKS.plus.monthly,reference),annual:withReference(PAYMENT_LINKS.plus.annual,reference)},
+      pro:{monthly:withReference(PAYMENT_LINKS.pro.monthly,reference),annual:withReference(PAYMENT_LINKS.pro.annual,reference)},
+      teacher:{annual:withReference(PAYMENT_LINKS.teacher.annual,reference)}
+    };
+    document.documentElement.dataset.billingReady='true';
+    window.dispatchEvent(new CustomEvent('alevel:billing-ready',{detail:{ready:true}}));
+  }catch(error){
+    console.error('Secure checkout setup failed:',error);
+    clearCheckout();
   }
-  window.ALEVEL_CHECKOUT_URLS={
-    plus:{monthly:withReference(PAYMENT_LINKS.plus.monthly,currentUser.id),annual:withReference(PAYMENT_LINKS.plus.annual,currentUser.id)},
-    pro:{monthly:withReference(PAYMENT_LINKS.pro.monthly,currentUser.id),annual:withReference(PAYMENT_LINKS.pro.annual,currentUser.id)},
-    teacher:{annual:withReference(PAYMENT_LINKS.teacher.annual,currentUser.id)}
-  };
-  document.documentElement.dataset.billingReady='true';
-  window.dispatchEvent(new CustomEvent('alevel:billing-ready',{detail:{userId:currentUser.id}}));
 }
 async function boot(){
   const {data,error}=await supabase.auth.getSession();
   if(error)console.error('Billing session check failed:',error);
-  configure(data?.session?.user||null);
-  supabase.auth.onAuthStateChange((_event,session)=>configure(session?.user||null));
+  await configure(data?.session?.user||null);
+  supabase.auth.onAuthStateChange((_event,session)=>window.setTimeout(()=>configure(session?.user||null),0));
 }
 
-window.ALEVEL_BILLING={paymentLinks:PAYMENT_LINKS,get userId(){return currentUser?.id||null;},get ready(){return !!currentUser?.id;}};
+window.ALEVEL_BILLING={paymentLinks:PAYMENT_LINKS,get ready(){return !!checkoutReference;}};
 boot();
