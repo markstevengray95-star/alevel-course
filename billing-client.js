@@ -1,82 +1,42 @@
-(()=>{
-  'use strict';
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/+esm';
 
-  let checkoutBusy=false;
+const SUPABASE_URL='https://emjmvgginijkupwuflla.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_axgWqbWx-24V2b9s7mE1Fw__N3Ce61f';
+const supabase=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 
-  async function json(url,options={}){
-    const response=await fetch(url,{credentials:'same-origin',...options,headers:{'Content-Type':'application/json',...(options.headers||{})}});
-    let data={};
-    try{data=await response.json();}catch{}
-    if(!response.ok)throw new Error(data?.error||`Request failed (${response.status})`);
-    return data;
+const PAYMENT_LINKS={
+  plus:{monthly:'https://buy.stripe.com/6oU7sMbWrcHc1u985b5AQ0b',annual:'https://buy.stripe.com/14A7sM0dJbD81u9dpv5AQ0c'},
+  pro:{monthly:'https://buy.stripe.com/4gMaEYbWrgXsdcR2KR5AQ0d',annual:'https://buy.stripe.com/8x24gA3pVaz41u9gBH5AQ0e'},
+  teacher:{annual:'https://buy.stripe.com/bJecN67Gb9v05Kp85b5AQ0f'}
+};
+let currentUser=null;
+
+function withReference(base,userId){
+  const url=new URL(base);
+  url.searchParams.set('client_reference_id',userId);
+  return url.toString();
+}
+function configure(user){
+  currentUser=user||null;
+  if(!currentUser?.id){
+    window.ALEVEL_CHECKOUT_URLS={};
+    document.documentElement.dataset.billingReady='false';
+    return;
   }
-
-  function announce(message){
-    if(window.ALEVEL_ACCESS?.announce)window.ALEVEL_ACCESS.announce(message);
-    else console.info(message);
-  }
-
-  async function refreshEntitlement(){
-    try{
-      const data=await json('/api/entitlement',{method:'GET',headers:{}});
-      if(data?.plan)window.ALEVEL_ACCESS?.applyEntitlement?.({plan:data.plan,verified:!!data.verified});
-      return data;
-    }catch{
-      return null;
-    }
-  }
-
-  async function verifyCheckout(){
-    const url=new URL(location.href);
-    if(url.searchParams.get('checkout')!=='success')return false;
-    const sessionId=url.searchParams.get('session_id');
-    if(!sessionId)return false;
-    try{
-      const data=await json(`/api/checkout-status?session_id=${encodeURIComponent(sessionId)}`,{method:'GET',headers:{}});
-      if(data?.plan)window.ALEVEL_ACCESS?.applyEntitlement?.({plan:data.plan,verified:true});
-      announce(`${String(data.plan||'Paid').replace(/^./,c=>c.toUpperCase())} access is now active.`);
-      url.searchParams.delete('checkout');
-      url.searchParams.delete('session_id');
-      history.replaceState(history.state,'',url);
-      return true;
-    }catch(error){
-      announce(error.message||'Payment completed, but access verification needs attention.');
-      return false;
-    }
-  }
-
-  async function startCheckout(detail){
-    if(checkoutBusy)return;
-    checkoutBusy=true;
-    document.documentElement.classList.add('billing-checkout-busy');
-    try{
-      const data=await json('/api/create-checkout-session',{
-        method:'POST',
-        body:JSON.stringify({plan:detail?.plan,period:detail?.period})
-      });
-      if(!data?.url)throw new Error('Checkout did not return a payment URL.');
-      location.assign(data.url);
-    }catch(error){
-      announce(error.message||'Unable to open secure checkout.');
-      checkoutBusy=false;
-      document.documentElement.classList.remove('billing-checkout-busy');
-    }
-  }
-
-  window.addEventListener('alevel:checkout-requested',event=>startCheckout(event.detail||{}));
-
-  const start=async()=>{
-    const url=new URL(location.href);
-    if(url.searchParams.get('checkout')==='cancelled'){
-      url.searchParams.delete('checkout');
-      history.replaceState(history.state,'',url);
-      announce('Checkout cancelled — your current plan has not changed.');
-    }
-    const verified=await verifyCheckout();
-    if(!verified)await refreshEntitlement();
+  window.ALEVEL_CHECKOUT_URLS={
+    plus:{monthly:withReference(PAYMENT_LINKS.plus.monthly,currentUser.id),annual:withReference(PAYMENT_LINKS.plus.annual,currentUser.id)},
+    pro:{monthly:withReference(PAYMENT_LINKS.pro.monthly,currentUser.id),annual:withReference(PAYMENT_LINKS.pro.annual,currentUser.id)},
+    teacher:{annual:withReference(PAYMENT_LINKS.teacher.annual,currentUser.id)}
   };
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});
-  else start();
+  document.documentElement.dataset.billingReady='true';
+  window.dispatchEvent(new CustomEvent('alevel:billing-ready',{detail:{userId:currentUser.id}}));
+}
+async function boot(){
+  const {data,error}=await supabase.auth.getSession();
+  if(error)console.error('Billing session check failed:',error);
+  configure(data?.session?.user||null);
+  supabase.auth.onAuthStateChange((_event,session)=>configure(session?.user||null));
+}
 
-  window.ALEVEL_BILLING={refreshEntitlement,startCheckout};
-})();
+window.ALEVEL_BILLING={paymentLinks:PAYMENT_LINKS,get userId(){return currentUser?.id||null;},get ready(){return !!currentUser?.id;}};
+boot();
