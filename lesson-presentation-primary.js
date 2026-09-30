@@ -2,7 +2,6 @@
   'use strict';
 
   let activeId = window.ALEVEL_ACTIVE_LESSON?.id || null;
-  let shellObserver = null;
   let lastSlideSignature = '';
   let decorateQueued = false;
 
@@ -73,12 +72,12 @@
     const textLength=(slide.textContent || '').trim().length;
     if(bulletCount>=6 || textLength>650) slide.classList.add('presentation-dense');
     if(bulletCount>=8 || textLength>950) slide.classList.add('presentation-very-dense');
-
     requestAnimationFrame(()=>{
+      if(!shellVisible())return;
       if(slide.scrollHeight>slide.clientHeight+4){
         slide.classList.add('presentation-dense');
         requestAnimationFrame(()=>{
-          if(slide.scrollHeight>slide.clientHeight+4) slide.classList.add('presentation-very-dense');
+          if(shellVisible() && slide.scrollHeight>slide.clientHeight+4) slide.classList.add('presentation-very-dense');
         });
       }
     });
@@ -93,10 +92,7 @@
     lastSlideSignature=signature;
     if(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
     slide.animate?.(
-      [
-        {opacity:.62, transform:'translateY(8px) scale(.995)'},
-        {opacity:1, transform:'translateY(0) scale(1)'}
-      ],
+      [{opacity:.62,transform:'translateY(8px) scale(.995)'},{opacity:1,transform:'translateY(0) scale(1)'}],
       {duration:220,easing:'cubic-bezier(.2,.8,.2,1)'}
     );
   }
@@ -109,27 +105,20 @@
     button.setAttribute('aria-pressed',String(active));
   }
 
-  function queuePresentationRefresh(){
-    if(decorateQueued) return;
-    decorateQueued=true;
-    requestAnimationFrame(()=>{
-      decorateQueued=false;
-      const shell=presentationShell();
-      if(!shell) return;
-      refreshSlideLabels(shell);
-      updateNavigationState(shell);
-      fitCurrentSlide(shell);
-      animateCurrentSlide(shell);
-      updateFullscreenButton(shell);
-    });
+  function refreshPresentation(){
+    const shell=presentationShell();
+    if(!shell)return;
+    refreshSlideLabels(shell);
+    updateNavigationState(shell);
+    fitCurrentSlide(shell);
+    animateCurrentSlide(shell);
+    updateFullscreenButton(shell);
   }
 
-  function observePresentation(shell){
-    if(!shell || shell.dataset.primaryObserved==='1') return;
-    shell.dataset.primaryObserved='1';
-    shellObserver?.disconnect();
-    shellObserver=new MutationObserver(()=>queuePresentationRefresh());
-    shellObserver.observe(shell,{subtree:true,childList:true,characterData:true});
+  function queuePresentationRefresh(){
+    if(decorateQueued)return;
+    decorateQueued=true;
+    requestAnimationFrame(()=>{decorateQueued=false;refreshPresentation();});
   }
 
   function decoratePresentation(){
@@ -165,12 +154,7 @@
       next.innerHTML='<span>Next</span><span aria-hidden="true">→</span>';
       next.setAttribute('aria-label','Next slide');
     }
-
-    observePresentation(shell);
-    refreshSlideLabels(shell);
-    updateNavigationState(shell);
-    fitCurrentSlide(shell);
-    updateFullscreenButton(shell);
+    refreshPresentation();
   }
 
   function enterPresentationState(){
@@ -180,9 +164,24 @@
   }
 
   function leavePresentationState(){
-    document.body.classList.remove('lesson-presentation-primary');
+    document.body.classList.remove('lesson-presentation-primary','deep-deck-open');
     document.documentElement.classList.remove('lesson-presentation-active');
     lastSlideSignature='';
+  }
+
+  function showLessonNotes(){
+    const shell=presentationShell();
+    if(shell) shell.hidden=true;
+    leavePresentationState();
+    const reader=document.querySelector('.lesson-reader-shell:not([hidden])');
+    if(reader){
+      document.body.classList.add('lesson-reader-open');
+      reader.style.removeProperty('visibility');
+      reader.style.removeProperty('pointer-events');
+      requestAnimationFrame(()=>reader.querySelector('.lesson-reader-body')?.focus?.({preventScroll:true}));
+    }else{
+      document.body.classList.remove('lesson-reader-open');
+    }
   }
 
   function openPresentation(id,force=false,attempt=0){
@@ -192,7 +191,6 @@
       queuePresentationRefresh();
       return true;
     }
-
     activeId=id;
     const controller=window.ALEVEL_DEEPENING;
     if(!controller?.open){
@@ -200,19 +198,10 @@
       return false;
     }
     if(!controller.open(id)) return false;
-
     enterPresentationState();
     decoratePresentation();
     queuePresentationRefresh();
     return true;
-  }
-
-  function showLessonNotes(){
-    const shell=presentationShell();
-    shell?.querySelector('.phase3-deck-tools [data-deep-close]')?.click();
-    leavePresentationState();
-    const reader=document.querySelector('.lesson-reader-shell:not([hidden])');
-    reader?.querySelector('.lesson-reader-body')?.focus?.();
   }
 
   function isTypingTarget(target){
@@ -220,30 +209,37 @@
   }
 
   document.addEventListener('click',event=>{
+    const closeButton=event.target.closest?.('.lesson-presentation-shell [data-deep-close]');
+    if(closeButton){
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      showLessonNotes();
+      return;
+    }
     const restart=event.target.closest?.('[data-presentation-restart]');
     if(restart){
       event.preventDefault();
       openPresentation(activeId,true);
       return;
     }
-
     const fullscreen=event.target.closest?.('[data-presentation-fullscreen]');
     if(fullscreen){
       event.preventDefault();
       const target=presentationShell()?.querySelector('.deep-deck') || presentationShell();
       if(!document.fullscreenElement) target?.requestFullscreen?.().catch(()=>{});
       else document.exitFullscreen?.().catch(()=>{});
-      return;
-    }
-
-    if(event.target.closest?.('.lesson-presentation-shell [data-deep-close]')){
-      leavePresentationState();
     }
   },true);
 
+  document.addEventListener('click',event=>{
+    if(!shellVisible())return;
+    if(event.target.closest?.('[data-deep-prev],[data-deep-next],[data-deep-index]')){
+      requestAnimationFrame(()=>{decoratePresentation();queuePresentationRefresh();});
+    }
+  });
+
   document.addEventListener('keydown',event=>{
     if(!document.body.classList.contains('lesson-presentation-primary') || !shellVisible() || isTypingTarget(event.target)) return;
-
     if(event.key==='Escape'){
       if(document.fullscreenElement) return;
       event.preventDefault();
@@ -251,27 +247,18 @@
       showLessonNotes();
       return;
     }
-
     if(event.key==='ArrowLeft' || event.key==='PageUp'){
-      event.preventDefault();
-      event.stopImmediatePropagation();
+      event.preventDefault();event.stopImmediatePropagation();
       presentationShell()?.querySelector('[data-deep-prev]:not(:disabled)')?.click();
       return;
     }
-
     if(event.key==='ArrowRight' || event.key==='PageDown' || event.key===' '){
-      event.preventDefault();
-      event.stopImmediatePropagation();
+      event.preventDefault();event.stopImmediatePropagation();
       presentationShell()?.querySelector('[data-deep-next]:not(:disabled)')?.click();
     }
   },true);
 
-  document.addEventListener('fullscreenchange',()=>{
-    const shell=presentationShell();
-    updateFullscreenButton(shell);
-    queuePresentationRefresh();
-  });
-
+  document.addEventListener('fullscreenchange',()=>{updateFullscreenButton(presentationShell());queuePresentationRefresh();});
   window.addEventListener('resize',()=>queuePresentationRefresh(),{passive:true});
 
   window.addEventListener('alevel:lesson-selected',event=>{
@@ -281,23 +268,18 @@
     openPresentation(id,false);
     window.setTimeout(()=>{
       relabelLaunchers();
-      if(shellVisible()){
-        decoratePresentation();
-        queuePresentationRefresh();
-      }
+      if(shellVisible()){decoratePresentation();queuePresentationRefresh();}
     },80);
   });
 
-  const start=()=>{
-    relabelLaunchers();
-    if(activeId) openPresentation(activeId,false);
-  };
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start,{once:true});
+  const start=()=>{relabelLaunchers();if(activeId)openPresentation(activeId,false);};
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});
   else start();
 
   window.ALEVEL_PRIMARY_PRESENTATION={
     open:(id)=>openPresentation(id,true),
     notes:showLessonNotes,
+    refresh:queuePresentationRefresh,
     get activeLessonId(){return activeId;}
   };
 })();
