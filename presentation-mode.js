@@ -119,28 +119,6 @@
       }
     `;
     document.head.appendChild(style);
-
-    // Handle the primary "Lesson notes" action at window-capture level so
-    // overlays, drawing canvases and progressive-reveal layers cannot swallow
-    // the action before the deck's own delegated click handler runs.
-    window.addEventListener('click',event=>{
-      const button=event.target?.closest?.('.lesson-presentation-shell [data-deep-close]');
-      if(!button)return;
-      const presentation=document.querySelector('.lesson-presentation-shell');
-      if(!presentation||presentation.hidden)return;
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      presentation.hidden=true;
-      document.body.classList.remove('deep-deck-open','lesson-presentation-primary');
-      document.documentElement.classList.remove('lesson-presentation-active');
-      const reader=document.querySelector('.lesson-reader-shell:not([hidden])');
-      if(reader){
-        document.body.classList.add('lesson-reader-open');
-        reader.style.removeProperty('visibility');
-        reader.style.removeProperty('pointer-events');
-        reader.querySelector('.lesson-reader-body')?.focus?.({preventScroll:true});
-      }
-    },true);
   }
 
   function finishHome(){
