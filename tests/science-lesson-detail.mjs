@@ -6,7 +6,8 @@ const files=['subjects/chemistry-physical-detail.js','subjects/chemistry-inorgan
 for(const file of files)if(fs.existsSync(file))vm.runInNewContext(fs.readFileSync(file,'utf8'),box,{filename:file});
 const {ALEVEL_CHEMISTRY_DETAIL:detail,ALEVEL_CHEMISTRY_CONTENT:content,ALEVEL_CHEMISTRY_LESSONS:lessons,ALEVEL_COURSE_REGISTRY:registry}=box.window;
 const physical=['3.1.1.1','3.1.1.2','3.1.1.3','3.1.2.1','3.1.2.2','3.1.2.3','3.1.2.4','3.1.2.5','3.1.3.1','3.1.3.2','3.1.3.3','3.1.3.4','3.1.3.5','3.1.3.6','3.1.3.7','3.1.4.1','3.1.4.2','3.1.4.3','3.1.4.4','3.1.5.1','3.1.5.2','3.1.5.3','3.1.5.4','3.1.5.5','3.1.6.1','3.1.6.2','3.1.7','3.1.8.1','3.1.8.2','3.1.9.1','3.1.9.2','3.1.10','3.1.11.1','3.1.11.2','3.1.12.1','3.1.12.2','3.1.12.3','3.1.12.4','3.1.12.5','3.1.12.6'];
-for(const ref of physical)assert.ok(detail.lookup[ref],`Missing physical specification lesson ${ref}`);
+const inorganic=['3.2.1.1','3.2.1.2','3.2.2','3.2.3.1','3.2.3.2','3.2.4','3.2.5.1','3.2.5.2','3.2.5.3','3.2.5.4','3.2.5.5','3.2.5.6','3.2.6'];
+for(const ref of [...physical,...inorganic])assert.ok(detail.lookup[ref],`Missing physical specification lesson ${ref}`);
 assert.equal(new Set(detail.rows.map(r=>r.ref)).size,detail.rows.length,'duplicate detail reference');
 for(const row of detail.rows){
  const p=content.get(row.ref);assert.ok(p,`Content cannot resolve ${row.ref}`);
@@ -21,7 +22,7 @@ for(const row of detail.rows){
  assert.ok(!p.exam.some(q=>q.startsWith('Apply ')&&q.includes('unfamiliar chemical context')),`${row.ref}: generic exam scaffold survived`);
 }
 for(const topic of registry.chemistry.topics)for(const section of topic.modules){
- if(section.ref.startsWith('3.1.')){const p=content.get(section.ref);assert.equal(p.examAnswers.length,3,`${section.ref}: parent answers missing`);}
+ if(/^3\.[12]\./.test(section.ref)){const p=content.get(section.ref);assert.equal(p.examAnswers.length,3,`${section.ref}: parent answers missing`);}
 }
 const examples=[['3.1.1.2','35.5'],['3.1.2.3','0.0101'],['3.1.2.5','0.160'],['3.1.4.2','−62.7'],['3.1.4.3','−283'],['3.1.4.4','−184'],['3.1.8.1','−787'],['3.1.8.2','500 K'],['3.1.10','1.48 × 10⁻⁵'],['3.1.11.1','+1.10'],['3.1.12.4','2.87'],['3.1.12.6','4.66']];
 for(const [ref,result] of examples)assert.ok(detail.lookup[ref].answer.join(' ').includes(result),`${ref}: worked result changed; recalculate before accepting`);
