@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "Initialising A-Level Physics modules and course tools..."
+echo "Initialising A-Level course modules and course tools..."
 git submodule sync --recursive
 git submodule update --init --recursive
 
@@ -20,6 +20,9 @@ for file in "${required[@]}"; do
   if [[ ! -f "$file" ]]; then echo "Missing required course module: $file" >&2; exit 1; fi
 done
 if [[ ! -f "tools/practicals/index.html" ]]; then echo "Missing bundled A-Level practical app: tools/practicals/index.html" >&2; exit 1; fi
+for file in course-config.js subjects/topic-shell.html subjects/subject-presentation.js; do
+  if [[ ! -f "$file" ]]; then echo "Missing Biology/Chemistry course asset: $file" >&2; exit 1; fi
+done
 
 echo "Applying verified integration compatibility fixes..."
 python3 scripts/apply-integration-fixes.py
@@ -45,6 +48,7 @@ for file in "$materials_dir/three-performance-v10.js" "$materials_dir/vendor/thr
 done
 
 shell_assets=(
+  course-config.js
   lesson-slide-design.js lesson-slide-design.css
   pricing-access.js pricing-access.css billing-client.js admin-promos.js
   auth.js auth.css
@@ -75,10 +79,10 @@ for file in "${shell_assets[@]}"; do
 done
 
 for file in \
-  app.js pricing-access.js billing-client.js admin-promos.js auth.js student-notebook.js ai-coach.js course-tools.js mobile-mode.js textbook-data.js textbook.js textbook-options.js textbook-safe-options.js textbook-option-glossary.js \
+  course-config.js app.js pricing-access.js billing-client.js admin-promos.js auth.js student-notebook.js ai-coach.js course-tools.js mobile-mode.js textbook-data.js textbook.js textbook-options.js textbook-safe-options.js textbook-option-glossary.js \
   lesson-slide-design.js lesson-enrichment.js curriculum-map.js lesson-content.js lesson-automarking.js lesson-quality-audit.js guided-tutor-dashboard.js lesson-navigator.js guided-tutor-mode.js lesson-reader-quicknav.js presentation-library.js \
   presentation-mode.js lesson-phase3.js lesson-spec-depth.js lesson-deepening.js lesson-presentation-primary.js lesson-presentation-controls.js lesson-presentation-progressive.js lesson-presentation-visuals.js lesson-presentation-practical.js lesson-presenter-view.js \
-  lesson-activities.js lesson-simulations.js lesson-assessment.js lesson-progression.js lesson-teacher-tools.js lesson-astar.js sw.js \
+  lesson-activities.js lesson-simulations.js lesson-assessment.js lesson-progression.js lesson-teacher-tools.js lesson-astar.js sw.js subjects/subject-presentation.js \
   api/physics-coach.js api/create-checkout-session.js api/checkout-status.js api/entitlement.js shared/unified-topic-embedded.js shared/simple-lesson-navigation.js shared/lesson-presentation-enhancements.js; do
   node --check "$file"
 done
@@ -88,6 +92,7 @@ mkdir -p dist/tools
 cp index.html app.js ai-coach.js styles.css course-enhancements.css focus-layout.css manifest.webmanifest .nojekyll dist/
 cp "${shell_assets[@]}" dist/
 cp -R topics dist/topics
+cp -R subjects dist/subjects
 cp -R tools/practicals dist/tools/practicals
 
 # SAFE MODE: keep the proven base textbook renderer and all Paper 3 option
@@ -100,7 +105,9 @@ printf '\n/* lightweight-paper3-switcher */\n' >> dist/textbook.js; cat textbook
 
 find dist/topics -name .git -exec rm -rf {} + 2>/dev/null || true
 find dist/topics -type d -name node_modules -prune -exec rm -rf {} + 2>/dev/null || true
+find dist/subjects -name .git -exec rm -rf {} + 2>/dev/null || true
+find dist/subjects -type d -name node_modules -prune -exec rm -rf {} + 2>/dev/null || true
 find dist/tools -name .git -exec rm -rf {} + 2>/dev/null || true
 find dist/tools -type d -name node_modules -prune -exec rm -rf {} + 2>/dev/null || true
 
-echo "Unified A-Level Physics course assembled in stable safe mode with Free, Plus, Pro and Teacher access plus Vercel billing assets included."
+echo "Unified A-Level Physics, Biology and Chemistry course assembled with shared presentation infrastructure and Vercel billing assets included."
