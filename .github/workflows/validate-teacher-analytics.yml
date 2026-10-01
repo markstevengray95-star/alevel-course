@@ -1,0 +1,57 @@
+name: Validate Teacher Analytics
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  teacher-analytics:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout course and topic modules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Check source and security coverage
+        run: |
+          node --check subjects/teacher-analytics.js
+          node --check subjects/progress-class-sync.js
+          node --check subject-tool-bridge.js
+          node tests/teacher-analytics-coverage.mjs
+
+      - name: Assemble production output
+        run: bash scripts/vercel-build.sh
+
+      - name: Verify Phase 16 assets ship
+        run: |
+          test -f dist/subjects/teacher-analytics.html
+          test -f dist/subjects/teacher-analytics.js
+          test -f dist/subjects/teacher-analytics.css
+          test -f dist/subjects/progress-class-sync.js
+          grep -q "Teacher Analytics" dist/subjects/teacher-analytics.html
+          grep -q "openTeacherAnalytics" dist/subject-tool-bridge.js
+          grep -q "progress-class-sync.js" dist/subjects/progress-mastery.html
+
+      - name: Install browser dependency
+        timeout-minutes: 5
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Start production-like server
+        timeout-minutes: 2
+        run: |
+          python3 -m http.server 4173 --directory dist > /tmp/teacher-analytics-http.log 2>&1 &
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/teacher-analytics-http.log
+          exit 1
+
+      - name: Exercise teacher analytics, privacy and routing
+        timeout-minutes: 3
+        run: node tests/teacher-analytics.mjs
