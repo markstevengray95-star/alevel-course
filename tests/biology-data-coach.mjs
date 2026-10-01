@@ -21,7 +21,7 @@ try{
  await page.click('[data-view="graphs"]'); await page.selectOption('#graphType','continuous'); await page.click('#graphRecommendBtn'); if(!(await text('#graphAnswer')).includes('Scatter graph'))throw new Error('Graph recommendation failed');
  await page.goto(`${base}/index.html?subject=biology`,{waitUntil:'domcontentloaded'});
  await page.waitForFunction(()=>window.CourseApp?.config?.id==='biology'&&window.ALEVEL_SUBJECT_TOOL_BRIDGE?.openBiologyDataCoach);
- await page.waitForSelector('[data-course-tool="data-coach"]');
+ await page.waitForSelector('[data-course-tool="data-coach"]',{state:'attached'});
  const opened=await page.evaluate(()=>window.ALEVEL_SUBJECT_TOOL_BRIDGE.openBiologyDataCoach()); if(!opened)throw new Error('Biology Data Coach bridge refused Biology');
  await page.waitForFunction(()=>document.getElementById('toolFrame')?.src.includes('biology-data-coach.html'));
  await page.goto(`${base}/index.html?subject=chemistry`,{waitUntil:'domcontentloaded'});
