@@ -1,0 +1,55 @@
+name: Validate Chemistry required practicals
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  chemistry-practicals:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout course and topic modules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Check source and specification coverage
+        run: |
+          node --check subjects/chemistry-practicals.js
+          node --check subject-tool-bridge.js
+          node tests/chemistry-practicals-coverage.mjs
+
+      - name: Assemble production output
+        run: bash scripts/vercel-build.sh
+
+      - name: Verify Phase 10 assets ship
+        run: |
+          test -f dist/subjects/chemistry-practicals.html
+          test -f dist/subjects/chemistry-practicals.js
+          test -f dist/subjects/chemistry-practicals.css
+          test -f dist/subject-tool-bridge.js
+          grep -q "AQA 7405 · Activities 1–12" dist/subjects/chemistry-practicals.html
+          grep -q "openChemistryPracticals" dist/subject-tool-bridge.js
+
+      - name: Install browser dependency
+        timeout-minutes: 5
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Start production-like server
+        timeout-minutes: 2
+        run: |
+          python3 -m http.server 4173 --directory dist > /tmp/chem-prac-http.log 2>&1 &
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/chem-prac-http.log
+          exit 1
+
+      - name: Exercise Chemistry practical hub and routing
+        timeout-minutes: 3
+        run: node tests/chemistry-practicals.mjs
