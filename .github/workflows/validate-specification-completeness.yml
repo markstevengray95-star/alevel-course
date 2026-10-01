@@ -1,0 +1,55 @@
+name: Validate AQA specification completeness
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  specification-completeness:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout course and topic modules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Check Phase 17 source
+        run: |
+          node --check subjects/specification-manifest.js
+          node --check subjects/specification-audit.js
+          node --check subject-tool-bridge.js
+          node tests/specification-completeness.mjs
+
+      - name: Assemble production output
+        run: bash scripts/vercel-build.sh
+
+      - name: Verify Phase 17 assets ship
+        run: |
+          test -f dist/subjects/specification-manifest.js
+          test -f dist/subjects/specification-audit.html
+          test -f dist/subjects/specification-audit.css
+          test -f dist/subjects/specification-audit.js
+          grep -q "specification-audit" dist/subject-tool-bridge.js
+
+      - name: Install browser dependency
+        timeout-minutes: 5
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Start production-like server
+        timeout-minutes: 2
+        run: |
+          python3 -m http.server 4173 --directory dist > /tmp/phase17-http.log 2>&1 &
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/phase17-http.log
+          exit 1
+
+      - name: Exercise audit dashboard and three-subject routing
+        timeout-minutes: 3
+        run: node tests/specification-audit.mjs
