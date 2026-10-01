@@ -1,0 +1,55 @@
+name: Validate unified Progress and Mastery
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  progress-mastery:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout course and topic modules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Check source and mastery coverage
+        run: |
+          node --check subjects/progress-mastery.js
+          node --check subject-tool-bridge.js
+          node tests/progress-mastery-coverage.mjs
+
+      - name: Assemble production output
+        run: bash scripts/vercel-build.sh
+
+      - name: Verify Phase 15 assets ship
+        run: |
+          test -f dist/subjects/progress-mastery.html
+          test -f dist/subjects/progress-mastery.js
+          test -f dist/subjects/progress-mastery.css
+          test -f dist/subject-tool-bridge.js
+          grep -q "Progress & Mastery" dist/subjects/progress-mastery.html
+          grep -q "openProgressMastery" dist/subject-tool-bridge.js
+
+      - name: Install browser dependency
+        timeout-minutes: 5
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Start production-like server
+        timeout-minutes: 2
+        run: |
+          python3 -m http.server 4173 --directory dist > /tmp/progress-http.log 2>&1 &
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/progress-http.log
+          exit 1
+
+      - name: Exercise unified progress and mastery dashboard
+        timeout-minutes: 3
+        run: node tests/progress-mastery.mjs
