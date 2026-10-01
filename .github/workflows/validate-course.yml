@@ -27,6 +27,12 @@ jobs:
           node --check subjects/biology-lessons.js
           node tests/biology-content-coverage.mjs
 
+      - name: Verify complete Chemistry lesson content
+        run: |
+          node --check subjects/chemistry-content.js
+          node --check subjects/chemistry-lessons.js
+          node tests/chemistry-content-coverage.mjs
+
       - name: Verify course shell
         run: |
           test -f dist/index.html
@@ -48,6 +54,8 @@ jobs:
           test -f dist/subjects/subject-presentation.js
           test -f dist/subjects/biology-content.js
           test -f dist/subjects/biology-lessons.js
+          test -f dist/subjects/chemistry-content.js
+          test -f dist/subjects/chemistry-lessons.js
           test -f dist/tools/practicals/index.html
           test -f dist/topics/01-measurements/index.html
           test -f dist/topics/02-particles-radiation/index.html
@@ -91,8 +99,6 @@ jobs:
           cat /tmp/alevel-course-http.log
           exit 1
 
-      # Primary release gate: the home page and all eight specialist Physics topic apps
-      # must open, settle and return without a renderer freeze.
       - name: Verify app boot and topic navigation
         timeout-minutes: 3
         run: node tests/runtime-recovery.mjs
@@ -105,7 +111,7 @@ jobs:
         timeout-minutes: 3
         run: node tests/default-lesson-presentation.mjs
 
-      - name: Verify Biology and Chemistry lesson presentations
+      - name: Verify detailed Biology and Chemistry lesson presentations
         timeout-minutes: 3
         run: node tests/subject-presentations.mjs
 
@@ -113,9 +119,6 @@ jobs:
         timeout-minutes: 3
         run: node tests/textbook-options-smoke.mjs
 
-      # Historical end-to-end assertions are retained for diagnostic coverage.
-      # Some expectations describe the pre-Paper-3/pre-recovery UI and therefore
-      # should not block a stable release while they are being modernised.
       - name: Run legacy integrated study-flow diagnostics
         continue-on-error: true
         timeout-minutes: 3
