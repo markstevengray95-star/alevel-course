@@ -1,4 +1,4 @@
-name: Validate unified A-Level Physics course
+name: Validate unified A-Level course
 
 on:
   push:
@@ -25,6 +25,7 @@ jobs:
         run: |
           test -f dist/index.html
           test -f dist/app.js
+          test -f dist/course-config.js
           test -f dist/styles.css
           test -f dist/experience-polish.css
           test -f dist/pricing-access.js
@@ -37,6 +38,8 @@ jobs:
           test -f dist/lesson-deepening.css
           test -f dist/lesson-presentation-primary.js
           test -f dist/lesson-presentation-primary.css
+          test -f dist/subjects/topic-shell.html
+          test -f dist/subjects/subject-presentation.js
           test -f dist/tools/practicals/index.html
           test -f dist/topics/01-measurements/index.html
           test -f dist/topics/02-particles-radiation/index.html
@@ -80,7 +83,7 @@ jobs:
           cat /tmp/alevel-course-http.log
           exit 1
 
-      # Primary release gate: the home page and all eight specialist topic apps
+      # Primary release gate: the home page and all eight specialist Physics topic apps
       # must open, settle and return without a renderer freeze.
       - name: Verify app boot and topic navigation
         timeout-minutes: 3
@@ -90,9 +93,13 @@ jobs:
         timeout-minutes: 3
         run: node tests/theme-smoke.mjs
 
-      - name: Verify lessons open as presentations
+      - name: Verify Physics lessons open as presentations
         timeout-minutes: 3
         run: node tests/default-lesson-presentation.mjs
+
+      - name: Verify Biology and Chemistry lesson presentations
+        timeout-minutes: 3
+        run: node tests/subject-presentations.mjs
 
       - name: Verify Paper 3 option textbooks
         timeout-minutes: 3
