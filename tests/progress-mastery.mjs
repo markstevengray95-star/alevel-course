@@ -22,9 +22,9 @@ try{
  await page.goto(`${base}/subjects/progress-mastery.html?from=physics`,{waitUntil:'domcontentloaded'});
  await page.waitForFunction(()=>window.ALEVEL_PROGRESS_MASTERY?.version==='phase-15');
  const data=await page.evaluate(()=>window.ALEVEL_PROGRESS_MASTERY.collect());
- if(Math.round(data.physics.mastery*100)!==50)throw new Error(`Physics mastery expected 50, got ${data.physics.mastery}`);
- if(Math.round(data.biology.mastery*100)!==55)throw new Error(`Biology mastery expected ~55, got ${data.biology.mastery}`);
- if(Math.round(data.chemistry.mastery*100)!==91)throw new Error(`Chemistry mastery expected ~91, got ${data.chemistry.mastery}`);
+ if(Math.abs(data.physics.mastery-.5)>1e-9)throw new Error(`Physics mastery expected 0.5, got ${data.physics.mastery}`);
+ if(Math.abs(data.biology.mastery-.5501282051282051)>.000001)throw new Error(`Biology mastery expected ~0.5501, got ${data.biology.mastery}`);
+ if(Math.abs(data.chemistry.mastery-.905)>.000001)throw new Error(`Chemistry mastery expected 0.905, got ${data.chemistry.mastery}`);
  if(data.biology.practicals.done!==6||data.chemistry.practicals.done!==12)throw new Error('Practical completion aggregation failed');
  if(data.biology.skills.done!==5||data.chemistry.skills.done!==14)throw new Error('Coach skill aggregation failed');
  if(data.biology.assessment.answers.length!==3||data.chemistry.assessment.answers.length!==3)throw new Error('Assessment aggregation failed');
