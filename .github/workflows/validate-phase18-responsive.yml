@@ -1,0 +1,52 @@
+name: Validate Phase 18 responsive UI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  responsive-ui:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout course and topic modules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Assemble production output
+        run: bash scripts/vercel-build.sh
+
+      - name: Verify Phase 18 audit sources
+        run: |
+          node --check tests/phase18-responsive.mjs
+          node --check tests/mobile-overflow.mjs
+          test -f dist/mobile-mode.css
+          test -f dist/mobile-mode.js
+
+      - name: Install browser dependency
+        timeout-minutes: 5
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Start production-like server
+        timeout-minutes: 2
+        run: |
+          python3 -m http.server 4173 --directory dist > /tmp/alevel-course-http.log 2>&1 &
+          echo $! > /tmp/alevel-course-http.pid
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/alevel-course-http.log
+          exit 1
+
+      - name: Audit responsive shell and subject tools
+        timeout-minutes: 5
+        run: node tests/phase18-responsive.mjs
+
+      - name: Audit all Physics modules at phone width
+        timeout-minutes: 5
+        run: node tests/mobile-overflow.mjs
