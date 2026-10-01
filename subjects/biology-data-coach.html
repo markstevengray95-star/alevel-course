@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0d241d">
+  <title>AQA A-Level Biology Data Coach</title>
+  <meta name="description" content="AQA Biology 7402 data, maths and statistics coach for magnification, percentage change, uncertainty, standard deviation, statistical-test selection, biodiversity, Hardy-Weinberg and graph interpretation.">
+  <link rel="stylesheet" href="biology-data-coach.css">
+</head>
+<body>
+<header class="coach-topbar">
+  <a href="../index.html?subject=biology" class="back-link">← Biology course</a>
+  <div class="brand"><span>Σ</span><div><strong>Biology Data Coach</strong><small>AQA 7402 · Maths, data & statistics</small></div></div>
+  <div class="skill-meter"><strong id="skillText">0 / 10 skills practised</strong><div class="meter"><i id="skillBar"></i></div></div>
+</header>
+<main class="coach-shell">
+  <aside class="coach-nav" aria-label="Data Coach sections">
+    <div class="nav-intro"><span class="eyebrow">AQA mathematical skills</span><h1>Data Coach</h1><p>Choose the right method, calculate accurately and explain what the result means biologically.</p></div>
+    <button class="nav-btn active" data-view="overview">Overview</button>
+    <button class="nav-btn" data-view="calculators">Calculators</button>
+    <button class="nav-btn" data-view="statistics">Statistical-test coach</button>
+    <button class="nav-btn" data-view="graphs">Graphs & data</button>
+    <button class="nav-btn" data-view="practice">Exam practice</button>
+  </aside>
+  <section class="coach-main">
+    <section class="view active" id="overviewView">
+      <div class="hero"><div><span class="eyebrow">At least 10% of AQA Biology marks use maths</span><h2>Turn biological data into evidence.</h2><p>Work through the calculation, then practise the more important exam skill: interpreting what your answer means and whether the evidence supports a conclusion.</p></div><div class="hero-stat"><strong>10</strong><span>core data skills</span></div></div>
+      <div class="skill-grid" id="skillGrid"></div>
+      <article class="exam-note"><h3>Statistical tests in written exams</h3><p>AQA expects students to select and interpret appropriate statistical tests. This coach can calculate examples for learning, but the key exam skill is choosing a suitable test, stating a null hypothesis, comparing with a critical value and writing a biological conclusion.</p></article>
+    </section>
+    <section class="view" id="calculatorsView" hidden>
+      <div class="section-head"><span class="eyebrow">Calculate + interpret</span><h2>Biology calculators</h2><p>Enter data, see the working and then use the interpretation prompt to turn the number into an exam-quality biological statement.</p></div>
+      <div class="calculator-grid" id="calculatorGrid"></div>
+    </section>
+    <section class="view" id="statisticsView" hidden>
+      <div class="section-head"><span class="eyebrow">MS 1.9</span><h2>Which statistical test?</h2><p>Answer the questions below to choose between chi-squared, Student's t-test and a correlation coefficient.</p></div>
+      <div class="test-coach">
+        <div class="choice-row"><label>What are you testing?<select id="testPurpose"><option value="difference">A difference between groups/results</option><option value="association">An association/correlation between two variables</option><option value="fit">Whether observed frequencies fit expected frequencies</option></select></label><label>What kind of data?<select id="testData"><option value="continuous">Continuous measurements</option><option value="frequency">Counts/frequencies</option><option value="ranked">Paired/ranked measurements</option></select></label></div>
+        <button type="button" class="primary" id="chooseTestBtn">Choose statistical test</button>
+        <div class="test-answer" id="testAnswer" aria-live="polite"></div>
+      </div>
+      <div class="stats-reference" id="statsReference"></div>
+    </section>
+    <section class="view" id="graphsView" hidden>
+      <div class="section-head"><span class="eyebrow">MS 1.3 · 1.7 · PS 3</span><h2>Graphs and data interpretation</h2><p>Choose an appropriate display, describe a pattern without overclaiming, and separate correlation from causation.</p></div>
+      <div class="graph-lab">
+        <label>Data type<select id="graphType"><option value="continuous">Continuous variable against continuous variable</option><option value="categories">Separate categories</option><option value="frequency">Continuous frequency distribution</option><option value="time">Measurement over time</option></select></label>
+        <button type="button" class="primary" id="graphRecommendBtn">Recommend graph</button>
+        <div class="graph-answer" id="graphAnswer"></div>
+      </div>
+      <div class="data-workbench"><h3>Quick trend analyser</h3><p>Paste paired x,y values as <code>1,2</code> on each line. The coach ranks the data and calculates Spearman's rank coefficient.</p><textarea id="pairedData" rows="7" placeholder="1,2\n2,4\n3,5\n4,8"></textarea><button class="primary" id="analyseTrendBtn" type="button">Analyse trend</button><div id="trendResult" class="result-card"></div></div>
+    </section>
+    <section class="view" id="practiceView" hidden>
+      <div class="section-head"><span class="eyebrow">Exam practice</span><h2>Data-skills challenge</h2><p>Short AQA-style questions covering calculation choice, statistics and interpretation.</p></div>
+      <div id="practiceCard" class="practice-card"></div>
+    </section>
+  </section>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="biology-data-coach.js"></script>
+</body>
+</html>
