@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#10243c">
+<title>AQA Specification Completeness Audit</title>
+<meta name="description" content="AQA A-Level Physics, Biology and Chemistry specification completeness audit.">
+<link rel="stylesheet" href="specification-audit.css">
+</head>
+<body>
+<header class="topbar"><a id="backLink" href="../index.html">← Course</a><div class="brand"><span>✓</span><div><strong>Specification Audit</strong><small>AQA 7408 · 7402 · 7405</small></div></div><span class="verified" id="verifiedBadge">Verified</span></header>
+<main class="shell">
+<section class="hero"><div><span class="eyebrow">Phase 17 · specification completeness</span><h1>Every required part of the course, checked in one place.</h1><p>This dashboard maps the live course against the current AQA subject content, exam structure, mathematical requirements, required practicals and Physics Paper 3 options.</p></div><div class="hero-score"><strong id="overallStatus">CHECKING</strong><span>repository evidence</span></div></section>
+<section class="summary-grid" id="summaryGrid"></section>
+<section class="panel"><div class="panel-head"><div><span class="eyebrow">Subject content</span><h2>Specification coverage</h2></div><p>Biology and Chemistry are checked to their numbered section level. Physics core is checked across all eight core areas, with all five optional topics audited separately.</p></div><div class="subject-grid" id="subjectGrid"></div></section>
+<section class="two-col"><article class="panel"><div class="panel-head"><div><span class="eyebrow">Assessment requirements</span><h2>Maths and practical weighting</h2></div></div><div class="weight-grid" id="weightGrid"></div></article><article class="panel"><div class="panel-head"><div><span class="eyebrow">Practical endorsement</span><h2>Required practicals</h2></div></div><div class="practical-grid" id="practicalGrid"></div></article></section>
+<section class="panel"><div class="panel-head"><div><span class="eyebrow">Written assessment</span><h2>Paper structure</h2></div><p>Marks, duration, weighting and scope are stored in the Phase 17 manifest and checked against course assessment metadata where it exists.</p></div><div class="papers" id="papers"></div></section>
+<section class="panel"><div class="panel-head"><div><span class="eyebrow">Physics Paper 3</span><h2>All five options represented</h2></div><p>AQA students enter for one option. The app keeps all five available so schools can choose their route.</p></div><div class="option-grid" id="optionGrid"></div></section>
+<section class="panel"><div class="panel-head"><div><span class="eyebrow">Evidence model</span><h2>What the automated gate verifies</h2></div></div><div class="evidence-grid"><span><b>Content structure</b>39 Biology and 34 Chemistry section profiles; 8 Physics core areas.</span><span><b>Lesson depth</b>Core teaching, models, terminology, maths, practical links, misconceptions, synoptic links and exam tasks.</span><span><b>Practicals</b>12 per subject, 36 total, plus apparatus-and-technique coverage.</span><span><b>Physics options</b>3.9–3.13 textbooks, chapter navigation, diagrams and glossary evidence.</span><span><b>Assessment</b>Paper marks, weighting and subject scope.</span><span><b>Regression</b>The full existing app test suite must remain green before merge.</span></div></section>
+<section class="panel sources"><div><span class="eyebrow">Official sources</span><h2>AQA specification links</h2><p>Verified against the live AQA specification pages on <strong id="verifiedDate"></strong>. This dashboard is an audit aid; AQA remains the authoritative source if a specification changes.</p></div><div id="sourceLinks" class="source-links"></div></section>
+</main>
+<script src="specification-manifest.js"></script>
+<script src="specification-audit.js"></script>
+</body>
+</html>

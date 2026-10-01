@@ -2,7 +2,17 @@
   'use strict';
 
   const repoUrl='https://github.com/markstevengray95-star/alevel-course';
-  const createSubject=(config)=>Object.freeze({enabled:true,qualification:'A-level',board:'AQA',...config,storage:Object.freeze(config.storage||{}),coach:Object.freeze(config.coach||{}),stages:Object.freeze(config.stages||[]),tools:Object.freeze(config.tools||{}),topics:Object.freeze(config.topics||[])});
+  const freezeArray=value=>Object.freeze([...(value||[])]);
+  const createSubject=config=>Object.freeze({
+    enabled:true,qualification:'A-level',board:'AQA',...config,
+    storage:Object.freeze(config.storage||{}),
+    coach:Object.freeze(config.coach||{}),
+    stages:freezeArray(config.stages),
+    tools:Object.freeze(config.tools||{}),
+    topics:freezeArray(config.topics),
+    options:freezeArray(config.options),
+    assessment:Object.freeze(config.assessment||{})
+  });
   const section=(subject,topicId,ref,title,year,summary='')=>({ref,title,label:title,year,summary:summary||`${title}, aligned to AQA ${ref}.`,focus:[`Master the core knowledge and terminology in ${ref}.`,`Apply ${title.toLowerCase()} to data, practical and exam-style contexts.`,`Connect this section to the wider A-Level ${subject==='biology'?'Biology':'Chemistry'} course.`],path:`subjects/topic-shell.html?subject=${subject}&topic=${topicId}&section=${encodeURIComponent(ref)}`,repo:repoUrl});
   const modules=(subject,topicId,rows)=>rows.map(([ref,title,year,summary])=>section(subject,topicId,ref,title,year,summary));
 
@@ -15,6 +25,13 @@
     {id:'further-mechanics',code:'AQA 3.6',title:'Further mechanics and thermal physics',short:'Further mechanics',year:'Year 13',description:'Circular motion, SHM, resonance, thermal physics, ideal gases and kinetic theory.',modules:[{label:'Further Mechanics & Thermal',path:'topics/06-further-mechanics-thermal/index.html',repo:'https://github.com/markstevengray95-star/furthermechanics'}]},
     {id:'fields',code:'AQA 3.7',title:'Fields and their consequences',short:'Fields',year:'Year 13',description:'Gravitational, electric and magnetic fields, orbits, capacitance and electromagnetic induction.',modules:[{label:'Fields',path:'topics/07-fields/index.html',repo:'https://github.com/markstevengray95-star/alevel-fields-'}]},
     {id:'nuclear',code:'AQA 3.8',title:'Nuclear physics',short:'Nuclear',year:'Year 13',description:'Rutherford scattering, radioactivity, nuclear radius and density, mass–energy, fission, fusion and reactors.',modules:[{label:'Nuclear Physics',path:'topics/08-nuclear/index.html',repo:'https://github.com/markstevengray95-star/nuclear-physicsalevel'}]}
+  ];
+  const physicsOptions=[
+    {ref:'3.9',title:'Astrophysics',textbookId:'astrophysics'},
+    {ref:'3.10',title:'Medical physics',textbookId:'medical-physics'},
+    {ref:'3.11',title:'Engineering physics',textbookId:'engineering-physics'},
+    {ref:'3.12',title:'Turning points in physics',textbookId:'turning-points'},
+    {ref:'3.13',title:'Electronics',textbookId:'electronics'}
   ];
 
   const biologyTopics=[
@@ -56,11 +73,11 @@
     ])}
   ];
 
-  const physics=createSubject({id:'physics',subject:'Physics',displayName:'A-Level Physics',brandMark:'φ',specCode:'7408',topicRange:'AQA 3.1–3.8',metaTitle:'AQA A-level Physics Course',metaDescription:'Unified AQA A-level Physics 7408 course with lessons, simulations, required practicals, exam marking, a student notebook and an AI study coach.',heroEyebrow:'AQA A-level Physics 7408',heroTitle:'Your Physics course.',heroDescription:'Move smoothly from learning the physics, to practising it experimentally, to answering and marking exam questions.',storage:{progress:'alevel-course-progress-v1',location:'alevel-course-location-v2',notebook:'alevel-physics-student-notebook-v1',coachHistory:'alevel-physics-coach-history-v2',topicSections:'alevel-course-topic-sections-v1'},coach:{label:'Physics Coach',endpoint:'/api/physics-coach',enabled:true},practicalCount:12,stages:[{id:'year12',label:'Year 12',title:'Core foundations',topicIds:['measurements','particles','waves','mechanics-materials','electricity']},{id:'year13',label:'Year 13',title:'Advanced core',topicIds:['further-mechanics','fields','nuclear']}],tools:{practicals:{id:'practicals',label:'Required Practicals',eyebrow:'AQA Physics 7408 · Practicals 1–12',url:'tools/practicals/index.html',repo:'https://github.com/markstevengray95-star/Alevel-prac',external:false},marking:{id:'marking',label:'Exam Practice & Marking',eyebrow:'AQA A-Level Physics · Exam practice',url:'https://alevel-marking.vercel.app',repo:'https://github.com/markstevengray95-star/alevel-marking-',external:true}},topics:physicsTopics});
+  const physics=createSubject({id:'physics',subject:'Physics',displayName:'A-Level Physics',brandMark:'φ',specCode:'7408',topicRange:'AQA 3.1–3.8 core · 3.9–3.13 options',metaTitle:'AQA A-level Physics Course',metaDescription:'Unified AQA A-level Physics 7408 course with the full core, all five Paper 3 options, simulations, required practicals, exam marking, a student notebook and an AI study coach.',heroEyebrow:'AQA A-level Physics 7408',heroTitle:'Your Physics course.',heroDescription:'Move smoothly from the eight core areas to required practicals, exam practice and your chosen Paper 3 option.',storage:{progress:'alevel-course-progress-v1',location:'alevel-course-location-v2',notebook:'alevel-physics-student-notebook-v1',coachHistory:'alevel-physics-coach-history-v2',topicSections:'alevel-course-topic-sections-v1'},coach:{label:'Physics Coach',endpoint:'/api/physics-coach',enabled:true},practicalCount:12,options:physicsOptions,assessment:{mathsMinimum:40,practicalMinimum:15,papers:[{marks:85,weight:34},{marks:85,weight:34},{marks:80,weight:32}]},stages:[{id:'year12',label:'Year 12',title:'Core foundations',topicIds:['measurements','particles','waves','mechanics-materials','electricity']},{id:'year13',label:'Year 13',title:'Advanced core',topicIds:['further-mechanics','fields','nuclear']}],tools:{practicals:{id:'practicals',label:'Required Practicals',eyebrow:'AQA Physics 7408 · Practicals 1–12',url:'tools/practicals/index.html',repo:'https://github.com/markstevengray95-star/Alevel-prac',external:false},marking:{id:'marking',label:'Exam Practice & Marking',eyebrow:'AQA A-Level Physics · Exam practice',url:'https://alevel-marking.vercel.app',repo:'https://github.com/markstevengray95-star/alevel-marking-',external:true}},topics:physicsTopics});
 
-  const biology=createSubject({id:'biology',subject:'Biology',displayName:'A-Level Biology',brandMark:'β',specCode:'7402',topicRange:'AQA 3.1–3.8',metaTitle:'AQA A-level Biology Course',metaDescription:'Complete AQA A-level Biology 7402 specification structure connected to the shared A-Level course engine.',heroEyebrow:'AQA A-level Biology 7402',heroTitle:'Your Biology course.',heroDescription:'Work through the complete AQA Biology specification from biological molecules and cells to ecosystems, gene expression and modern gene technologies.',storage:{progress:'alevel-biology-progress-v1',location:'alevel-biology-location-v1',notebook:'alevel-biology-student-notebook-v1',coachHistory:'alevel-biology-coach-history-v1',topicSections:'alevel-biology-topic-sections-v1'},coach:{label:'Biology Coach',endpoint:'/api/biology-coach',enabled:false},practicalCount:12,stages:[{id:'year12',label:'Year 12',title:'AS foundations',topicIds:['bio-molecules','bio-cells','bio-exchange','bio-genetic-info']},{id:'year13',label:'Year 13',title:'A-Level extension',topicIds:['bio-energy','bio-response','bio-populations','bio-gene-expression']}],tools:{},topics:biologyTopics});
+  const biology=createSubject({id:'biology',subject:'Biology',displayName:'A-Level Biology',brandMark:'β',specCode:'7402',topicRange:'AQA 3.1–3.8',metaTitle:'AQA A-level Biology Course',metaDescription:'Complete AQA A-level Biology 7402 specification structure connected to the shared A-Level course engine.',heroEyebrow:'AQA A-level Biology 7402',heroTitle:'Your Biology course.',heroDescription:'Work through the complete AQA Biology specification from biological molecules and cells to ecosystems, gene expression and modern gene technologies.',storage:{progress:'alevel-biology-progress-v1',location:'alevel-biology-location-v1',notebook:'alevel-biology-student-notebook-v1',coachHistory:'alevel-biology-coach-history-v1',topicSections:'alevel-biology-topic-sections-v1'},coach:{label:'Biology Coach',endpoint:'/api/biology-coach',enabled:false},practicalCount:12,assessment:{mathsMinimum:10,practicalMinimum:15,papers:[{marks:91,weight:35},{marks:91,weight:35},{marks:78,weight:30}]},stages:[{id:'year12',label:'Year 12',title:'AS foundations',topicIds:['bio-molecules','bio-cells','bio-exchange','bio-genetic-info']},{id:'year13',label:'Year 13',title:'A-Level extension',topicIds:['bio-energy','bio-response','bio-populations','bio-gene-expression']}],tools:{},topics:biologyTopics});
 
-  const chemistry=createSubject({id:'chemistry',subject:'Chemistry',displayName:'A-Level Chemistry',brandMark:'χ',specCode:'7405',topicRange:'AQA 3.1–3.3',metaTitle:'AQA A-level Chemistry Course',metaDescription:'Complete AQA A-level Chemistry 7405 specification structure connected to the shared A-Level course engine.',heroEyebrow:'AQA A-level Chemistry 7405',heroTitle:'Your Chemistry course.',heroDescription:'Work through Physical, Inorganic and Organic Chemistry with every numbered AQA 7405 specification section connected to the shared course engine.',storage:{progress:'alevel-chemistry-progress-v1',location:'alevel-chemistry-location-v1',notebook:'alevel-chemistry-student-notebook-v1',coachHistory:'alevel-chemistry-coach-history-v1',topicSections:'alevel-chemistry-topic-sections-v1'},coach:{label:'Chemistry Coach',endpoint:'/api/chemistry-coach',enabled:false},practicalCount:12,stages:[],tools:{},topics:chemistryTopics});
+  const chemistry=createSubject({id:'chemistry',subject:'Chemistry',displayName:'A-Level Chemistry',brandMark:'χ',specCode:'7405',topicRange:'AQA 3.1–3.3',metaTitle:'AQA A-level Chemistry Course',metaDescription:'Complete AQA A-level Chemistry 7405 specification structure connected to the shared A-Level course engine.',heroEyebrow:'AQA A-level Chemistry 7405',heroTitle:'Your Chemistry course.',heroDescription:'Work through Physical, Inorganic and Organic Chemistry with every numbered AQA 7405 specification section connected to the shared course engine.',storage:{progress:'alevel-chemistry-progress-v1',location:'alevel-chemistry-location-v1',notebook:'alevel-chemistry-student-notebook-v1',coachHistory:'alevel-chemistry-coach-history-v1',topicSections:'alevel-chemistry-topic-sections-v1'},coach:{label:'Chemistry Coach',endpoint:'/api/chemistry-coach',enabled:false},practicalCount:12,assessment:{mathsMinimum:20,practicalMinimum:15,papers:[{marks:105,weight:35},{marks:105,weight:35},{marks:90,weight:30}]},stages:[],tools:{},topics:chemistryTopics});
 
   const registry=Object.freeze({physics,biology,chemistry});
   const params=new URLSearchParams(window.location.search);
@@ -87,7 +104,7 @@
 
   window.ALEVEL_COURSE_REGISTRY=registry;
   window.ALEVEL_COURSE_CONFIG=selected;
-  window.ALEVEL_COURSE_CONFIG_VERSION='3.0.0';
+  window.ALEVEL_COURSE_CONFIG_VERSION='4.0.0';
   installSubjectSwitcher();
   prepareSubjectShell();
 })();

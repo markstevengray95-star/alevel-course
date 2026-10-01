@@ -18,6 +18,12 @@ jobs:
       - name: Assemble Vercel output
         run: bash scripts/vercel-build.sh
 
+      - name: Verify current AQA specification completeness
+        run: |
+          node --check subjects/specification-manifest.js
+          node --check subjects/specification-audit.js
+          node tests/specification-completeness.mjs
+
       - name: Verify presentation content and subject matching
         run: node tests/lesson-slide-design.cjs
 
@@ -56,6 +62,10 @@ jobs:
           test -f dist/subjects/biology-lessons.js
           test -f dist/subjects/chemistry-content.js
           test -f dist/subjects/chemistry-lessons.js
+          test -f dist/subjects/specification-manifest.js
+          test -f dist/subjects/specification-audit.html
+          test -f dist/subjects/specification-audit.css
+          test -f dist/subjects/specification-audit.js
           test -f dist/tools/practicals/index.html
           test -f dist/topics/01-measurements/index.html
           test -f dist/topics/02-particles-radiation/index.html
@@ -118,6 +128,10 @@ jobs:
       - name: Verify Paper 3 option textbooks
         timeout-minutes: 3
         run: node tests/textbook-options-smoke.mjs
+
+      - name: Verify Phase 17 specification dashboard
+        timeout-minutes: 3
+        run: node tests/specification-audit.mjs
 
       - name: Run legacy integrated study-flow diagnostics
         continue-on-error: true
