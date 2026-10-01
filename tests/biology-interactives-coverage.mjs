@@ -1,9 +1,10 @@
 import fs from 'node:fs';
 import vm from 'node:vm';
 
-const source=fs.readFileSync('subjects/biology-interactives.js','utf8');
 const sandbox={window:{},Object,Array,String,JSON,Math,Number};
-vm.runInNewContext(source,sandbox,{filename:'subjects/biology-interactives.js'});
+for(const file of ['subjects/biology-interactives.js','subjects/biology-interactive-alignment.js']){
+  vm.runInNewContext(fs.readFileSync(file,'utf8'),sandbox,{filename:file});
+}
 const api=sandbox.window.ALEVEL_BIOLOGY_INTERACTIVES;
 const expected=[
   '3.1.1','3.1.2','3.1.3','3.1.4','3.1.5','3.1.6','3.1.7','3.1.8',
@@ -28,7 +29,9 @@ else{
   const present=new Set(Object.values(api.definitions||{}).map(x=>x.kind));
   for(const kind of requiredKinds)if(!present.has(kind))failures.push(`missing required Biology interactive kind: ${kind}`);
   const priority={
-    '3.2.1':'cell','3.2.3':'transport','3.1.4':'enzyme','3.4.2':'dna','3.5.1':'energy','3.6.2':'process','3.6.3':'process','3.7.1':'genetics','3.7.2':'hardy','3.8.4':'geneTech'
+    '3.2.1':'cell','3.2.2':'process','3.2.3':'transport','3.1.4':'enzyme','3.4.2':'dna','3.4.4':'population',
+    '3.5.1':'energy','3.6.2':'process','3.6.3':'process','3.7.1':'genetics','3.7.2':'hardy',
+    '3.8.1':'dna','3.8.2':'process','3.8.4':'geneTech'
   };
   for(const [ref,kind] of Object.entries(priority))if(api.definitions?.[ref]?.kind!==kind)failures.push(`${ref} should use ${kind}`);
 }
@@ -37,4 +40,4 @@ if(failures.length){
   failures.forEach(x=>console.error(`- ${x}`));
   process.exit(1);
 }
-console.log(`Biology interactive coverage passed: all ${expected.length} AQA sections map to a working Phase 7 interactive type.`);
+console.log(`Biology interactive coverage passed: all ${expected.length} AQA sections map to a working Phase 7 interactive type with corrected section alignment.`);
