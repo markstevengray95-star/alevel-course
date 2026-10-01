@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="../lesson-presentation-phase3.css">
   <link rel="stylesheet" href="../lesson-slide-design.css">
   <link rel="stylesheet" href="biology-interactives.css">
+  <link rel="stylesheet" href="chemistry-interactives.css">
   <style>
     :root{color-scheme:dark;--bg:#08111d;--panel:#101c2c;--panel2:#14243a;--line:#263b57;--text:#eff6ff;--muted:#a8b7ca;--accent:#77bdfb;--good:#88d8a4}
     *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top right,#132b46 0,#08111d 42%);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}
@@ -35,28 +36,11 @@
     <h1 id="sectionTitle">Course section</h1>
     <p class="lead" id="sectionSummary"></p>
     <div class="status"><span>Specification <strong id="sectionRef"></strong></span><span id="sectionYear"></span><span><strong id="sectionStatus">Presentation ready</strong></span></div>
-    <div class="lesson-actions">
-      <button class="primary" id="presentLessonBtn" type="button">Present lesson</button>
-      <button id="restartPresentationBtn" type="button">Start presentation from slide 1</button>
-    </div>
+    <div class="lesson-actions"><button class="primary" id="presentLessonBtn" type="button">Present lesson</button><button id="restartPresentationBtn" type="button">Start presentation from slide 1</button></div>
   </section>
   <div class="grid">
-    <section class="panel">
-      <h2>Lesson presentation</h2>
-      <p class="lead" id="presentationIntro">This specification section has its own PowerPoint-style lesson deck using the same presentation pattern as Physics.</p>
-      <div class="presentation-summary" aria-label="Presentation features">
-        <div><strong id="presentationSlideCount">12 slides</strong><span>Starter → teaching → application → assessment</span></div>
-        <div><strong>Presenter controls</strong><span>Outline, keyboard navigation, full screen and restart</span></div>
-        <div><strong>Teacher support</strong><span>Solutions, teaching notes, print/PDF and copied outline</span></div>
-      </div>
-      <h2 style="margin-top:22px">Specification focus</h2>
-      <ul class="focus-list" id="focusList"></ul>
-      <div class="next" id="buildStatus"><strong>Course build:</strong> this section is connected to the shared presentation engine.</div>
-    </section>
-    <aside class="panel">
-      <h2 id="parentTitle">Topic structure</h2>
-      <ul class="section-list" id="sectionList"></ul>
-    </aside>
+    <section class="panel"><h2>Lesson presentation</h2><p class="lead" id="presentationIntro">This specification section has its own PowerPoint-style lesson deck using the same presentation pattern as Physics.</p><div class="presentation-summary" aria-label="Presentation features"><div><strong id="presentationSlideCount">12 slides</strong><span>Starter → teaching → application → assessment</span></div><div><strong>Presenter controls</strong><span>Outline, keyboard navigation, full screen and restart</span></div><div><strong>Teacher support</strong><span>Solutions, teaching notes, print/PDF and copied outline</span></div></div><h2 style="margin-top:22px">Specification focus</h2><ul class="focus-list" id="focusList"></ul><div class="next" id="buildStatus"><strong>Course build:</strong> this section is connected to the shared presentation engine.</div></section>
+    <aside class="panel"><h2 id="parentTitle">Topic structure</h2><ul class="section-list" id="sectionList"></ul></aside>
   </div>
   <section class="bio-lesson-section" id="biologyLessonContent" hidden></section>
   <section class="bio-lesson-section" id="chemistryLessonContent" hidden></section>
@@ -69,53 +53,32 @@
 <script src="biology-interactives.js"></script>
 <script src="biology-interactive-alignment.js"></script>
 <script src="chemistry-lessons.js"></script>
+<script src="chemistry-interactives.js"></script>
 <script>
 (()=>{
-  const esc=value=>String(value??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const esc=value=>String(value??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[m]));
   const params=new URLSearchParams(location.search);
   const config=window.ALEVEL_COURSE_CONFIG;
   const topic=config?.topics?.find(item=>item.id===params.get('topic'))||config?.topics?.[0];
   const ref=params.get('section');
   const section=topic?.modules?.find(item=>item.ref===ref)||topic?.modules?.[0];
   if(!config||!topic||!section){document.getElementById('sectionTitle').textContent='Course section unavailable';return;}
-  const context={config,topic,section};
-  window.ALEVEL_SUBJECT_CONTEXT=context;
-  const biology=config.subject==='Biology';
-  const chemistry=config.subject==='Chemistry';
+  const context={config,topic,section};window.ALEVEL_SUBJECT_CONTEXT=context;
+  const biology=config.subject==='Biology',chemistry=config.subject==='Chemistry';
   const engine=()=>biology?window.ALEVEL_BIOLOGY_LESSONS:chemistry?window.ALEVEL_CHEMISTRY_LESSONS:window.ALEVEL_SUBJECT_PRESENTATION;
-
   document.title=`${section.ref} ${section.title} · ${config.subject}`;
   document.getElementById('courseBadge').textContent=`${config.board} ${config.subject} ${config.specCode}`;
-  document.getElementById('sectionTitle').textContent=section.title;
-  document.getElementById('sectionRef').textContent=section.ref;
-  document.getElementById('sectionYear').textContent=section.year||topic.year||'';
-  document.getElementById('sectionSummary').textContent=section.summary||`${section.title} within ${topic.title}, aligned to the ${config.board} A-Level ${config.subject} specification.`;
-  document.getElementById('parentTitle').textContent=topic.title;
+  document.getElementById('sectionTitle').textContent=section.title;document.getElementById('sectionRef').textContent=section.ref;document.getElementById('sectionYear').textContent=section.year||topic.year||'';
+  document.getElementById('sectionSummary').textContent=section.summary||`${section.title} within ${topic.title}, aligned to the ${config.board} A-Level ${config.subject} specification.`;document.getElementById('parentTitle').textContent=topic.title;
   document.getElementById('crumbs').innerHTML=`<span>${esc(config.displayName)}</span><span>›</span><span>${esc(topic.code)} ${esc(topic.title)}</span><span>›</span><span>${esc(section.ref)}</span>`;
-  const focus=(section.focus?.length?section.focus:[`Learn the core knowledge required by ${section.ref}.`,`Apply the specification to data, practical and exam-style contexts.`,`Connect this section to the wider ${config.subject} course.`]);
-  document.getElementById('focusList').innerHTML=focus.map(item=>`<li>${esc(item)}</li>`).join('');
-  document.getElementById('sectionList').innerHTML=topic.modules.map(item=>{
-    const url=new URL(location.href);url.searchParams.set('subject',config.id);url.searchParams.set('topic',topic.id);url.searchParams.set('section',item.ref);
-    return `<li class="${item.ref===section.ref?'active':''}"><a href="${esc(url.pathname+url.search)}"><span class="ref">${esc(item.ref)}</span>${esc(item.title)}</a></li>`;
-  }).join('');
-
+  const focus=section.focus?.length?section.focus:[`Learn the core knowledge required by ${section.ref}.`,`Apply ${section.title.toLowerCase()} to data, practical and exam-style contexts.`,`Connect this section to the wider ${config.subject} course.`];document.getElementById('focusList').innerHTML=focus.map(item=>`<li>${esc(item)}</li>`).join('');
+  document.getElementById('sectionList').innerHTML=topic.modules.map(item=>{const url=new URL(location.href);url.searchParams.set('subject',config.id);url.searchParams.set('topic',topic.id);url.searchParams.set('section',item.ref);return `<li class="${item.ref===section.ref?'active':''}"><a href="${esc(url.pathname+url.search)}"><span class="ref">${esc(item.ref)}</span>${esc(item.title)}</a></li>`;}).join('');
   if(biology){
-    document.getElementById('sectionStatus').textContent='Biology lesson + interactive ready';
-    document.getElementById('presentationSlideCount').textContent='15 slides';
-    document.getElementById('presentationIntro').textContent='This Biology section has a fully populated 15-slide lesson deck plus a section-specific interactive model or activity.';
-    document.getElementById('buildStatus').innerHTML='<strong>Phase 7 complete for this section:</strong> detailed Biology teaching content is now paired with an interactive model, simulation, data activity or calculation tool matched to the specification point.';
-    window.ALEVEL_BIOLOGY_LESSONS?.renderPage?.(context);
-    window.ALEVEL_BIOLOGY_INTERACTIVES?.render?.(context);
+    document.getElementById('sectionStatus').textContent='Biology lesson + interactive ready';document.getElementById('presentationSlideCount').textContent='15 slides';document.getElementById('presentationIntro').textContent='This Biology section has a fully populated 15-slide lesson deck plus a section-specific interactive model or activity.';document.getElementById('buildStatus').innerHTML='<strong>Phase 7 complete for this section:</strong> detailed Biology teaching content is paired with an interactive model, simulation, data activity or calculation tool matched to the specification point.';window.ALEVEL_BIOLOGY_LESSONS?.renderPage?.(context);window.ALEVEL_BIOLOGY_INTERACTIVES?.render?.(context);
   }else if(chemistry){
-    document.getElementById('sectionStatus').textContent='Detailed Chemistry lesson ready';
-    document.getElementById('presentationSlideCount').textContent='15 slides';
-    document.getElementById('presentationIntro').textContent='This Chemistry section now has a fully populated 15-slide lesson deck with equations, mechanisms, calculations, practical evidence, misconceptions and A* synoptic links.';
-    document.getElementById('buildStatus').innerHTML='<strong>Phase 6 complete for this section:</strong> detailed Chemistry teaching content now drives both the lesson notes and presentation. Later Chemistry interactive phases can add simulations without rebuilding the lesson structure.';
-    window.ALEVEL_CHEMISTRY_LESSONS?.renderPage?.(context);
+    document.getElementById('sectionStatus').textContent='Chemistry lesson + interactive ready';document.getElementById('presentationSlideCount').textContent='15 slides';document.getElementById('presentationIntro').textContent='This Chemistry section has a detailed 15-slide lesson deck plus a section-specific interactive model, mechanism, calculator or analytical activity.';document.getElementById('buildStatus').innerHTML='<strong>Phase 8 complete for this section:</strong> all AQA Chemistry sections now pair detailed teaching content with an interactive activity matched to the specification.';window.ALEVEL_CHEMISTRY_LESSONS?.renderPage?.(context);window.ALEVEL_CHEMISTRY_INTERACTIVES?.render?.(context);
   }
-
-  document.getElementById('presentLessonBtn')?.addEventListener('click',()=>engine()?.open?.(context));
-  document.getElementById('restartPresentationBtn')?.addEventListener('click',()=>engine()?.open?.(context,{restart:true}));
+  document.getElementById('presentLessonBtn')?.addEventListener('click',()=>engine()?.open?.(context));document.getElementById('restartPresentationBtn')?.addEventListener('click',()=>engine()?.open?.(context,{restart:true}));
 })();
 </script>
 </body>
