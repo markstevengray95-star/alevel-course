@@ -1,0 +1,55 @@
+name: Validate Chemistry Calculation Coach
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  chemistry-calculation-coach:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout course and topic modules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Check source and AQA skill coverage
+        run: |
+          node --check subjects/chemistry-calculation-coach.js
+          node --check subject-tool-bridge.js
+          node tests/chemistry-calculation-coach-coverage.mjs
+
+      - name: Assemble production output
+        run: bash scripts/vercel-build.sh
+
+      - name: Verify Phase 13 assets ship
+        run: |
+          test -f dist/subjects/chemistry-calculation-coach.html
+          test -f dist/subjects/chemistry-calculation-coach.js
+          test -f dist/subjects/chemistry-calculation-coach.css
+          test -f dist/subject-tool-bridge.js
+          grep -q "AQA 7405 · Quantitative chemistry" dist/subjects/chemistry-calculation-coach.html
+          grep -q "openChemistryCalculationCoach" dist/subject-tool-bridge.js
+
+      - name: Install browser dependency
+        timeout-minutes: 5
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Start production-like server
+        timeout-minutes: 2
+        run: |
+          python3 -m http.server 4173 --directory dist > /tmp/chem-calc-http.log 2>&1 &
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/chem-calc-http.log
+          exit 1
+
+      - name: Exercise Chemistry Calculation Coach and routing
+        timeout-minutes: 3
+        run: node tests/chemistry-calculation-coach.mjs
