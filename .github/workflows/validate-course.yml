@@ -48,6 +48,7 @@ jobs:
           test -f dist/experience-polish.css
           test -f dist/mobile-mode.css
           test -f dist/mobile-mode.js
+          test -f dist/phase18-responsive.css
           test -f dist/pricing-access.js
           test -f dist/pricing-access.css
           test -f dist/lesson-enrichment.js
@@ -114,6 +115,10 @@ jobs:
       - name: Verify Phase 18 responsive shell and subject tools
         timeout-minutes: 5
         run: node tests/phase18-responsive.mjs
+
+      - name: Verify Phase 18 subject-tool visibility and mobile Tools action
+        timeout-minutes: 3
+        run: node tests/phase18-tool-visibility.mjs
 
       - name: Verify all Physics topic modules at phone width
         timeout-minutes: 5
