@@ -51,3 +51,11 @@
   if(!document.querySelector('script[src="auth.js"]')){const auth=document.createElement('script');auth.type='module';auth.src='auth.js';document.body.appendChild(auth);}
   if(!document.querySelector('script[src="billing-client.js"]')){const billing=document.createElement('script');billing.type='module';billing.src='billing-client.js';document.body.appendChild(billing);}
 })();
+
+(()=>{
+  if(document.querySelector('script[src="subject-tool-bridge.js"]'))return;
+  const script=document.createElement('script');
+  script.src='subject-tool-bridge.js';
+  script.async=false;
+  document.body.appendChild(script);
+})();
