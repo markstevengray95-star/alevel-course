@@ -1,0 +1,45 @@
+import { chromium } from 'playwright';
+const base=process.env.BASE_URL||'http://127.0.0.1:4173';
+const browser=await chromium.launch({headless:true});
+const page=await browser.newPage();
+const errors=[];page.on('pageerror',e=>errors.push(e.message));
+try{
+ await page.goto(`${base}/index.html?subject=physics`,{waitUntil:'domcontentloaded'});
+ await page.evaluate(()=>{
+  localStorage.clear();
+  localStorage.setItem('alevel-course-progress-v1',JSON.stringify({measurements:true,particles:true,waves:true,'mechanics-materials':true}));
+  localStorage.setItem('alevel-biology-progress-v1',JSON.stringify({'bio-molecules':true,'bio-cells':true,'bio-exchange':true,'bio-genetic-info':true}));
+  localStorage.setItem('alevel-chemistry-progress-v1',JSON.stringify({'chem-physical':true,'chem-inorganic':true,'chem-organic':true}));
+  localStorage.setItem('alevel-biology-required-practicals-v1',JSON.stringify([1,2,3,4,5,6]));
+  localStorage.setItem('alevel-chemistry-required-practicals-v1',JSON.stringify([1,2,3,4,5,6,7,8,9,10,11,12]));
+  localStorage.setItem('alevel-biology-data-coach-v1',JSON.stringify({skills:['magnification','percentage','uncertainty','descriptive','chi'],practice:2}));
+  localStorage.setItem('alevel-chemistry-calculation-coach-v1',JSON.stringify({skills:['moles','particles','solutions','gas','stoich','empirical','yield','titration','uncertainty','energetics','rates','equilibrium','acidbase','cells'],practice:3}));
+  localStorage.setItem('alevel-biology-astar-hub-v1',JSON.stringify({attempts:{'3.1.1':{},'3.2.1':{},'3.4.2':{},'3.7.2':{}},master:1}));
+  localStorage.setItem('alevel-chemistry-astar-hub-v1',JSON.stringify({attempts:Object.fromEntries(Array.from({length:17},(_,i)=>[`x${i}`,{}])),master:1}));
+  localStorage.setItem('alevel-biology-assessment-history-v1',JSON.stringify([{id:1,date:'2026-10-01T09:00:00Z',subject:'biology',mode:'quick',score:7,total:10,pct:70,answers:[{ref:'3.1.1',topic:'3.1',ao:'AO1',marks:3,score:2},{ref:'3.2.1',topic:'3.2',ao:'AO2',marks:3,score:2},{ref:'3.7.2',topic:'3.7',ao:'AO3',marks:4,score:3}]}]));
+  localStorage.setItem('alevel-chemistry-assessment-history-v1',JSON.stringify([{id:2,date:'2026-10-01T10:00:00Z',subject:'chemistry',mode:'paper3',score:8,total:10,pct:80,answers:[{ref:'3.1.2',topic:'3.1',ao:'AO1',marks:3,score:3},{ref:'3.2.5',topic:'3.2',ao:'AO2',marks:3,score:2},{ref:'3.3.15',topic:'3.3',ao:'AO3',marks:4,score:3}]}]));
+ });
+ await page.goto(`${base}/subjects/progress-mastery.html?from=physics`,{waitUntil:'domcontentloaded'});
+ await page.waitForFunction(()=>window.ALEVEL_PROGRESS_MASTERY?.version==='phase-15');
+ const data=await page.evaluate(()=>window.ALEVEL_PROGRESS_MASTERY.collect());
+ if(Math.round(data.physics.mastery*100)!==50)throw new Error(`Physics mastery expected 50, got ${data.physics.mastery}`);
+ if(Math.round(data.biology.mastery*100)!==55)throw new Error(`Biology mastery expected ~55, got ${data.biology.mastery}`);
+ if(Math.round(data.chemistry.mastery*100)!==91)throw new Error(`Chemistry mastery expected ~91, got ${data.chemistry.mastery}`);
+ if(data.biology.practicals.done!==6||data.chemistry.practicals.done!==12)throw new Error('Practical completion aggregation failed');
+ if(data.biology.skills.done!==5||data.chemistry.skills.done!==14)throw new Error('Coach skill aggregation failed');
+ if(data.biology.assessment.answers.length!==3||data.chemistry.assessment.answers.length!==3)throw new Error('Assessment aggregation failed');
+ if(await page.locator('.subject-card').count()!==3)throw new Error('Expected three subject mastery cards');
+ const overall=await page.locator('#overallScore').innerText();if(overall!=='65%')throw new Error(`Combined mastery expected 65%, got ${overall}`);
+ if(await page.locator('#aoGrid .ao-card').count()!==3)throw new Error('AO profile missing');
+ if(await page.locator('#weakAreas .weak-item').count()<1)throw new Error('Weak-area diagnosis missing');
+ if(await page.locator('#recentAttempts .recent-item').count()!==2)throw new Error('Recent assessment list failed');
+ await page.goto(`${base}/index.html?subject=physics`,{waitUntil:'domcontentloaded'});
+ await page.waitForFunction(()=>window.CourseApp?.config?.id==='physics'&&window.ALEVEL_SUBJECT_TOOL_BRIDGE?.openProgressMastery);
+ await page.waitForSelector('[data-course-tool="progress-mastery"]',{state:'attached'});
+ const openedPhysics=await page.evaluate(()=>window.ALEVEL_SUBJECT_TOOL_BRIDGE.openProgressMastery());if(!openedPhysics)throw new Error('Progress dashboard refused Physics');
+ await page.waitForFunction(()=>document.getElementById('toolFrame')?.src.includes('progress-mastery.html?from=physics'));
+ await page.goto(`${base}/index.html?subject=biology`,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>window.CourseApp?.config?.id==='biology'&&window.ALEVEL_SUBJECT_TOOL_BRIDGE?.openProgressMastery);if(!await page.locator('[data-course-tool="progress-mastery"]').count())throw new Error('Progress card missing in Biology');
+ await page.goto(`${base}/index.html?subject=chemistry`,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>window.CourseApp?.config?.id==='chemistry'&&window.ALEVEL_SUBJECT_TOOL_BRIDGE?.openProgressMastery);if(!await page.locator('[data-course-tool="progress-mastery"]').count())throw new Error('Progress card missing in Chemistry');
+ if(errors.length)throw new Error(`Page errors: ${errors.join(' | ')}`);
+ console.log('Progress & Mastery browser audit passed: three-subject aggregation, diagnosis, scoring and routing work.');
+} finally {await browser.close()}
