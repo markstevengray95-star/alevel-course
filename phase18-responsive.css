@@ -14,7 +14,9 @@ img,svg,canvas,video{max-width:100%}
 pre,code{overflow-wrap:anywhere}
 
 @media(max-width:900px){
-  #subjectSwitcher{max-width:36vw;margin-left:0!important;gap:4px!important}
+  .header-progress{display:none!important}
+  .topbar-inner{gap:7px!important}
+  #subjectSwitcher{max-width:40vw;margin-left:0!important;gap:4px!important}
   #subjectSwitcher a{padding:6px 8px!important;font-size:.74rem!important}
   .tool-bar{overflow-x:auto;overscroll-behavior-inline:contain;scrollbar-width:none}
   .tool-bar::-webkit-scrollbar{display:none}
