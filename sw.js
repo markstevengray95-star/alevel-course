@@ -1,7 +1,7 @@
-const CACHE='alevel-physics-offline-v15';
+const CACHE='alevel-physics-offline-v16';
 const CORE=[
-  './','./index.html','./styles.css','./course-enhancements.css','./focus-layout.css','./student-notebook.css','./course-tools.css','./mobile-mode.css','./experience-polish.css','./curriculum-map.css','./lesson-content.css','./textbook.css',
-  './app.js','./curriculum-map.js','./lesson-content.js','./student-notebook.js','./ai-coach.js','./course-tools.js','./mobile-mode.js','./presentation-mode.js','./textbook-data.js','./textbook.js','./textbook-options.js','./textbook-safe-options.js','./textbook-options.css',
+  './','./index.html','./styles.css','./course-enhancements.css','./focus-layout.css','./student-notebook.css','./course-tools.css','./mobile-mode.css','./phase18-responsive.css','./experience-polish.css','./curriculum-map.css','./lesson-content.css','./textbook.css',
+  './app.js','./curriculum-map.js','./lesson-content.js','./student-notebook.js','./ai-coach.js','./course-tools.js','./subject-tool-bridge.js','./mobile-mode.js','./presentation-mode.js','./textbook-data.js','./textbook.js','./textbook-options.js','./textbook-safe-options.js','./textbook-options.css',
   './lesson-enrichment.js','./lesson-enrichment.css','./lesson-automarking.js','./lesson-automarking.css','./guided-tutor-dashboard.js','./guided-tutor-dashboard.css','./lesson-navigator.js','./lesson-navigator.css','./lesson-reader-quicknav.js','./guided-tutor-mode.js','./guided-tutor-mode.css','./lesson-quality-audit.js','./lesson-quality-audit.css','./presentation-library.js','./presentation-library.css',
   './lesson-phase3.js','./lesson-phase3.css','./lesson-spec-depth.js','./lesson-spec-depth.css','./lesson-deepening.js','./lesson-deepening.css',
   './lesson-presentation-primary.js','./lesson-presentation-primary.css','./lesson-presentation-phase3.css','./lesson-presentation-controls.js','./lesson-presentation-controls.css',
