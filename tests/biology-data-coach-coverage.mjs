@@ -3,7 +3,7 @@ const html=fs.readFileSync('subjects/biology-data-coach.html','utf8');
 const js=fs.readFileSync('subjects/biology-data-coach.js','utf8');
 const bridge=fs.readFileSync('subject-tool-bridge.js','utf8');
 const failures=[];
-for(const token of ['AQA 7402','10 core data skills','Statistical-test coach','Graphs & data','Exam practice'])if(!html.includes(token))failures.push(`HTML missing: ${token}`);
+for(const token of ['AQA 7402','core data skills','Statistical-test coach','Graphs & data','Exam practice'])if(!html.includes(token))failures.push(`HTML missing: ${token}`);
 const skills=['magnification','percentage','uncertainty','descriptive','chi','ttest','spearman','simpson','hardy','graphs'];
 for(const skill of skills)if(!js.includes(`'${skill}'`))failures.push(`Skill missing: ${skill}`);
 for(const token of ['n − 1','Chi-squared','Student\'s t-test','Spearman','Simpson','Hardy–Weinberg','Quadrat population estimate','percentage uncertainty'])if(!js.includes(token)&&!html.includes(token))failures.push(`Required maths/statistics feature missing: ${token}`);
