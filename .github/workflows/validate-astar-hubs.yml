@@ -1,0 +1,56 @@
+name: Validate Biology and Chemistry A* Hubs
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  astar-hubs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout course and topic modules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Check source and A* coverage
+        run: |
+          node --check subjects/astar-hub.js
+          node --check subject-tool-bridge.js
+          node tests/astar-hub-coverage.mjs
+
+      - name: Assemble production output
+        run: bash scripts/vercel-build.sh
+
+      - name: Verify Phase 14 assets ship
+        run: |
+          test -f dist/subjects/astar-hub.html
+          test -f dist/subjects/astar-hub.js
+          test -f dist/subjects/astar-hub.css
+          test -f dist/subject-tool-bridge.js
+          grep -q "Paper 3 mastery" dist/subjects/astar-hub.html
+          grep -q "openBiologyAstarHub" dist/subject-tool-bridge.js
+          grep -q "openChemistryAstarHub" dist/subject-tool-bridge.js
+
+      - name: Install browser dependency
+        timeout-minutes: 5
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Start production-like server
+        timeout-minutes: 2
+        run: |
+          python3 -m http.server 4173 --directory dist > /tmp/astar-http.log 2>&1 &
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/astar-http.log
+          exit 1
+
+      - name: Exercise Biology and Chemistry A* hubs
+        timeout-minutes: 3
+        run: node tests/astar-hub.mjs
