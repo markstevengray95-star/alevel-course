@@ -1,0 +1,55 @@
+name: Validate Biology required practicals
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  biology-practicals:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout course and topic modules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Check source and specification coverage
+        run: |
+          node --check subjects/biology-practicals.js
+          node --check subject-tool-bridge.js
+          node tests/biology-practicals-coverage.mjs
+
+      - name: Assemble production output
+        run: bash scripts/vercel-build.sh
+
+      - name: Verify Phase 9 assets ship
+        run: |
+          test -f dist/subjects/biology-practicals.html
+          test -f dist/subjects/biology-practicals.js
+          test -f dist/subjects/biology-practicals.css
+          test -f dist/subject-tool-bridge.js
+          grep -q "subject-tool-bridge.js" dist/mobile-mode.js
+          grep -q "AQA 7402 · Activities 1–12" dist/subjects/biology-practicals.html
+
+      - name: Install browser dependency
+        timeout-minutes: 5
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Start production-like server
+        timeout-minutes: 2
+        run: |
+          python3 -m http.server 4173 --directory dist > /tmp/bio-prac-http.log 2>&1 &
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/bio-prac-http.log
+          exit 1
+
+      - name: Exercise Biology practical hub and routing
+        timeout-minutes: 3
+        run: node tests/biology-practicals.mjs
