@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#10243c">
+<title>A-Level Teacher Analytics</title>
+<meta name="description" content="Teacher analytics for the unified AQA A-Level Physics, Biology and Chemistry course.">
+<link rel="stylesheet" href="teacher-analytics.css">
+</head>
+<body>
+<header class="topbar">
+  <a id="backLink" href="../index.html">← Course</a>
+  <div class="brand"><span>▦</span><div><strong>Teacher Analytics</strong><small>Physics · Biology · Chemistry</small></div></div>
+  <button id="refreshBtn" type="button">Refresh</button>
+</header>
+<main class="shell">
+  <section class="loading-card" id="loadingCard"><span class="spinner" aria-hidden="true"></span><div><strong>Loading teacher analytics…</strong><p>Checking your teacher access and class data.</p></div></section>
+
+  <section class="access-card" id="accessCard" hidden>
+    <span class="eyebrow">Teacher access</span>
+    <h1>Teacher Analytics is available on the Teacher plan.</h1>
+    <p>Sign in with a teacher-plan or admin account to create classes, view linked student progress and build intervention groups. Student answers and notebook notes are not shared.</p>
+    <a class="button" href="../index.html">Return to course</a>
+  </section>
+
+  <div id="analyticsApp" hidden>
+    <section class="hero">
+      <div class="hero-copy">
+        <span class="eyebrow">Phase 16 · class intelligence</span>
+        <h1>Turn course evidence into teaching actions.</h1>
+        <p>Monitor completion, assessment performance, practical progress, AO weaknesses, misconception hotspots and students who may benefit from intervention.</p>
+      </div>
+      <div class="class-control">
+        <label><span>Class</span><select id="classSelect" aria-label="Select class"></select></label>
+        <div class="class-code"><span>Join code</span><strong id="joinCode">—</strong><button id="copyCodeBtn" type="button">Copy</button></div>
+      </div>
+    </section>
+
+    <section class="class-empty" id="classEmpty" hidden>
+      <span class="eyebrow">Create your first class</span>
+      <h2>No classes yet</h2>
+      <p>Create a class, then give students the generated code. Students join from their Progress &amp; Mastery dashboard.</p>
+      <form id="firstClassForm" class="inline-form"><input id="firstClassName" maxlength="80" required placeholder="e.g. Year 12 Physics"><button type="submit">Create class</button></form>
+    </section>
+
+    <div id="classContent" hidden>
+      <section class="summary-grid" id="summaryGrid"></section>
+
+      <section class="two-col">
+        <article class="panel"><div class="panel-head"><div><span class="eyebrow">Subject readiness</span><h2>Class mastery</h2></div></div><div class="subject-grid" id="subjectGrid"></div></article>
+        <article class="panel"><div class="panel-head"><div><span class="eyebrow">Assessment objectives</span><h2>AO profile</h2></div></div><div class="ao-grid" id="aoGrid"></div></article>
+      </section>
+
+      <section class="two-col">
+        <article class="panel"><div class="panel-head"><div><span class="eyebrow">Question-level diagnosis</span><h2>Misconception hotspots</h2></div><small>Aggregated gaps only</small></div><div class="hotspot-list" id="hotspotList"></div></article>
+        <article class="panel"><div class="panel-head"><div><span class="eyebrow">Practical readiness</span><h2>Required practical gaps</h2></div></div><div class="practical-grid" id="practicalGrid"></div></article>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head"><div><span class="eyebrow">Actionable support</span><h2>Intervention queue</h2></div><button id="exportBtn" type="button">Export CSV</button></div>
+        <div class="intervention-list" id="interventionList"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head"><div><span class="eyebrow">Student overview</span><h2>Class progress</h2></div><span id="studentCount"></span></div>
+        <div class="table-wrap"><table><thead><tr><th>Student</th><th>Overall</th><th>Physics</th><th>Biology</th><th>Chemistry</th><th>Practicals</th><th>Last sync</th><th>Priority</th></tr></thead><tbody id="studentRows"></tbody></table></div>
+      </section>
+
+      <section class="panel class-admin">
+        <div><span class="eyebrow">Class management</span><h2>Manage classes</h2><p>Generate another class or archive the selected class when it is no longer needed.</p></div>
+        <form id="newClassForm" class="inline-form"><input id="newClassName" maxlength="80" required placeholder="New class name"><button type="submit">Create class</button></form>
+        <button class="danger" id="archiveClassBtn" type="button">Archive selected class</button>
+      </section>
+    </div>
+  </div>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="teacher-analytics.js"></script>
+</body>
+</html>

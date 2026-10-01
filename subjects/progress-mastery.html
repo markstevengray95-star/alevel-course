@@ -11,6 +11,7 @@
 <main class="shell">
 <section class="hero"><div><span class="eyebrow">Unified A-Level dashboard</span><h1>See the whole learning picture.</h1><p>Course coverage, assessment evidence, required practicals, quantitative skills and A* stretch are combined without replacing any existing progress data.</p></div><div class="hero-score"><strong id="overallScore">0%</strong><span>combined mastery evidence</span></div></section>
 <section class="summary-grid" id="summaryGrid"></section>
+<section class="panel class-sync" id="classSyncPanel"><div class="panel-head"><div><span class="eyebrow">Teacher class sync</span><h2>Share progress with your teacher</h2></div><span class="sync-status" id="classSyncStatus">Checking sign-in…</span></div><div class="class-sync-grid"><div><p>Only summary progress, marks, topic references and practical/skills completion are synced. Written answers and notebook notes stay private.</p><form id="joinClassForm" class="join-class-form"><input id="classCodeInput" maxlength="12" autocomplete="off" placeholder="Enter class code" aria-label="Teacher class code"><button type="submit">Join class</button></form></div><div><strong class="joined-title">Your classes</strong><div id="joinedClasses" class="joined-classes"><span class="muted">No linked classes yet.</span></div></div></div></section>
 <section class="panel"><div class="panel-head"><div><span class="eyebrow">Three-subject overview</span><h2>Subject readiness</h2></div><p>Scores are evidence indices, not predicted grades. Missing tools are excluded rather than counted as failure.</p></div><div class="subject-grid" id="subjectGrid"></div></section>
 <section class="two-col"><article class="panel"><div class="panel-head"><div><span class="eyebrow">What to do next</span><h2>Priority actions</h2></div></div><div id="priorityList" class="priority-list"></div></article><article class="panel"><div class="panel-head"><div><span class="eyebrow">Assessment evidence</span><h2>AO profile</h2></div></div><div id="aoGrid" class="ao-grid"></div></article></section>
 <section class="panel"><div class="panel-head"><div><span class="eyebrow">Mastery signals</span><h2>Evidence matrix</h2></div><p>Each row shows the strongest progress signal available from the tools already used.</p></div><div class="matrix" id="matrix"></div></section>
@@ -19,4 +20,5 @@
 </main>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script src="progress-mastery.js"></script>
+<script src="progress-class-sync.js"></script>
 </body></html>
