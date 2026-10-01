@@ -24,6 +24,10 @@
   }
   function toggle(){apply(!body.classList.contains('mobile-ui'),{persist:true});}
   function openTopicPicker(){const select=document.getElementById('quickCourseSelect');if(!select)return;select.focus({preventScroll:true});try{if(typeof select.showPicker==='function')select.showPicker();else select.click();}catch{select.click();}}
+  function openCourseTools(){
+    window.CourseApp?.exitCourse?.({scroll:false});
+    window.setTimeout(()=>document.getElementById('courseTools')?.scrollIntoView({behavior:'smooth',block:'start'}),60);
+  }
   function loadLessonEnrichment(){if(window.CourseLessonEnrichment||document.querySelector('script[data-course-lesson-enrichment]'))return;const script=document.createElement('script');script.src='lesson-enrichment.js';script.dataset.courseLessonEnrichment='true';document.body.appendChild(script);}
   function loadTextbook(){
     if(window.CourseTextbook){loadLessonEnrichment();return;}
@@ -35,6 +39,7 @@
   menuToggle?.addEventListener('click',()=>{toggle();document.querySelector('.shell-more[open]')?.removeAttribute('open');});
   document.getElementById('mobileDockHome')?.addEventListener('click',()=>window.CourseApp?.exitCourse?.());
   document.getElementById('mobileDockTopic')?.addEventListener('click',openTopicPicker);
+  document.getElementById('mobileDockTools')?.addEventListener('click',openCourseTools);
   document.getElementById('mobileDockNotebook')?.addEventListener('click',()=>window.CourseNotebook?.open?.());
   document.getElementById('mobileDockAI')?.addEventListener('click',()=>document.getElementById('coachToggle')?.click());
   document.getElementById('mobileDockComplete')?.addEventListener('click',()=>document.getElementById('markComplete')?.click());
@@ -47,6 +52,7 @@
 })();
 
 (()=>{
+  if(!document.querySelector('link[href="phase18-responsive.css"]')){const responsive=document.createElement('link');responsive.rel='stylesheet';responsive.href='phase18-responsive.css';document.head.appendChild(responsive);}
   if(!document.querySelector('link[href="auth.css"]')){const style=document.createElement('link');style.rel='stylesheet';style.href='auth.css';document.head.appendChild(style);}
   if(!document.querySelector('script[src="auth.js"]')){const auth=document.createElement('script');auth.type='module';auth.src='auth.js';document.body.appendChild(auth);}
   if(!document.querySelector('script[src="billing-client.js"]')){const billing=document.createElement('script');billing.type='module';billing.src='billing-client.js';document.body.appendChild(billing);}
