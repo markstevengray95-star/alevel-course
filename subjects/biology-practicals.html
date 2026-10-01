@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#08151a">
+  <title>AQA A-Level Biology Required Practicals</title>
+  <meta name="description" content="Interactive AQA A-level Biology 7402 required practicals hub covering practicals 1–12, apparatus and techniques, CPAC-style skills, data analysis and exam practice.">
+  <link rel="stylesheet" href="biology-practicals.css">
+</head>
+<body>
+<header class="lab-topbar">
+  <a class="back-link" href="../index.html?subject=biology">← Biology course</a>
+  <div class="lab-brand"><span>β</span><div><strong>A-Level Biology Required Practicals</strong><small>AQA 7402 · Activities 1–12</small></div></div>
+  <div class="lab-progress"><strong id="progressText">0 / 12 complete</strong><div class="progress-track"><i id="progressBar"></i></div></div>
+</header>
+<main class="lab-shell">
+  <aside class="practical-nav" aria-label="Required practicals">
+    <div class="nav-head"><span class="eyebrow">Practical endorsement</span><h1>Practical Hub</h1><p>Build the method, collect data, analyse it and practise the exam skills.</p></div>
+    <div class="nav-tools">
+      <button type="button" id="overviewBtn" class="nav-action active">Overview</button>
+      <button type="button" id="skillsBtn" class="nav-action">Apparatus &amp; skills</button>
+    </div>
+    <ol id="practicalList" class="practical-list"></ol>
+  </aside>
+
+  <section class="lab-main">
+    <section id="overviewView" class="view active">
+      <div class="hero-card">
+        <div><span class="eyebrow">AQA Biology 7402</span><h2>Master all 12 required practicals.</h2><p>Each practical follows the same exam-ready sequence: purpose, variables, apparatus, method, safety, simulation, results, graph, uncertainty, evaluation and exam practice.</p></div>
+        <div class="hero-stat"><strong>12</strong><span>required practicals</span></div>
+      </div>
+      <div class="overview-grid">
+        <article><strong>Plan</strong><p>Identify independent, dependent and control variables before collecting data.</p></article>
+        <article><strong>Measure</strong><p>Select suitable apparatus and record units, resolution and uncertainty.</p></article>
+        <article><strong>Analyse</strong><p>Process results, choose a graph and interpret patterns using biological reasoning.</p></article>
+        <article><strong>Evaluate</strong><p>Separate random error, systematic error, anomalies and genuine biological variation.</p></article>
+      </div>
+      <div class="practical-cards" id="overviewCards"></div>
+    </section>
+
+    <section id="skillsView" class="view" hidden>
+      <div class="section-head"><div><span class="eyebrow">AQA apparatus &amp; techniques</span><h2>AT skills a–l</h2><p>The 12 required activities collectively provide opportunities to develop all listed apparatus and technique skills.</p></div></div>
+      <div class="skills-grid" id="skillsGrid"></div>
+      <article class="skills-note"><h3>Written-paper practical skills</h3><p>Expect questions on experimental design, variables, data presentation, uncertainty, evaluating methods and interpreting unfamiliar practical contexts. The practical endorsement itself is assessed separately by teachers.</p></article>
+    </section>
+
+    <section id="practicalView" class="view" hidden>
+      <div class="practical-hero">
+        <div><span class="eyebrow" id="practicalCode">Required practical 1</span><h2 id="practicalTitle"></h2><p id="practicalSummary"></p></div>
+        <button type="button" id="completeBtn" class="complete-btn">Mark complete</button>
+      </div>
+      <div class="practical-meta"><span id="topicLink"></span><span id="atLinks"></span></div>
+      <div class="lesson-tabs" role="tablist" aria-label="Practical sections">
+        <button type="button" class="lesson-tab active" data-tab="plan">Plan</button>
+        <button type="button" class="lesson-tab" data-tab="method">Method</button>
+        <button type="button" class="lesson-tab" data-tab="simulate">Interactive lab</button>
+        <button type="button" class="lesson-tab" data-tab="analyse">Analyse</button>
+        <button type="button" class="lesson-tab" data-tab="exam">Exam practice</button>
+      </div>
+      <div id="panelPlan" class="lesson-panel active"></div>
+      <div id="panelMethod" class="lesson-panel" hidden></div>
+      <div id="panelSimulate" class="lesson-panel" hidden></div>
+      <div id="panelAnalyse" class="lesson-panel" hidden></div>
+      <div id="panelExam" class="lesson-panel" hidden></div>
+    </section>
+  </section>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="biology-practicals.js"></script>
+</body>
+</html>
