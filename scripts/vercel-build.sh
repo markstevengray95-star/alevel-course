@@ -54,7 +54,7 @@ shell_assets=(
   auth.js auth.css
   student-notebook.js student-notebook.css
   course-tools.js course-tools.css subject-tool-bridge.js
-  mobile-mode.js mobile-mode.css
+  mobile-mode.js mobile-mode.css phase18-responsive.css
   experience-polish.css
   textbook-data.js textbook.js textbook.css textbook-options.js textbook-options.css textbook-safe-options.js textbook-option-glossary.js
   textbook-options-adapter.js textbook-stability-guard.js
