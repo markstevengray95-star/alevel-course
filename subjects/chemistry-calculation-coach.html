@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#173354">
+  <title>AQA A-Level Chemistry Calculation Coach</title>
+  <meta name="description" content="AQA Chemistry 7405 calculation coach for moles, solutions, gases, stoichiometry, titrations, uncertainty, energetics, rates, equilibria, acids, buffers and electrochemical cells.">
+  <link rel="stylesheet" href="chemistry-calculation-coach.css">
+</head>
+<body>
+<header class="coach-topbar">
+  <a href="../index.html?subject=chemistry" class="back-link">← Chemistry course</a>
+  <div class="brand"><span>∑</span><div><strong>Chemistry Calculation Coach</strong><small>AQA 7405 · Quantitative chemistry</small></div></div>
+  <div class="skill-meter"><strong id="skillText">0 / 14 skills practised</strong><div class="meter"><i id="skillBar"></i></div></div>
+</header>
+<main class="coach-shell">
+  <aside class="coach-nav" aria-label="Calculation Coach sections">
+    <div class="nav-intro"><span class="eyebrow">AQA mathematical skills</span><h1>Calculation Coach</h1><p>Choose the equation, keep units consistent, show working and interpret the chemistry.</p></div>
+    <button class="nav-btn active" data-view="overview">Overview</button>
+    <button class="nav-btn" data-view="core">Core calculations</button>
+    <button class="nav-btn" data-view="physical">Physical chemistry</button>
+    <button class="nav-btn" data-view="acidbase">Acids & buffers</button>
+    <button class="nav-btn" data-view="practice">Exam practice</button>
+  </aside>
+  <section class="coach-main">
+    <section class="view active" id="overviewView">
+      <div class="hero"><div><span class="eyebrow">20% of AQA A-level Chemistry assesses mathematical skills</span><h2>Turn chemical data into a defensible answer.</h2><p>Each calculator shows the equation, substitution, units and the chemical meaning of the result. The aim is to build method choice and exam working, not just produce a number.</p></div><div class="hero-stat"><strong>14</strong><span>core calculation skills</span></div></div>
+      <div class="skill-grid" id="skillGrid"></div>
+      <article class="exam-note"><h3>AQA calculation habits</h3><p>Convert units before substitution, use the balanced equation for mole ratios, keep extra figures through intermediate steps, then round the final answer appropriately. For practical data, select concordant titres and account for uncertainty in every measurement used.</p></article>
+    </section>
+    <section class="view" id="coreView" hidden>
+      <div class="section-head"><span class="eyebrow">Amount of substance + practical maths</span><h2>Core Chemistry calculations</h2><p>Moles, particles, solutions, gases, stoichiometry, empirical formulae, yields, titrations and uncertainty.</p></div>
+      <div class="calculator-grid" id="coreGrid"></div>
+    </section>
+    <section class="view" id="physicalView" hidden>
+      <div class="section-head"><span class="eyebrow">A-level physical chemistry</span><h2>Energetics, rates, equilibria and cells</h2><p>Calorimetry, Hess cycles, Gibbs energy, rate constants, Kc/Kp and electrode potentials with sign and unit guidance.</p></div>
+      <div class="calculator-grid" id="physicalGrid"></div>
+    </section>
+    <section class="view" id="acidbaseView" hidden>
+      <div class="section-head"><span class="eyebrow">3.1.12 Acids and bases</span><h2>pH, Ka, pKa and buffers</h2><p>Move between hydrogen-ion concentration and pH, calculate strong/weak acid or base values and solve acidic-buffer problems.</p></div>
+      <div class="calculator-grid" id="acidGrid"></div>
+    </section>
+    <section class="view" id="practiceView" hidden>
+      <div class="section-head"><span class="eyebrow">AQA-style calculation practice</span><h2>Calculation challenge</h2><p>Short questions that test equation choice, conversions, chemistry interpretation and final-answer discipline.</p></div>
+      <div id="practiceCard" class="practice-card"></div>
+    </section>
+  </section>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="chemistry-calculation-coach.js"></script>
+<script src="chemistry-energetics-calculator.js"></script>
+</body>
+</html>
