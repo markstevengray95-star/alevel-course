@@ -53,7 +53,7 @@ async function checkSubject({subject,topic,section,expectedTitle}){
   if(!await copy.count()) failures.push(`${subject}: Copy slides control missing`);
   if(!await notes.count()) failures.push(`${subject}: Teacher notes control missing`);
 
-  await shell.locator('[data-subject-close]').click();
+  await shell.locator('button[data-subject-close]').click();
   await page.waitForTimeout(80);
   if(await page.locator('.subject-presentation-shell:not([hidden])').count()) failures.push(`${subject}: Lesson notes/close control did not leave presentation mode`);
 }
