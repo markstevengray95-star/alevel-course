@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#1d2440">
+  <title>A-Level A* Hub</title>
+  <meta name="description" content="AQA A-Level Biology and Chemistry A* synoptic challenge hub for unfamiliar contexts, AO2/AO3 reasoning, extended responses, practical evaluation and Paper 3 preparation.">
+  <link rel="stylesheet" href="astar-hub.css">
+</head>
+<body>
+<header class="topbar">
+  <a id="backLink" class="back-link" href="../index.html">← Course</a>
+  <div class="brand"><span>★</span><div><strong id="brandTitle">A* Hub</strong><small id="brandSub">AQA synoptic reasoning</small></div></div>
+  <div class="progress"><strong id="progressText">0 challenges completed</strong><div class="meter"><i id="progressBar"></i></div></div>
+</header>
+<main class="shell">
+  <aside class="nav">
+    <div class="intro"><span class="eyebrow">AQA stretch & challenge</span><h1>A* Hub</h1><p>Apply knowledge in unfamiliar contexts, connect topics and evaluate evidence rather than simply recalling content.</p></div>
+    <label class="subject-pick">Subject<select id="subjectSelect"><option value="biology">Biology 7402</option><option value="chemistry">Chemistry 7405</option></select></label>
+    <button class="nav-btn active" data-view="dashboard">Dashboard</button>
+    <button class="nav-btn" data-view="challenge">Synoptic challenge</button>
+    <button class="nav-btn" data-view="evidence">Evidence & evaluation</button>
+    <button class="nav-btn" data-view="extended">Extended response</button>
+    <button class="nav-btn" data-view="master">Paper 3 mastery</button>
+  </aside>
+  <section class="main">
+    <section class="view active" id="dashboardView">
+      <div class="hero"><div><span class="eyebrow" id="heroEyebrow">AQA A-Level</span><h2 id="heroTitle">Think across the specification.</h2><p id="heroText"></p></div><div class="hero-stat"><strong id="coverageCount">0</strong><span>specification sections available</span></div></div>
+      <div class="stats" id="stats"></div>
+      <div class="section-head"><span class="eyebrow">Choose a starting point</span><h2>Specification challenge bank</h2><p>Every detailed lesson profile can generate an A* task. Filter by specification area or jump straight into a random challenge.</p></div>
+      <div class="filters"><label>Section<select id="refSelect"></select></label><button class="primary" id="openChallengeBtn">Open selected challenge</button><button class="secondary" id="randomBtn">Random A* challenge</button></div>
+      <div class="topic-grid" id="topicGrid"></div>
+    </section>
+
+    <section class="view" id="challengeView" hidden>
+      <div class="section-head"><span class="eyebrow">AO2 · unfamiliar context</span><h2 id="challengeTitle">Synoptic challenge</h2><p id="challengeQuestion"></p></div>
+      <div class="challenge-grid" id="challengeGrid"></div>
+      <div class="response-card"><h3>Build your response</h3><textarea id="challengeResponse" rows="8" placeholder="Explain the science, apply it to the unfamiliar context, make the cross-topic link and state any assumptions or limitations…"></textarea><div class="actions"><button class="primary" id="challengeCheck">Reveal A* checklist</button><button class="secondary" id="challengeSave">Save attempt</button></div><div id="challengeFeedback" class="feedback"></div></div>
+    </section>
+
+    <section class="view" id="evidenceView" hidden>
+      <div class="section-head"><span class="eyebrow">AO3 · evidence, data & practical design</span><h2>Interrogate the evidence</h2><p id="evidenceIntro"></p></div>
+      <div class="evidence-case" id="evidenceCase"></div>
+      <div class="response-card"><h3>Evaluation response</h3><textarea id="evidenceResponse" rows="8" placeholder="Identify limitations, explain their effect, propose a justified improvement and state what conclusion the evidence actually supports…"></textarea><div class="actions"><button class="primary" id="evidenceCheck">Reveal AO3 checklist</button><button class="secondary" id="evidenceSave">Save evaluation</button></div><div id="evidenceFeedback" class="feedback"></div></div>
+    </section>
+
+    <section class="view" id="extendedView" hidden>
+      <div class="section-head"><span class="eyebrow">Extended response</span><h2 id="extendedTitle">A* extended reasoning</h2><p id="extendedPrompt"></p></div>
+      <div class="planner" id="extendedPlanner"></div>
+      <div class="response-card"><textarea id="extendedResponse" rows="12" placeholder="Write a coherent, precise response with linked scientific reasoning…"></textarea><div class="actions"><button class="primary" id="extendedCheck">Reveal examiner checklist</button><button class="secondary" id="extendedSave">Save response</button></div><div id="extendedFeedback" class="feedback"></div></div>
+    </section>
+
+    <section class="view" id="masterView" hidden>
+      <div class="section-head"><span class="eyebrow">Paper 3</span><h2 id="masterTitle">Paper 3 mastery</h2><p id="masterIntro"></p></div>
+      <div id="masterTask" class="master-task"></div>
+      <div class="response-card"><h3 id="masterResponseTitle">Plan your response</h3><textarea id="masterResponse" rows="12" placeholder="Plan links, evidence and a logical route before writing…"></textarea><div class="actions"><button class="primary" id="masterCheck">Reveal mastery checklist</button><button class="secondary" id="masterSave">Save Paper 3 attempt</button></div><div id="masterFeedback" class="feedback"></div></div>
+    </section>
+  </section>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="biology-content.js"></script>
+<script src="chemistry-content.js"></script>
+<script src="astar-hub.js"></script>
+</body>
+</html>
