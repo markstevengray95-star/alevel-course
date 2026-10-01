@@ -21,9 +21,11 @@ jobs:
       - name: Verify Phase 18 audit sources
         run: |
           node --check tests/phase18-responsive.mjs
+          node --check tests/phase18-tool-visibility.mjs
           node --check tests/mobile-overflow.mjs
           test -f dist/mobile-mode.css
           test -f dist/mobile-mode.js
+          test -f dist/phase18-responsive.css
 
       - name: Install browser dependency
         timeout-minutes: 5
@@ -46,6 +48,10 @@ jobs:
       - name: Audit responsive shell and subject tools
         timeout-minutes: 5
         run: node tests/phase18-responsive.mjs
+
+      - name: Verify Biology and Chemistry tool visibility
+        timeout-minutes: 3
+        run: node tests/phase18-tool-visibility.mjs
 
       - name: Audit all Physics modules at phone width
         timeout-minutes: 5
