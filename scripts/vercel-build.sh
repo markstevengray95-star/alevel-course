@@ -20,7 +20,7 @@ for file in "${required[@]}"; do
   if [[ ! -f "$file" ]]; then echo "Missing required course module: $file" >&2; exit 1; fi
 done
 if [[ ! -f "tools/practicals/index.html" ]]; then echo "Missing bundled A-Level practical app: tools/practicals/index.html" >&2; exit 1; fi
-for file in course-config.js subjects/topic-shell.html subjects/subject-presentation.js; do
+for file in course-config.js subjects/topic-shell.html subjects/subject-presentation.js subjects/biology-content.js subjects/biology-lessons.js subjects/chemistry-content.js subjects/chemistry-lessons.js; do
   if [[ ! -f "$file" ]]; then echo "Missing Biology/Chemistry course asset: $file" >&2; exit 1; fi
 done
 
@@ -82,7 +82,7 @@ for file in \
   course-config.js app.js pricing-access.js billing-client.js admin-promos.js auth.js student-notebook.js ai-coach.js course-tools.js mobile-mode.js textbook-data.js textbook.js textbook-options.js textbook-safe-options.js textbook-option-glossary.js \
   lesson-slide-design.js lesson-enrichment.js curriculum-map.js lesson-content.js lesson-automarking.js lesson-quality-audit.js guided-tutor-dashboard.js lesson-navigator.js guided-tutor-mode.js lesson-reader-quicknav.js presentation-library.js \
   presentation-mode.js lesson-phase3.js lesson-spec-depth.js lesson-deepening.js lesson-presentation-primary.js lesson-presentation-controls.js lesson-presentation-progressive.js lesson-presentation-visuals.js lesson-presentation-practical.js lesson-presenter-view.js \
-  lesson-activities.js lesson-simulations.js lesson-assessment.js lesson-progression.js lesson-teacher-tools.js lesson-astar.js sw.js subjects/subject-presentation.js \
+  lesson-activities.js lesson-simulations.js lesson-assessment.js lesson-progression.js lesson-teacher-tools.js lesson-astar.js sw.js subjects/subject-presentation.js subjects/biology-content.js subjects/biology-lessons.js subjects/chemistry-content.js subjects/chemistry-lessons.js \
   api/physics-coach.js api/create-checkout-session.js api/checkout-status.js api/entitlement.js shared/unified-topic-embedded.js shared/simple-lesson-navigation.js shared/lesson-presentation-enhancements.js; do
   node --check "$file"
 done
@@ -110,4 +110,4 @@ find dist/subjects -type d -name node_modules -prune -exec rm -rf {} + 2>/dev/nu
 find dist/tools -name .git -exec rm -rf {} + 2>/dev/null || true
 find dist/tools -type d -name node_modules -prune -exec rm -rf {} + 2>/dev/null || true
 
-echo "Unified A-Level Physics, Biology and Chemistry course assembled with shared presentation infrastructure and Vercel billing assets included."
+echo "Unified A-Level Physics, Biology and Chemistry course assembled with complete detailed Biology and Chemistry lesson content."
