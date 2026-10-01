@@ -21,6 +21,12 @@ jobs:
       - name: Verify presentation content and subject matching
         run: node tests/lesson-slide-design.cjs
 
+      - name: Verify complete Biology lesson content
+        run: |
+          node --check subjects/biology-content.js
+          node --check subjects/biology-lessons.js
+          node tests/biology-content-coverage.mjs
+
       - name: Verify course shell
         run: |
           test -f dist/index.html
@@ -40,6 +46,8 @@ jobs:
           test -f dist/lesson-presentation-primary.css
           test -f dist/subjects/topic-shell.html
           test -f dist/subjects/subject-presentation.js
+          test -f dist/subjects/biology-content.js
+          test -f dist/subjects/biology-lessons.js
           test -f dist/tools/practicals/index.html
           test -f dist/topics/01-measurements/index.html
           test -f dist/topics/02-particles-radiation/index.html
