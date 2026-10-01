@@ -39,17 +39,18 @@ try{
 
   await page.goto(`${base}/index.html?subject=biology`,{waitUntil:'domcontentloaded',timeout:45000});
   await page.waitForFunction(()=>window.CourseApp?.config?.id==='biology'&&window.ALEVEL_SUBJECT_TOOL_BRIDGE,{timeout:10000}).catch(()=>failures.push('Biology main course did not initialise subject tool bridge'));
-  const bioCard=page.locator('.course-tool-card[data-course-tool="practicals"]');
   await expectText('.course-tool-card[data-course-tool="practicals"] h3',/Biology Required Practicals/,'Biology practical card should be relabelled');
-  await bioCard.click();
-  const src=await page.locator('#toolFrame').getAttribute('src').catch(()=> '');if(!/subjects\/biology-practicals\.html/.test(src||''))failures.push(`Biology Practicals routed to ${src} instead of Biology hub`);
-  await page.locator('#toolFrame').waitFor({state:'visible',timeout:5000}).catch(()=>failures.push('Biology practical iframe not visible'));
+  const opened=await page.evaluate(()=>window.ALEVEL_SUBJECT_TOOL_BRIDGE?.openBiologyPracticals?.()===true);
+  if(!opened)failures.push('Biology practical bridge did not open the Biology hub');
+  const src=await page.locator('#toolFrame').getAttribute('src').catch(()=> '');
+  if(!/subjects\/biology-practicals\.html/.test(src||''))failures.push(`Biology Practicals routed to ${src} instead of Biology hub`);
+  await page.locator('#toolFrame').waitFor({state:'visible',timeout:5000}).catch(()=>failures.push('Biology practical iframe not visible after bridge open'));
 
   await page.goto(`${base}/index.html?subject=physics`,{waitUntil:'domcontentloaded',timeout:45000});
-  await page.waitForFunction(()=>window.CourseApp?.config?.id==='physics',{timeout:8000});
-  await page.locator('.course-tool-card[data-course-tool="practicals"]').click();
-  const physicsSrc=await page.locator('#toolFrame').getAttribute('src').catch(()=> '');if(!/tools\/practicals\/index\.html/.test(physicsSrc||''))failures.push(`Physics practical route regressed: ${physicsSrc}`);
+  await page.waitForFunction(()=>window.CourseApp?.config?.id==='physics'&&window.ALEVEL_SUBJECT_TOOL_BRIDGE,{timeout:10000}).catch(()=>failures.push('Physics main course did not initialise with subject tool bridge available'));
+  const physicsHijacked=await page.evaluate(()=>window.ALEVEL_SUBJECT_TOOL_BRIDGE?.openBiologyPracticals?.()===true);
+  if(physicsHijacked)failures.push('Biology practical bridge incorrectly opened while Physics was active');
 }finally{await browser.close();}
 if(errors.length){failures.push(`Page JavaScript errors: ${[...new Set(errors)].join(' | ')}`);}
 if(failures.length){console.error('Biology practical browser audit failed:');failures.forEach(f=>console.error(`- ${f}`));process.exit(1);}
-console.log('Biology practical browser audit passed: 12-practical hub, mitotic index, Rf, colorimetry, completion persistence and subject-aware routing all work.');
+console.log('Biology practical browser audit passed: 12-practical hub, mitotic index, Rf, colorimetry, completion persistence and subject-aware routing guard all work.');
