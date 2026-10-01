@@ -9,7 +9,7 @@ try{
  await page.waitForFunction(()=>window.ALEVEL_BIOLOGY_DATA_COACH?.version==='phase-12');
  if(await page.locator('.skill-card').count()!==10)throw new Error('Expected 10 Biology data skills');
  await page.click('[data-view="calculators"]');
- await page.click('#magBtn'); if(!(await text('#magResult')).includes('2000'))throw new Error('Magnification calculation failed');
+ await page.click('#magBtn'); {const mag=await text('#magResult'); if(!mag.includes('2.000e+3')&&!mag.includes('2000'))throw new Error(`Magnification calculation failed: ${mag}`)}
  await page.click('#pctBtn'); if(!(await text('#pctResult')).includes('30%'))throw new Error('Percentage change calculation failed');
  await page.click('#descBtn'); if(!(await text('#descResult')).includes('1.5811'))throw new Error('Sample standard deviation calculation failed');
  await page.click('#chiBtn'); if(!(await text('#chiResult')).includes('2.56'))throw new Error('Chi-squared calculation failed');
