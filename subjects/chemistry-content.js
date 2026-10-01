@@ -525,7 +525,7 @@
     )
   });
 
-  const get=ref=>profiles[String(ref||'')]||null;
+  const get=ref=>window.ALEVEL_CHEMISTRY_DETAIL?.resolve(String(ref||''),profiles)||profiles[String(ref||'')]||null;
   const refs=Object.freeze(Object.keys(profiles));
   window.ALEVEL_CHEMISTRY_CONTENT=Object.freeze({
     version:'phase-6',

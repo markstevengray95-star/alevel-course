@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="../lesson-slide-design.css">
   <link rel="stylesheet" href="biology-interactives.css">
   <link rel="stylesheet" href="chemistry-interactives.css">
+<link rel="stylesheet" href="science-study.css">
   <style>
     :root{color-scheme:dark;--bg:#08111d;--panel:#101c2c;--panel2:#14243a;--line:#263b57;--text:#eff6ff;--muted:#a8b7ca;--accent:#77bdfb;--good:#88d8a4}
     *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top right,#132b46 0,#08111d 42%);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}
@@ -45,9 +46,12 @@
   <section class="bio-lesson-section" id="biologyLessonContent" hidden></section>
   <section class="bio-lesson-section" id="chemistryLessonContent" hidden></section>
 </main>
+<script src="chemistry-physical-detail.js"></script>
+<script src="chemistry-detail.js"></script>
 <script src="../course-config.js"></script>
 <script src="biology-content.js"></script>
 <script src="chemistry-content.js"></script>
+<script src="science-answer-support.js"></script>
 <script src="subject-presentation.js"></script>
 <script src="biology-lessons.js"></script>
 <script src="biology-interactives.js"></script>
@@ -56,12 +60,15 @@
 <script src="chemistry-interactives.js"></script>
 <script>
 (()=>{
-  const esc=value=>String(value??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[m]));
+  const esc=value=>String(value??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   const params=new URLSearchParams(location.search);
   const config=window.ALEVEL_COURSE_CONFIG;
   const topic=config?.topics?.find(item=>item.id===params.get('topic'))||config?.topics?.[0];
   const ref=params.get('section');
-  const section=topic?.modules?.find(item=>item.ref===ref)||topic?.modules?.[0];
+  const chapter=topic?.modules?.find(item=>item.ref===ref)||topic?.modules?.[0];
+  const detailRef=params.get('lesson');
+  const detail=detailRef?window.ALEVEL_CHEMISTRY_DETAIL?.children(chapter?.ref).find(r=>r.ref===detailRef):null;
+  const section=detailRef?(detail?{...chapter,ref:detail.ref,parentRef:chapter.ref,title:detail.title,summary:detail.core[0],focus:detail.core.slice(0,3)}:null):chapter;
   if(!config||!topic||!section){document.getElementById('sectionTitle').textContent='Course section unavailable';return;}
   const context={config,topic,section};window.ALEVEL_SUBJECT_CONTEXT=context;
   const biology=config.subject==='Biology',chemistry=config.subject==='Chemistry';
@@ -70,13 +77,13 @@
   document.getElementById('courseBadge').textContent=`${config.board} ${config.subject} ${config.specCode}`;
   document.getElementById('sectionTitle').textContent=section.title;document.getElementById('sectionRef').textContent=section.ref;document.getElementById('sectionYear').textContent=section.year||topic.year||'';
   document.getElementById('sectionSummary').textContent=section.summary||`${section.title} within ${topic.title}, aligned to the ${config.board} A-Level ${config.subject} specification.`;document.getElementById('parentTitle').textContent=topic.title;
-  document.getElementById('crumbs').innerHTML=`<span>${esc(config.displayName)}</span><span>›</span><span>${esc(topic.code)} ${esc(topic.title)}</span><span>›</span><span>${esc(section.ref)}</span>`;
+  document.getElementById('crumbs').innerHTML=`<a href="../index.html?subject=${esc(config.id)}">${esc(config.displayName)}</a><span>›</span><span>${esc(topic.code)} ${esc(topic.title)}</span><span>›</span><span>${esc(section.ref)}</span>`;
   const focus=section.focus?.length?section.focus:[`Learn the core knowledge required by ${section.ref}.`,`Apply ${section.title.toLowerCase()} to data, practical and exam-style contexts.`,`Connect this section to the wider ${config.subject} course.`];document.getElementById('focusList').innerHTML=focus.map(item=>`<li>${esc(item)}</li>`).join('');
-  document.getElementById('sectionList').innerHTML=topic.modules.map(item=>{const url=new URL(location.href);url.searchParams.set('subject',config.id);url.searchParams.set('topic',topic.id);url.searchParams.set('section',item.ref);return `<li class="${item.ref===section.ref?'active':''}"><a href="${esc(url.pathname+url.search)}"><span class="ref">${esc(item.ref)}</span>${esc(item.title)}</a></li>`;}).join('');
+  document.getElementById('sectionList').innerHTML=topic.modules.map(item=>{const url=new URL(location.href);url.searchParams.delete('lesson');url.searchParams.set('subject',config.id);url.searchParams.set('topic',topic.id);url.searchParams.set('section',item.ref);const childLinks=config.id==='chemistry'?window.ALEVEL_CHEMISTRY_DETAIL?.children(item.ref).map(r=>{const childUrl=new URL(url);childUrl.searchParams.set('lesson',r.ref);return `<li class="${r.ref===section.ref?'active':''}"><a href="${esc(childUrl.pathname+childUrl.search)}"><span class="ref">${esc(r.ref)}</span>${esc(r.title)}</a></li>`;}).join(''):'';return `<li class="${item.ref===section.ref?'active':''}"><a href="${esc(url.pathname+url.search)}"><span class="ref">${esc(item.ref)}</span>${esc(item.title)}</a>${childLinks?`<details ${(section.parentRef||section.ref)===item.ref?'open':''}><summary>Individual lessons</summary><ul class="section-list">${childLinks}</ul></details>`:''}</li>`;}).join('');
   if(biology){
     document.getElementById('sectionStatus').textContent='Biology lesson + interactive ready';document.getElementById('presentationSlideCount').textContent='15 slides';document.getElementById('presentationIntro').textContent='This Biology section has a fully populated 15-slide lesson deck plus a section-specific interactive model or activity.';document.getElementById('buildStatus').innerHTML='<strong>Phase 7 complete for this section:</strong> detailed Biology teaching content is paired with an interactive model, simulation, data activity or calculation tool matched to the specification point.';window.ALEVEL_BIOLOGY_LESSONS?.renderPage?.(context);window.ALEVEL_BIOLOGY_INTERACTIVES?.render?.(context);
   }else if(chemistry){
-    document.getElementById('sectionStatus').textContent='Chemistry lesson + interactive ready';document.getElementById('presentationSlideCount').textContent='15 slides';document.getElementById('presentationIntro').textContent='This Chemistry section has a detailed 15-slide lesson deck plus a section-specific interactive model, mechanism, calculator or analytical activity.';document.getElementById('buildStatus').innerHTML='<strong>Phase 8 complete for this section:</strong> all AQA Chemistry sections now pair detailed teaching content with an interactive activity matched to the specification.';window.ALEVEL_CHEMISTRY_LESSONS?.renderPage?.(context);window.ALEVEL_CHEMISTRY_INTERACTIVES?.render?.(context);
+    document.getElementById('sectionStatus').textContent='Chemistry lesson ready';document.getElementById('presentationSlideCount').textContent='15 slides';document.getElementById('presentationIntro').textContent='Study a focused 15-slide presentation, reveal worked answers, and explore the chapter model below.';document.getElementById('buildStatus').innerHTML='<strong>Lesson notes and worked answers:</strong> use the individual lesson links to study a specific specification topic, or return to the chapter overview.';window.ALEVEL_CHEMISTRY_LESSONS?.renderPage?.(context);window.ALEVEL_CHEMISTRY_INTERACTIVES?.render?.(detail?{...context,section:chapter}:context);
   }
   document.getElementById('presentLessonBtn')?.addEventListener('click',()=>engine()?.open?.(context));document.getElementById('restartPresentationBtn')?.addEventListener('click',()=>engine()?.open?.(context,{restart:true}));
 })();

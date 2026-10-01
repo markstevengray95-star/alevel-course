@@ -1,7 +1,7 @@
 (()=>{
   'use strict';
 
-  const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[ch]));
+  const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   const list=value=>Array.isArray(value)?value.filter(Boolean):[];
   const POSITION_KEY='alevel-chemistry-presentation-position-v1';
   let shell=null,deck=null,slideIndex=0,teacherNotes=false,returnFocus=null;
@@ -16,9 +16,9 @@
     if(config?.subject!=='Chemistry'||!topic||!section)return null;
     const p=content(section.ref);if(!p)return null;
     const retrieval=[
-      `Define ${p.terms[0]} precisely.`,
-      `Explain one link between ${p.terms[1]} and ${section.title}.`,
-      `Recall this chemical idea: ${p.core[0]}`
+      `Explain the principle: ${p.core[0]}`,
+      `Explain the principle: ${p.core[1]}`,
+      `Correct a possible error using this accuracy check: ${p.mis}`
     ];
     const objectives=[
       `Explain the core chemistry of ${section.title} using precise AQA terminology.`,
@@ -36,18 +36,18 @@
       subtitle:`AQA Chemistry 7405 · ${section.ref} · ${section.year||topic.year||''}`,
       slides:[
         slide('Start',section.ref,section.title,[p.q,`Topic: ${topic.title}`],{layout:'title',note:'Open with the lesson question and ask students to commit to an initial chemical explanation.'}),
-        slide('Start','Retrieval starter','Activate prior chemistry',retrieval,{note:'Students answer independently before discussion.',solution:[...p.terms.slice(0,2),p.core[0]]}),
+        slide('Start','Retrieval starter','Activate prior chemistry',retrieval,{note:'Students answer independently before discussion.',solution:[p.core[0],p.core[1],p.mis]}),
         slide('Start','Learning objectives','By the end of the lesson',objectives,{note:'Return to these objectives at the end and identify the representation students found hardest.'}),
         slide('Teach','Big picture','Why this chemistry matters',[topic.description||'',...p.syn],{note:'Connect the lesson to earlier and later Chemistry content rather than teaching it as an isolated section.'}),
         slide('Teach','Core knowledge I','Build the chemistry',p.core.slice(0,2),{note:'Insist on particle-level or structural explanations where the question requires them.',solution:p.core.slice(0,2)}),
         slide('Teach','Core knowledge II','Deepen the explanation',p.core.slice(2),{note:'Move from what happens to why it happens using bonding, energetics, equilibrium or electron movement.',solution:p.core.slice(2)}),
         slide('Teach','Model / representation','Reason through the chemistry',p.model,{layout:'equation',equation:'particles / structure → chemical model → evidence',note:'Students should reproduce the reasoning sequence without prompts.',solution:p.model}),
         slide('Teach','Language precision','Key vocabulary and misconception',[`Key terms: ${p.terms.join(' · ')}`,`Common misconception: ${p.mis}`],{note:'Turn the misconception into a hinge question before moving on.',solution:[p.mis]}),
-        slide('Apply','Worked application','How to build an AQA answer',[`Question focus: ${p.q}`,...p.model.map((item,index)=>`${index+1}. ${item}`),'Finish by checking equations, charges, units, conditions and the command word.'],{note:'Model the reasoning process rather than only displaying a final answer.',solution:[...p.model,p.core[0]]}),
+        slide('Apply','Worked application','How to build an AQA answer',[p.worked?.question||p.q,'Attempt the question, showing the chemical reasoning and any units.','Reveal the solution to compare each step with your answer.'],{note:'Model the reasoning process rather than only displaying a final answer.',solution:p.worked?.answer||[...p.model,p.core[0]]}),
         slide('Apply','Student checkpoint','Pause and check',checkpoint,{note:'Use mini-whiteboards, structures, equations or short calculations as appropriate.',solution:[p.core[1],p.model[0],p.mis]}),
         slide('Apply','Practical / evidence','How could chemical evidence be collected?',p.practical,{note:'Focus on apparatus, variables, observations, safety, uncertainty, validity and purification.',solution:p.practical}),
         slide('Apply','Maths / data skill','Use quantitative evidence',p.maths,{note:'Require working, units, significant figures and chemical interpretation of the result.',solution:p.maths}),
-        slide('Assess','AQA-style practice','Exam practice',p.exam.map((q,index)=>`${[3,4,6][index]||4} marks: ${q}`),{note:'Plan first, then write linked chemical reasoning rather than disconnected facts.',solution:p.core}),
+        slide('Assess','AQA-style practice','Exam practice',p.exam.map((q,index)=>`Question ${index+1}: ${q}`),{note:'Plan first, then write linked chemical reasoning rather than disconnected facts.',solution:window.ALEVEL_SCIENCE_ANSWERS?.answers(p)||p.core}),
         slide('Assess','A* synoptic','Connect across Chemistry',[...p.syn,`Use at least two specification areas to answer: ${p.q}`],{note:'Push students to connect ideas such as structure, energetics, kinetics, equilibrium and mechanism.',solution:p.syn}),
         slide('Finish','Exit ticket','Show mastery',[`Answer the lesson question in two precise sentences: ${p.q}`,`Use one of these terms correctly: ${p.terms.join(', ')}.`,`State one practical, calculation or analytical skill from this lesson.`,`State the misconception you will avoid.`],{note:'Use responses to plan the next retrieval starter.',solution:[p.core[0],p.practical[0],p.mis]})
       ]
@@ -156,9 +156,11 @@
         <article class="bio-card"><span>Maths / data skill</span><ul>${p.maths.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></article>
       </div>
       <div class="bio-two-col">
-        <article class="bio-card bio-exam"><span>AQA-style practice</span>${p.exam.map((x,index)=>`<div><b>${[3,4,6][index]} marks</b><p>${esc(x)}</p></div>`).join('')}</article>
+        <article class="bio-card bio-exam"><span>AQA-style practice</span>${window.ALEVEL_SCIENCE_ANSWERS?.practiceHtml(p)||''}</article>
         <article class="bio-card"><span>A* synoptic links</span><ul>${p.syn.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></article>
-      </div>`;
+      </div>
+      ${window.ALEVEL_SCIENCE_ANSWERS?.subtopicsHtml(p,context)||''}
+      ${window.ALEVEL_SCIENCE_ANSWERS?.sourceHtml(p)||''}`;
     host.querySelector('[data-chem-present-inline]')?.addEventListener('click',()=>open(context,{restart:true}));
   }
 

@@ -38,6 +38,7 @@ jobs:
           node --check subjects/chemistry-content.js
           node --check subjects/chemistry-lessons.js
           node tests/chemistry-content-coverage.mjs
+          node tests/science-lesson-detail.mjs
 
       - name: Verify course shell
         run: |
