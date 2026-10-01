@@ -4,23 +4,19 @@
   const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   const list=value=>Array.isArray(value)?value.filter(Boolean):[];
   const POSITION_KEY='alevel-biology-presentation-position-v1';
-  let shell=null, deck=null, slideIndex=0, teacherNotes=false, returnFocus=null;
+  let shell=null, deck=null, slideIndex=0, teacherNotes=false, returnFocus=null, practiceIndex=0;
 
   function content(ref){return window.ALEVEL_BIOLOGY_CONTENT?.get?.(ref)||null;}
   function savedPositions(){try{return JSON.parse(localStorage.getItem(POSITION_KEY)||'{}')||{};}catch{return {};}}
   function savePosition(){if(!deck)return;try{const saved=savedPositions();saved[deck.id]=slideIndex;localStorage.setItem(POSITION_KEY,JSON.stringify(saved));}catch{}}
-  function slide(group,kicker,title,bullets,options={}){return{group,kicker,title,bullets:list(bullets),layout:options.layout||'content',note:options.note||'',solution:list(options.solution),equation:options.equation||''};}
+  function slide(group,kicker,title,bullets,options={}){return{group,kicker,title,bullets:list(bullets),layout:options.layout||'content',note:options.note||'',solution:list(options.solution),equation:options.equation||'',practice:options.practice||null};}
 
   function buildDeck(context){
     const {config,topic,section}=context||{};
     if(config?.subject!=='Biology'||!topic||!section)return null;
     const p=content(section.ref);
     if(!p)return null;
-    const retrieval=[
-      `Define ${p.terms[0]} precisely.`,
-      `Explain one link between ${p.terms[1]} and ${section.title}.`,
-      `Recall this idea: ${p.core[0]}`
-    ];
+    const retrieval=p.exam;
     const objectives=[
       `Explain the core biology of ${section.title} using precise AQA terminology.`,
       `Apply the process or model to an unfamiliar biological context.`,
@@ -37,18 +33,18 @@
       subtitle:`AQA Biology 7402 · ${section.ref} · ${section.year||topic.year||''}`,
       slides:[
         slide('Start',section.ref,section.title,[p.q,`Topic: ${topic.title}`],{layout:'title',note:'Open with the lesson question. Ask for an initial explanation before revealing the detail.'}),
-        slide('Start','Retrieval starter','Activate prior knowledge',retrieval,{note:'Students should answer independently before discussion.',solution:[...p.terms.slice(0,2),p.core[0]]}),
+        slide('Start','Retrieval starter','Activate prior knowledge',retrieval,{note:'Students should answer independently before discussion.',solution:window.ALEVEL_SCIENCE_ANSWERS.answers(p)}),
         slide('Start','Learning objectives','By the end of the lesson',objectives,{note:'Return to these objectives at the exit ticket.'}),
         slide('Teach','Big picture','Why this matters',[topic.description||'',...p.syn],{note:'Connect this section to earlier and later AQA Biology content.'}),
         slide('Teach','Core knowledge I','Build the biology',p.core.slice(0,2),{note:'Insist on precise biological vocabulary and cause-and-effect links.',solution:p.core.slice(0,2)}),
         slide('Teach','Core knowledge II','Deepen the explanation',p.core.slice(2),{note:'Ask students to connect structure/process to function or outcome.',solution:p.core.slice(2)}),
         slide('Teach','Process / model','Reason through the sequence',p.model,{layout:'equation',equation:'structure / input → process → biological outcome',note:'Students should be able to reproduce this sequence without prompts.',solution:p.model}),
         slide('Teach','Language precision','Key vocabulary and misconception',[`Key terms: ${p.terms.join(' · ')}`,`Common misconception: ${p.mis}`],{note:'Turn the misconception into a hinge question before moving on.',solution:[p.mis]}),
-        slide('Apply','Worked application','How to build an AQA answer',[`Question focus: ${p.q}`,...p.model.map((item,index)=>`${index+1}. ${item}`),'Finish by linking the biological evidence to the question command word.'],{note:'Model the reasoning, not just the final answer.',solution:[...p.model,p.core[0]]}),
+        slide('Apply','Worked application','How to build an AQA answer',[p.worked.question,'Attempt the question with a linked biological explanation.','Reveal the solution to compare each step with your answer.'],{note:'Model the reasoning, not just the final answer.',solution:p.worked.answer}),
         slide('Apply','Student checkpoint','Pause and check',checkpoint,{note:'Use mini-whiteboards or short written responses.',solution:[p.core[1],p.model[0],p.mis]}),
         slide('Apply','Practical / data thinking','How could evidence be collected?',p.practical,{note:'Focus on variables, controls, validity, reliability and appropriate measurements.',solution:p.practical}),
         slide('Apply','Maths / data skill','Use quantitative evidence',p.maths,{note:'Require working, units and an interpretation of the result.',solution:p.maths}),
-        slide('Assess','AQA-style practice','Exam practice',p.exam.map((q,index)=>`${[3,4,6][index]||4} marks: ${q}`),{note:'Plan first, then write linked reasoning rather than isolated facts.',solution:p.core}),
+        slide('Assess','AQA-style practice','Exam practice',p.exam.map((q,index)=>`Question ${index+1}: ${q}`),{note:'Plan first, then write linked reasoning rather than isolated facts.',solution:window.ALEVEL_SCIENCE_ANSWERS.answers(p),practice:window.ALEVEL_SCIENCE_ANSWERS.practice(p)}),
         slide('Assess','A* synoptic','Connect across the course',[...p.syn,`Use at least two specification areas to answer: ${p.q}`],{note:'Push students to build a causal chain across topics rather than list separate facts.',solution:p.syn}),
         slide('Finish','Exit ticket','Show mastery',[`Answer the lesson question in two precise sentences: ${p.q}`,`Use one of these terms correctly: ${p.terms.join(', ')}.`,`State one practical or data skill from this lesson.`,`State the misconception you will avoid.`],{note:'Use responses to plan the next retrieval starter.',solution:[p.core[0],p.practical[0],p.mis]})
       ]
@@ -56,6 +52,7 @@
   }
 
   function slideHtml(s){
+    if(s.practice)return `<div class="phase3-kicker">${esc(s.kicker)}</div><h2>${esc(s.title)}</h2>${window.ALEVEL_SCIENCE_ANSWERS.presentationHtml(s.practice,practiceIndex)}`;
     const bullets=list(s.bullets).map(x=>`<li>${esc(x)}</li>`).join('');
     const kicker=`<div class="phase3-kicker">${esc(s.kicker)}</div>`;
     const note=s.note?`<div class="phase3-note">${esc(s.note)}</div>`:'';
@@ -93,6 +90,7 @@
       </section>`;
     document.body.appendChild(shell);
     shell.addEventListener('click',event=>{
+      const question=event.target.closest('[data-science-practice]');if(question){practiceIndex=Number(question.dataset.sciencePractice);const current=deck.slides[slideIndex];shell.querySelector('.deep-slide').innerHTML=slideHtml(current);renderSupport(true);return;}
       if(event.target.closest('[data-bio-outline]')){const open=shell.classList.toggle('ls-outline-open');shell.querySelector('[data-bio-outline]')?.setAttribute('aria-expanded',String(open));return;}
       if(event.target.closest('[data-bio-close]')){event.preventDefault();close();return;}
       if(event.target.closest('[data-bio-prev]')){move(-1);return;}
@@ -115,7 +113,7 @@
     const s=deck.slides[slideIndex];
     const solution=shell.querySelector('[data-bio-solution]');
     if(reset)solution.hidden=true;
-    solution.innerHTML=`<strong>Solution / key reasoning</strong><ol>${list(s.solution).map(x=>`<li>${esc(x)}</li>`).join('')}</ol>`;
+    solution.innerHTML=`<strong>Solution / key reasoning</strong><ol>${list(s.practice?s.practice[practiceIndex].answer:s.solution).map(x=>`<li>${esc(x)}</li>`).join('')}</ol>`;
     const answer=shell.querySelector('[data-bio-answer]');
     answer.hidden=!s.solution?.length;answer.textContent=solution.hidden?'Show solution':'Hide solution';answer.setAttribute('aria-expanded',String(!solution.hidden));
     const note=shell.querySelector('[data-bio-teacher-note]');note.textContent=s.note||'Ask for precise AQA Biology reasoning.';note.hidden=!teacherNotes;
@@ -123,7 +121,7 @@
   }
 
   function render(){
-    if(!deck)return;
+    if(!deck)return;practiceIndex=0;
     const host=ensureShell();const s=deck.slides[slideIndex];
     host.querySelector('[data-bio-title]').textContent=deck.title;
     host.querySelector('[data-bio-subtitle]').textContent=`${deck.subtitle} · ${deck.slides.length} slides`;
@@ -169,8 +167,8 @@
         <article class="bio-card"><span>Practical &amp; evidence</span><ul>${p.practical.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></article>
         <article class="bio-card"><span>Maths &amp; data</span><ul>${p.maths.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></article>
       </div>
-      <article class="bio-card bio-exam"><span>AQA-style exam practice</span>${p.exam.map((x,index)=>`<div><strong>${[3,4,6][index]} marks</strong><p>${esc(x)}</p></div>`).join('')}</article>
-      <article class="bio-card"><span>Synoptic links</span><ul>${p.syn.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></article>`;
+      ${p.extra?.length?`<article class="bio-card science-deeper"><details><summary>Deepen this lesson</summary>${p.extra.map(x=>`<p>${esc(x)}</p>`).join('')}</details></article>`:''}<article class="bio-card bio-exam"><span>AQA-style exam practice</span>${window.ALEVEL_SCIENCE_ANSWERS.practiceHtml(p)}</article>
+      <article class="bio-card"><span>Synoptic links</span><ul>${p.syn.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></article>${window.ALEVEL_SCIENCE_ANSWERS.sourceHtml(p)}`;
     host.querySelector('[data-bio-present-inline]')?.addEventListener('click',()=>open(context,{restart:true}));
   }
 

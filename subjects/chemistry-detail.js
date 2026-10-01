@@ -11,8 +11,8 @@ function resolve(ref,profiles){
  if(direct){
   return {...base,q:direct.question,core:direct.core,model:direct.answer,mis:direct.precision,source:source(ref),
    worked:{question:direct.question,answer:direct.answer},
-   exam:[direct.question,`Explain the principles of ${direct.title.toLowerCase()}, linking each conclusion to a scientific reason.`,`Explain this accuracy check with a chemical example: ${direct.precision}`],
-   examAnswers:[direct.answer,direct.core,[direct.precision,...direct.answer.slice(-2)]],subtopics:parts};
+   exam:[direct.question,`Explain the principles of ${direct.title.toLowerCase()}, linking each conclusion to a scientific reason.`,`Explain the chemistry behind this accuracy check: ${direct.precision}`],
+   examAnswers:[direct.answer,direct.core,[direct.precision,...direct.core]],subtopics:parts};
  }
  const selected=parts.length>2?[parts[0],parts[Math.floor(parts.length/2)],parts.at(-1)]:parts;
  const exam=selected.map(r=>r.question),answers=selected.map(r=>r.answer);
@@ -22,21 +22,24 @@ function resolve(ref,profiles){
 }
 window.ALEVEL_CHEMISTRY_DETAIL=Object.freeze({rows,lookup,children,resolve,source,reviewed:'2026-10-01'});
 function installIndex(){
- if(window.ALEVEL_COURSE_CONFIG?.id!=='chemistry'||document.getElementById('chemistryDetailedIndex'))return;
+ const subject=window.ALEVEL_COURSE_CONFIG?.id;if(!['chemistry','biology'].includes(subject))return;
+ const indexId=subject+'DetailedIndex';if(document.getElementById(indexId))return;
  const host=document.getElementById('courseMap');if(!host)return;
  const config=window.ALEVEL_COURSE_CONFIG,esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
- const index=document.createElement('section');index.id='chemistryDetailedIndex';index.className='science-lesson-index';
+ const subjectName=config.subject,parts=ref=>subject==='chemistry'?children(ref):[];
+ const index=document.createElement('section');index.id=indexId;index.className='science-lesson-index';
  const chapters=config.topics.flatMap(topic=>topic.modules.map(section=>({topic,section})));
- index.innerHTML=`<span class="eyebrow">CHEMISTRY LESSON LIBRARY</span><h2>Find a Chemistry lesson</h2><p>Chapter overviews and individual specification topics, with worked answers. Choose a topic to study its notes or presentation.</p><label>Search lessons <input type="search" aria-label="Search Chemistry lessons" placeholder="Try buffers, ozone, NMR or ligand substitution"></label><p data-chem-library-count role="status"></p><div data-chem-library-results></div>`;
+ index.innerHTML=`<span class="eyebrow">${esc(subjectName.toUpperCase())} LESSON LIBRARY</span><h2>Find a ${esc(subjectName)} lesson</h2><p>Choose a specification topic to study its notes, presentation and matching worked answers.</p><label>Search lessons <input type="search" aria-label="Search ${esc(subjectName)} lessons" placeholder="${subject==='chemistry'?'Try buffers, ozone, NMR or ligand substitution':'Try photosynthesis, inheritance or immunity'}"></label><p data-chem-library-count role="status"></p><div data-chem-library-results></div>`;
  host.insertAdjacentElement('afterend',index);
  function render(){
   const term=index.querySelector('input').value.trim().toLowerCase();let count=0;
   index.querySelector('[data-chem-library-results]').innerHTML=chapters.map(({topic,section})=>{
-   const items=[{ref:section.ref,title:section.title},...children(section.ref)].filter(r=>`${r.ref} ${r.title} ${r.core?.join(' ')||''}`.toLowerCase().includes(term));
+   const items=[{ref:section.ref,title:section.title,core:[section.summary||'',...(section.focus||[])]},...parts(section.ref)].filter(r=>`${r.ref} ${r.title} ${r.core?.join(' ')||''}`.toLowerCase().includes(term));
    count+=items.length;if(!items.length)return '';
-   return `<details ${term?'open':''}><summary>${esc(section.ref)} ${esc(section.title)} · ${items.length} lesson${items.length===1?'':'s'}</summary><ul>${items.map(r=>`<li><a href="subjects/topic-shell.html?subject=chemistry&topic=${esc(topic.id)}&section=${esc(section.ref)}${r.ref===section.ref?'':`&lesson=${esc(r.ref)}`}"><strong>${esc(r.ref)}</strong> ${esc(r.title)}</a></li>`).join('')}</ul></details>`;
+   const links=items.map(r=>`<a href="subjects/topic-shell.html?subject=${esc(subject)}&topic=${esc(topic.id)}&section=${esc(section.ref)}${r.ref===section.ref?'':`&lesson=${esc(r.ref)}`}"><strong>${esc(r.ref)}</strong> ${esc(r.title)}</a>`);
+   return subject==='biology'?`<article class="science-index-link">${links[0]}</article>`:`<details ${term?'open':''}><summary>${esc(section.ref)} ${esc(section.title)} · ${items.length} lesson${items.length===1?'':'s'}</summary><ul>${links.map(a=>`<li>${a}</li>`).join('')}</ul></details>`;
   }).join('')||'<p>No matching lessons. Try a broader chemical term.</p>';
-  index.querySelector('[data-chem-library-count]').textContent=`${count} lessons shown · ${chapters.length} chapter overviews`;
+  index.querySelector('[data-chem-library-count]').textContent=`${count} lesson${count===1?'':'s'} shown${subject==='chemistry'?` · ${chapters.length} chapter overviews`:''}`;
  }
  index.querySelector('input').addEventListener('input',render);render();
 }

@@ -4,12 +4,12 @@
   const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   const list=value=>Array.isArray(value)?value.filter(Boolean):[];
   const POSITION_KEY='alevel-chemistry-presentation-position-v1';
-  let shell=null,deck=null,slideIndex=0,teacherNotes=false,returnFocus=null;
+  let shell=null, deck=null, slideIndex=0, teacherNotes=false, returnFocus=null, practiceIndex=0;
 
   function content(ref){return window.ALEVEL_CHEMISTRY_CONTENT?.get?.(ref)||null;}
   function savedPositions(){try{return JSON.parse(localStorage.getItem(POSITION_KEY)||'{}')||{};}catch{return {};}}
   function savePosition(){if(!deck)return;try{const saved=savedPositions();saved[deck.id]=slideIndex;localStorage.setItem(POSITION_KEY,JSON.stringify(saved));}catch{}}
-  function slide(group,kicker,title,bullets,options={}){return{group,kicker,title,bullets:list(bullets),layout:options.layout||'content',note:options.note||'',solution:list(options.solution),equation:options.equation||''};}
+  function slide(group,kicker,title,bullets,options={}){return{group,kicker,title,bullets:list(bullets),layout:options.layout||'content',note:options.note||'',solution:list(options.solution),equation:options.equation||'',practice:options.practice||null};}
 
   function buildDeck(context){
     const {config,topic,section}=context||{};
@@ -47,7 +47,7 @@
         slide('Apply','Student checkpoint','Pause and check',checkpoint,{note:'Use mini-whiteboards, structures, equations or short calculations as appropriate.',solution:[p.core[1],p.model[0],p.mis]}),
         slide('Apply','Practical / evidence','How could chemical evidence be collected?',p.practical,{note:'Focus on apparatus, variables, observations, safety, uncertainty, validity and purification.',solution:p.practical}),
         slide('Apply','Maths / data skill','Use quantitative evidence',p.maths,{note:'Require working, units, significant figures and chemical interpretation of the result.',solution:p.maths}),
-        slide('Assess','AQA-style practice','Exam practice',p.exam.map((q,index)=>`Question ${index+1}: ${q}`),{note:'Plan first, then write linked chemical reasoning rather than disconnected facts.',solution:window.ALEVEL_SCIENCE_ANSWERS?.answers(p)||p.core}),
+        slide('Assess','AQA-style practice','Exam practice',p.exam.map((q,index)=>`Question ${index+1}: ${q}`),{note:'Plan first, then write linked chemical reasoning rather than disconnected facts.',solution:window.ALEVEL_SCIENCE_ANSWERS?.answers(p)||p.core,practice:window.ALEVEL_SCIENCE_ANSWERS.practice(p)}),
         slide('Assess','A* synoptic','Connect across Chemistry',[...p.syn,`Use at least two specification areas to answer: ${p.q}`],{note:'Push students to connect ideas such as structure, energetics, kinetics, equilibrium and mechanism.',solution:p.syn}),
         slide('Finish','Exit ticket','Show mastery',[`Answer the lesson question in two precise sentences: ${p.q}`,`Use one of these terms correctly: ${p.terms.join(', ')}.`,`State one practical, calculation or analytical skill from this lesson.`,`State the misconception you will avoid.`],{note:'Use responses to plan the next retrieval starter.',solution:[p.core[0],p.practical[0],p.mis]})
       ]
@@ -55,6 +55,7 @@
   }
 
   function slideHtml(s){
+    if(s.practice)return `<div class="phase3-kicker">${esc(s.kicker)}</div><h2>${esc(s.title)}</h2>${window.ALEVEL_SCIENCE_ANSWERS.presentationHtml(s.practice,practiceIndex)}`;
     const bullets=list(s.bullets).map(x=>`<li>${esc(x)}</li>`).join('');
     const kicker=`<div class="phase3-kicker">${esc(s.kicker)}</div>`;
     const note=s.note?`<div class="phase3-note">${esc(s.note)}</div>`:'';
@@ -90,6 +91,7 @@
       </section>`;
     document.body.appendChild(shell);
     shell.addEventListener('click',event=>{
+      const question=event.target.closest('[data-science-practice]');if(question){practiceIndex=Number(question.dataset.sciencePractice);const current=deck.slides[slideIndex];shell.querySelector('.deep-slide').innerHTML=slideHtml(current);renderSupport(true);return;}
       if(event.target.closest('[data-chem-outline]')){const open=shell.classList.toggle('ls-outline-open');shell.querySelector('[data-chem-outline]')?.setAttribute('aria-expanded',String(open));return;}
       if(event.target.closest('[data-chem-close]')){event.preventDefault();close();return;}
       if(event.target.closest('[data-chem-prev]')){move(-1);return;}
@@ -110,14 +112,14 @@
   function renderSupport(reset=true){
     if(!shell||!deck)return;
     const s=deck.slides[slideIndex];const solution=shell.querySelector('[data-chem-solution]');if(reset)solution.hidden=true;
-    solution.innerHTML=`<strong>Solution / key reasoning</strong><ol>${list(s.solution).map(x=>`<li>${esc(x)}</li>`).join('')}</ol>`;
+    solution.innerHTML=`<strong>Solution / key reasoning</strong><ol>${list(s.practice?s.practice[practiceIndex].answer:s.solution).map(x=>`<li>${esc(x)}</li>`).join('')}</ol>`;
     const answer=shell.querySelector('[data-chem-answer]');answer.hidden=!s.solution?.length;answer.textContent=solution.hidden?'Show solution':'Hide solution';answer.setAttribute('aria-expanded',String(!solution.hidden));
     const note=shell.querySelector('[data-chem-teacher-note]');note.textContent=s.note||'Ask for precise AQA Chemistry reasoning.';note.hidden=!teacherNotes;
     shell.querySelector('[data-chem-notes]')?.setAttribute('aria-expanded',String(teacherNotes));
   }
 
   function render(){
-    if(!deck)return;
+    if(!deck)return;practiceIndex=0;
     const host=ensureShell();const s=deck.slides[slideIndex];
     host.querySelector('[data-chem-title]').textContent=deck.title;host.querySelector('[data-chem-subtitle]').textContent=`${deck.subtitle} · ${deck.slides.length} slides`;host.querySelector('[data-chem-count]').textContent=`Slide ${slideIndex+1} / ${deck.slides.length}`;
     const node=host.querySelector('.deep-slide');node.dataset.layout=s.layout||'content';node.innerHTML=slideHtml(s);node.scrollTop=0;

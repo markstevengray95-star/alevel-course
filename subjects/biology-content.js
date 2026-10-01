@@ -310,7 +310,7 @@
     "q": "How does cell ultrastructure reveal specialised function?",
     "core": [
       "Eukaryotic cells contain membrane-bound organelles including nuclei, mitochondria, endoplasmic reticulum, Golgi apparatus and lysosomes.",
-      "Prokaryotic cells lack a nucleus and membrane-bound organelles; they contain circular DNA, plasmids and smaller ribosomes.",
+      "Prokaryotic cells lack a nucleus and membrane-bound organelles; they typically contain circular chromosomal DNA and smaller ribosomes; some also contain plasmids.",
       "Viruses are acellular particles containing genetic material within a protein coat and replicate only inside host cells.",
       "Electron microscopes provide greater resolution than light microscopes; magnification does not automatically increase resolution."
     ],
@@ -349,7 +349,7 @@
     "core": [
       "The cell cycle includes DNA replication followed by mitosis and cytokinesis.",
       "Mitosis separates replicated chromosomes to produce genetically identical daughter nuclei, supporting growth, repair and asexual reproduction.",
-      "Binary fission in prokaryotes replicates circular DNA and plasmids before division.",
+      "In binary fission the circular chromosome replicates and the copies separate; plasmids, when present, also replicate and are distributed as the membrane and wall divide.",
       "Viruses attach to host cells, introduce genetic material and use host machinery to produce new virus particles."
     ],
     "model": [
@@ -616,7 +616,7 @@
       "A gene is a sequence of DNA bases that codes for a polypeptide or functional RNA product.",
       "A locus is the position of a gene on a chromosome; alleles are alternative forms of a gene.",
       "In eukaryotes, DNA is associated with proteins and arranged as linear chromosomes; prokaryotic DNA is typically circular and may include plasmids.",
-      "The genome is the complete DNA of an organism; the proteome is the full set of proteins expressed by a cell or organism."
+      "The genome is the complete DNA of an organism; the proteome is the set of proteins expressed by a cell or organism under specified conditions and at a particular time."
     ],
     "model": [
       "Locate a gene on DNA.",
@@ -957,7 +957,7 @@
     "core": [
       "Gross primary production is the chemical energy stored by producers; net primary production equals GPP minus respiratory losses.",
       "Only some NPP is transferred to primary consumers because not all biomass is eaten or digested.",
-      "At each trophic level energy is lost in respiration, movement, heat, waste and uneaten material.",
+      "At each trophic level, some chemical energy leaves as uneaten biomass or waste; respiration transfers energy to the environment as heat while supporting work such as movement.",
       "Agricultural systems can increase transfer efficiency by reducing movement, controlling temperature or reducing trophic levels."
     ],
     "model": [
@@ -1485,7 +1485,7 @@
     ]
   }
 });
-  const get = ref => profiles[String(ref||'')] || null;
+  const get = ref => window.ALEVEL_BIOLOGY_ANSWER_DETAIL?.resolve(String(ref||''),profiles) || profiles[String(ref||'')] || null;
   const refs = Object.freeze(Object.keys(profiles));
   window.ALEVEL_BIOLOGY_CONTENT = Object.freeze({
     version:'phase-5',

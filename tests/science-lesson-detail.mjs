@@ -22,6 +22,7 @@ for(const row of detail.rows){
  const topic=registry.chemistry.topics.find(t=>t.modules.some(m=>m.ref===row.ref.split('.').slice(0,3).join('.')));
  const deck=lessons.buildDeck({config:registry.chemistry,topic,section:{ref:row.ref,title:row.title}});
  assert.equal(deck.slides.length,15);assert.ok(deck.slides[8].solution.join(' ').includes(row.answer[0]));
+ for(let i=0;i<3;i++){assert.equal(deck.slides[12].practice[i].question,p.exam[i]);assert.deepEqual(deck.slides[12].practice[i].answer,p.examAnswers[i]);}
  assert.ok(box.window.ALEVEL_SCIENCE_ANSWERS.practiceHtml(p).includes('Show detailed model answer'));
  assert.ok(!p.exam.some(q=>q.startsWith('Apply ')&&q.includes('unfamiliar chemical context')),`${row.ref}: generic exam scaffold survived`);
 }

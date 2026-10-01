@@ -32,6 +32,7 @@ jobs:
           node --check subjects/biology-content.js
           node --check subjects/biology-lessons.js
           node tests/biology-content-coverage.mjs
+          node tests/biology-lesson-answers.mjs
 
       - name: Verify complete Chemistry lesson content
         run: |
@@ -139,7 +140,9 @@ jobs:
 
       - name: Verify detailed Biology and Chemistry lesson presentations
         timeout-minutes: 3
-        run: node tests/subject-presentations.mjs
+        run: |
+          node tests/subject-presentations.mjs
+          node tests/science-answer-browser.mjs
 
       - name: Verify Paper 3 option textbooks
         timeout-minutes: 3

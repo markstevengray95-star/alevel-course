@@ -9,3 +9,5 @@
 .chemistry-presentation-shell .phase3-deck-side,.biology-presentation-shell .phase3-deck-side{min-width:0;overflow-x:hidden}
 .chemistry-presentation-shell .phase3-deck-side .phase3-kicker,.biology-presentation-shell .phase3-deck-side .phase3-kicker{white-space:normal;overflow-wrap:anywhere;line-height:1.5}
 .chemistry-presentation-shell .phase3-deck-side h2,.biology-presentation-shell .phase3-deck-side h2{overflow-wrap:anywhere}
+.science-practice-nav{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}.science-practice-nav button{border:1px solid #b5c7df;background:#eef3fa;color:#183557;padding:10px 16px;border-radius:9px;font:inherit;cursor:pointer}.science-practice-nav button[aria-pressed="true"]{background:#2468ad;color:white;border-color:#2468ad}.science-practice-question{font-size:clamp(1.15rem,2.2vw,1.8rem);line-height:1.5;margin:20px 0}.science-practice-hint{font-size:.95rem;color:#42617e;line-height:1.5}
+.science-index-link{padding:12px;margin:8px 0;border:1px solid #30465e;border-radius:10px}.science-deeper summary{cursor:pointer;font-weight:700}.science-deeper p{line-height:1.65}
