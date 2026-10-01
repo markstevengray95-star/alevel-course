@@ -17,8 +17,8 @@ async function checkSubject({subject,topic,section,expectedTitle,expectedSlides,
     else{
       const text=await lesson.innerText();
       if(!/Detailed Biology lesson/i.test(text)) failures.push(`${subject}: detailed lesson heading missing`);
-      if(!/AQA-style practice/i.test(text)) failures.push(`${subject}: exam-practice section missing`);
-      if(!/Maths \/ data skill/i.test(text)) failures.push(`${subject}: maths/data section missing`);
+      if(!/AQA-style exam practice/i.test(text)) failures.push(`${subject}: exam-practice section missing`);
+      if(!/Maths & data/i.test(text)) failures.push(`${subject}: maths/data section missing`);
     }
   }
 
