@@ -3,41 +3,52 @@
 
   const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   const clean=value=>String(value??'').replace(/\s+/g,' ').trim();
-  const list=value=>Array.isArray(value)?value.filter(Boolean):[];
+  const asList=value=>Array.isArray(value)?value.filter(Boolean):[];
   const POSITION_KEY='alevel-subject-presentation-position-v1';
+
   let shell=null;
   let deck=null;
   let slideIndex=0;
   let teacherNotes=false;
   let returnFocus=null;
 
-  function positions(){try{return JSON.parse(localStorage.getItem(POSITION_KEY)||'{}')||{};}catch{return {};}}
+  function positions(){
+    try{return JSON.parse(localStorage.getItem(POSITION_KEY)||'{}')||{};}
+    catch{return {};}
+  }
+
   function savePosition(){
     if(!deck)return;
-    try{const saved=positions();saved[deck.id]=slideIndex;localStorage.setItem(POSITION_KEY,JSON.stringify(saved));}catch{}
+    try{
+      const saved=positions();
+      saved[deck.id]=slideIndex;
+      localStorage.setItem(POSITION_KEY,JSON.stringify(saved));
+    }catch{}
   }
 
   function subjectPrompts(subject,title){
-    if(subject==='Biology')return{
-      retrieval:[
-        `Define one key biological term that is likely to be needed for ${title}.`,
-        'Recall one linked structure, molecule or process from the previous specification section.',
-        'Predict one structure–function relationship that could be examined.'
-      ],
-      model:[
-        `Describe the key structure or process involved in ${title}.`,
-        'Explain the sequence using precise biological vocabulary.',
-        'Link each structural feature or stage to its biological function.',
-        'Finish with the measurable outcome or biological consequence.'
-      ],
-      practical:[
-        `Identify a variable or measurement that could be used to investigate ${title}.`,
-        'State an independent variable, dependent variable and important control variable where appropriate.',
-        'Choose a suitable graph, statistical treatment or data-comparison method.',
-        'Evaluate one limitation and one realistic improvement.'
-      ],
-      extension:`Connect ${title} to a second biological topic and explain the link as a causal chain rather than as two separate facts.`
-    };
+    if(subject==='Biology'){
+      return{
+        retrieval:[
+          `Define one key biological term likely to be needed for ${title}.`,
+          'Recall one linked structure, molecule or process from the previous specification section.',
+          'Predict one structure–function relationship that could be examined.'
+        ],
+        model:[
+          `Describe the key structure or process involved in ${title}.`,
+          'Explain the sequence using precise biological vocabulary.',
+          'Link each structural feature or stage to its biological function.',
+          'Finish with the measurable outcome or biological consequence.'
+        ],
+        practical:[
+          `Identify a variable or measurement that could be used to investigate ${title}.`,
+          'State an independent variable, dependent variable and important control variable where appropriate.',
+          'Choose a suitable graph, statistical treatment or data-comparison method.',
+          'Evaluate one limitation and one realistic improvement.'
+        ],
+        extension:`Connect ${title} to a second biological topic and explain the link as a causal chain rather than as two separate facts.`
+      };
+    }
     return{
       retrieval:[
         `State one definition, equation or particle-level idea likely to be needed for ${title}.`,
@@ -60,19 +71,29 @@
     };
   }
 
-  function makeSlide(section,kicker,title,bullets,{layout='content',note='',solution=[],equation=''}={}){
-    return{section,kicker,title,bullets:list(bullets).map(clean).filter(Boolean),layout,note:clean(note),solution:list(solution).map(clean).filter(Boolean),equation:clean(equation)};
+  function makeSlide(group,kicker,title,bullets,options={}){
+    return{
+      group,
+      kicker,
+      title,
+      bullets:asList(bullets).map(clean).filter(Boolean),
+      layout:options.layout||'content',
+      note:clean(options.note||''),
+      solution:asList(options.solution).map(clean).filter(Boolean),
+      equation:clean(options.equation||'')
+    };
   }
 
   function buildDeck(context){
-    const {config,topic,section}=context||{};
+    const config=context?.config;
+    const topic=context?.topic;
+    const section=context?.section;
     if(!config||!topic||!section)return null;
+
     const subject=config.subject;
-    const focus=list(section.focus);
     const prompts=subjectPrompts(subject,section.title);
     const summary=clean(section.summary||`${section.title} within ${topic.title}.`);
-    const id=`${config.id}:${topic.id}:${section.ref}`;
-    const objectives=focus.length?focus:[
+    const objectives=asList(section.focus).length?asList(section.focus):[
       `Explain the core knowledge required by ${section.ref}.`,
       `Apply ${section.title.toLowerCase()} to unfamiliar data or exam contexts.`,
       `Connect this section to the wider A-Level ${subject} course.`
@@ -80,29 +101,119 @@
     const examStem=subject==='Biology'
       ? `A student investigates a biological process linked to ${section.title.toLowerCase()}. Explain the expected result and justify it using biological principles.`
       : `A student investigates a chemical system linked to ${section.title.toLowerCase()}. Explain the expected result and justify it using chemical principles.`;
+
+    const slides=[];
+    slides.push(makeSlide('Start',section.ref,section.title,[summary,`Topic: ${topic.title}`],{
+      layout:'title',
+      note:'Start with the lesson question. Ask students what they already know before revealing the objectives.'
+    }));
+    slides.push(makeSlide('Start','Retrieval starter',`Before ${section.title}`,prompts.retrieval,{
+      note:'Give students quiet thinking time first. Reveal answers only after they have committed to a response.',
+      solution:[
+        'Use precise specification vocabulary.',
+        'Accept linked prior knowledge when the connection is scientifically justified.',
+        'Use the final prompt to surface a misconception that can be revisited later.'
+      ]
+    }));
+    slides.push(makeSlide('Start','Learning objectives','By the end of this lesson',objectives,{
+      note:'Keep the objectives visible long enough for students to identify the key command words.'
+    }));
+    slides.push(makeSlide('Teach','Big picture',`Where ${section.title} fits`,[
+      summary,
+      `This lesson sits within ${topic.code}: ${topic.title}.`,
+      `Specification reference: ${section.ref}.`,
+      'The aim is to move from recall to explanation, application and evaluation.'
+    ],{
+      note:'Use this slide to connect the lesson to prior and future learning.'
+    }));
+    slides.push(makeSlide('Teach','Core knowledge','Build the idea',objectives,{
+      note:'Phases 5 and 6 will replace this scaffold with full subject-specific teaching chunks while keeping the same presentation shell.'
+    }));
+    slides.push(makeSlide(
+      'Teach',
+      subject==='Biology'?'Process / structure model':'Model / representation',
+      subject==='Biology'?'Explain the biology':'Represent the chemistry',
+      prompts.model,
+      {
+        layout:'equation',
+        equation:subject==='Biology'?'structure → process → outcome':'particles → representation → evidence',
+        note:'Move deliberately between words, diagrams/models and measurable evidence.'
+      }
+    ));
+    slides.push(makeSlide('Apply','Guided reasoning','Worked-example method',[
+      `1. Identify exactly what the question is asking about ${section.title}.`,
+      `2. Select the relevant principle from ${section.ref}.`,
+      '3. Use a diagram, model, equation, data pattern or process sequence.',
+      '4. Link every step to evidence or a scientific reason.',
+      '5. Check terminology, units and the final conclusion.'
+    ],{
+      note:'Model the reasoning process rather than just revealing a final answer.',
+      solution:[
+        `Name the relevant ${subject.toLowerCase()} principle first.`,
+        'Use evidence from the question rather than repeating memorised notes.',
+        'Make each because/therefore link explicit.',
+        'End by answering the exact command word.'
+      ]
+    }));
+    slides.push(makeSlide('Apply','Student checkpoint','Pause and check',[
+      `Explain ${section.title} in no more than three sentences.`,
+      'Draw or describe one representation that would help explain it.',
+      'State one piece of evidence, observation or data pattern that would support the explanation.'
+    ],{
+      solution:[
+        'A strong answer is concise, uses specification terminology and links evidence to the scientific model.',
+        'The representation should add information rather than simply decorate the answer.',
+        'Evidence must be linked explicitly to the conclusion.'
+      ]
+    }));
+    slides.push(makeSlide('Apply','Practical / data thinking','How could this be investigated?',prompts.practical,{
+      note:'Where the specification section is not directly practical, frame this as data handling or evaluation.',
+      solution:[
+        'Identify what would actually be measured.',
+        'Control variables should remove plausible alternative explanations.',
+        'Choose analysis that matches the type of data.',
+        'Improvements should be specific and practical.'
+      ]
+    }));
+    slides.push(makeSlide('Assess','AQA-style practice','Exam practice',[
+      `3 marks: Explain one key principle involved in ${section.title}.`,
+      `4 marks: Apply ${section.title} to an unfamiliar context or data set.`,
+      `6 marks: ${examStem}`
+    ],{
+      note:'Students should plan before writing. Insist on linked reasoning rather than isolated statements.',
+      solution:[
+        'Use the command word to decide the structure of the answer.',
+        `Include accurate subject vocabulary from ${section.ref}.`,
+        'For longer answers, connect evidence → principle → conclusion.',
+        'Evaluate with a specific limitation and consequence where relevant.'
+      ]
+    }));
+    slides.push(makeSlide('Assess','A* extension','Make the synoptic connection',[
+      prompts.extension,
+      `Identify one assumption behind the model used in ${section.title}.`,
+      'Explain what evidence would make you revise the conclusion.'
+    ],{
+      note:'Push beyond recall: students should compare models, justify assumptions and connect topics.'
+    }));
+    slides.push(makeSlide('Finish','Exit ticket','Show mastery',[
+      `One-sentence definition or explanation of ${section.title}.`,
+      'One representation, equation, process or data pattern you would use in an exam.',
+      'One common mistake you will avoid.',
+      'One question you still need answered.'
+    ],{
+      note:'Use responses to decide the retrieval starter for the next lesson.'
+    }));
+
     return{
-      id,
+      id:`${config.id}:${topic.id}:${section.ref}`,
       title:section.title,
       subtitle:`${config.board} ${config.subject} ${config.specCode} · ${section.ref} · ${section.year||topic.year||''}`,
-      slides:[
-        makeSlide('Start',section.ref,section.title,[summary,`Topic: ${topic.title}`],{layout:'title',note:'Start with the lesson question. Ask students what they already know before revealing the objectives.'}),
-        makeSlide('Start','Retrieval starter',`Before ${section.title}`,prompts.retrieval,{note:'Give students quiet thinking time first. Reveal answers only after they have committed to a response.',solution:['Use precise specification vocabulary.','Accept linked prior knowledge when the connection is scientifically justified.','Use the final prompt to surface a misconception that can be revisited later.']}),
-        makeSlide('Start','Learning objectives','By the end of this lesson',objectives,{note:'Keep the objectives visible long enough for students to identify the key command words.'}),
-        makeSlide('Teach','Big picture',`Where ${section.title} fits`,[summary,`This lesson sits within ${topic.code}: ${topic.title}.`,`Specification reference: ${section.ref}.`,`The aim is to move from recall to explanation, application and evaluation.`],{note:'Use this slide to connect the lesson to prior and future learning.'}),
-        makeSlide('Teach','Core knowledge','Build the idea',objectives,{note:'Phase 5/6 will replace this scaffold with full subject-specific teaching chunks while keeping the same presentation shell.'}),
-        makeSlide('Teach',subject==='Biology'?'Process / structure model':'Model / representation',subject==='Biology'?'Explain the biology':'Represent the chemistry',prompts.model,{layout:'equation',equation:subject==='Biology'?'structure → process → outcome':'particles → representation → evidence',note:'Move deliberately between words, diagrams/models and measurable evidence.'}),
-        makeSlide('Apply','Guided reasoning','Worked-example method',[`1. Identify exactly what the question is asking about ${section.title}.`,`2. Select the relevant principle from ${section.ref}.`,`3. Use a diagram, model, equation, data pattern or process sequence.`,`4. Link every step to evidence or a scientific reason.`,`5. Check terminology, units and the final conclusion.`],{note:'Model the reasoning process rather than just revealing a final answer.',solution:[`Name the relevant ${subject.toLowerCase()} principle first.`,`Use evidence from the question rather than repeating memorised notes.`,`Make each because/therefore link explicit.`,`End by answering the exact command word.']}),
-        makeSlide('Apply','Student checkpoint','Pause and check',[`Explain ${section.title} in no more than three sentences.`,`Draw or describe one representation that would help explain it.`,`State one piece of evidence, observation or data pattern that would support the explanation.`],{solution:['A strong answer is concise, uses specification terminology and links evidence to the scientific model.','The representation should add information rather than simply decorate the answer.','Evidence must be linked explicitly to the conclusion.']}),
-        makeSlide('Apply','Practical / data thinking','How could this be investigated?',prompts.practical,{note:'Where the specification section is not directly practical, frame this as data handling or evaluation.',solution:['Identify what would actually be measured.','Control variables should remove plausible alternative explanations.','Choose analysis that matches the type of data.','Improvements should be specific and practical.']}),
-        makeSlide('Assess','AQA-style practice','Exam practice',[`3 marks: Explain one key principle involved in ${section.title}.`,`4 marks: Apply ${section.title} to an unfamiliar context or data set.`,`6 marks: ${examStem}`],{note:'Students should plan before writing. Insist on linked reasoning rather than isolated statements.',solution:[`Use the command word to decide the structure of the answer.`,`Include accurate subject vocabulary from ${section.ref}.`,`For longer answers, connect evidence → principle → conclusion.`,`Evaluate with a specific limitation and consequence where relevant.']}),
-        makeSlide('Assess','A* extension','Make the synoptic connection',[prompts.extension,`Identify one assumption behind the model used in ${section.title}.`,`Explain what evidence would make you revise the conclusion.`],{note:'Push beyond recall: students should compare models, justify assumptions and connect topics.'}),
-        makeSlide('Finish','Exit ticket','Show mastery',[`One-sentence definition or explanation of ${section.title}.`,`One representation, equation, process or data pattern you would use in an exam.`,`One common mistake you will avoid.`,`One question you still need answered.`],{note:'Use responses to decide the retrieval starter for the next lesson.'})
-      ]
+      slides
     };
   }
 
   function slideHtml(slide){
-    const bullets=list(slide.bullets).map(item=>`<li>${esc(item)}</li>`).join('');
+    const bullets=asList(slide.bullets).map(item=>`<li>${esc(item)}</li>`).join('');
     const kicker=`<div class="phase3-kicker">${esc(slide.kicker)}</div>`;
     const note=slide.note?`<div class="phase3-note">${esc(slide.note)}</div>`:'';
     if(slide.layout==='title')return `${kicker}<h1>${esc(slide.title)}</h1><ul>${bullets}</ul>${note}`;
@@ -138,6 +249,7 @@
         </main>
       </section>`;
     document.body.appendChild(shell);
+
     shell.addEventListener('click',event=>{
       if(event.target.closest('[data-outline-toggle]')){
         const expanded=shell.classList.toggle('ls-outline-open');
@@ -156,7 +268,11 @@
       const button=event.target.closest('[data-subject-index]');
       if(button){slideIndex=Number(button.dataset.subjectIndex);render();}
     });
-    shell.querySelector('[data-subject-jump]')?.addEventListener('change',event=>{slideIndex=Number(event.target.value);render();});
+
+    shell.querySelector('[data-subject-jump]')?.addEventListener('change',event=>{
+      slideIndex=Number(event.target.value);
+      render();
+    });
     document.addEventListener('fullscreenchange',updateFullscreenButton);
     return shell;
   }
@@ -167,10 +283,19 @@
     const solution=shell.querySelector('[data-subject-solution]');
     const answerButton=shell.querySelector('[data-subject-answer]');
     if(resetSolution&&solution)solution.hidden=true;
-    if(solution)solution.innerHTML=`<strong>Solution / key reasoning</strong><ol>${list(slide.solution).map(item=>`<li>${esc(item)}</li>`).join('')}</ol>`;
-    if(answerButton){answerButton.hidden=!slide.solution?.length;answerButton.textContent=solution?.hidden?'Show solution':'Hide solution';answerButton.setAttribute('aria-expanded',String(!solution?.hidden));}
+    if(solution){
+      solution.innerHTML=`<strong>Solution / key reasoning</strong><ol>${asList(slide.solution).map(item=>`<li>${esc(item)}</li>`).join('')}</ol>`;
+    }
+    if(answerButton){
+      answerButton.hidden=!slide.solution?.length;
+      answerButton.textContent=solution?.hidden?'Show solution':'Hide solution';
+      answerButton.setAttribute('aria-expanded',String(!solution?.hidden));
+    }
     const note=shell.querySelector('[data-subject-teacher-note]');
-    if(note){note.textContent=slide.note||'Ask for a precise explanation and connect it back to the lesson objective.';note.hidden=!teacherNotes;}
+    if(note){
+      note.textContent=slide.note||'Ask for a precise explanation and connect it back to the lesson objective.';
+      note.hidden=!teacherNotes;
+    }
     shell.querySelector('[data-subject-notes]')?.setAttribute('aria-expanded',String(teacherNotes));
   }
 
@@ -182,20 +307,26 @@
     host.querySelector('[data-subject-title]').textContent=deck.title;
     host.querySelector('[data-subject-subtitle]').textContent=`${deck.subtitle} · ${deck.slides.length} slides`;
     host.querySelector('[data-subject-count]').textContent=`Slide ${slideIndex+1} / ${deck.slides.length}`;
+
     const node=host.querySelector('.deep-slide');
     node.dataset.layout=slide.layout||'content';
     node.innerHTML=slideHtml(slide);
+    node.scrollTop=0;
+
     host.querySelector('[data-subject-progress]').style.width=`${((slideIndex+1)/deck.slides.length)*100}%`;
-    host.querySelector('[data-subject-list]').innerHTML=deck.slides.map((item,index)=>`${index===0||item.section!==deck.slides[index-1].section?`<strong class="ls-outline-section">${esc(item.section)}</strong>`:''}<button type="button" data-subject-index="${index}" aria-current="${index===slideIndex?'step':'false'}" class="${index===slideIndex?'active':''}"><small>${esc(item.kicker)}</small><span>${index+1}. ${esc(item.title)}</span></button>`).join('');
+    host.querySelector('[data-subject-list]').innerHTML=deck.slides.map((item,index)=>{
+      const group=(index===0||item.group!==deck.slides[index-1].group)?`<strong class="ls-outline-section">${esc(item.group)}</strong>`:'';
+      return `${group}<button type="button" data-subject-index="${index}" aria-current="${index===slideIndex?'step':'false'}" class="${index===slideIndex?'active':''}"><small>${esc(item.kicker)}</small><span>${index+1}. ${esc(item.title)}</span></button>`;
+    }).join('');
+
     const picker=host.querySelector('[data-subject-jump]');
     picker.innerHTML=deck.slides.map((item,index)=>`<option value="${index}">${index+1}. ${esc(item.kicker)}</option>`).join('');
     picker.value=String(slideIndex);
-    const prev=host.querySelector('[data-subject-prev]');
-    const next=host.querySelector('[data-subject-next]');
-    prev.disabled=slideIndex===0;next.disabled=slideIndex===deck.slides.length-1;
+
+    host.querySelector('[data-subject-prev]').disabled=slideIndex===0;
+    host.querySelector('[data-subject-next]').disabled=slideIndex===deck.slides.length-1;
     renderSupport(true);
     savePosition();
-    node.scrollTop=0;
     node.focus({preventScroll:true});
   }
 
@@ -227,7 +358,8 @@
     if(!deck)return;
     const next=Math.max(0,Math.min(deck.slides.length-1,slideIndex+delta));
     if(next===slideIndex)return;
-    slideIndex=next;render();
+    slideIndex=next;
+    render();
   }
 
   function toggleSolution(){
@@ -241,37 +373,64 @@
 
   function copySlides(){
     if(!deck)return;
-    const text=deck.slides.map((slide,index)=>`${index+1}. ${slide.title}\n${list(slide.bullets).map(item=>`- ${item}`).join('\n')}`).join('\n\n');
+    const text=deck.slides.map((slide,index)=>{
+      const bullets=asList(slide.bullets).map(item=>`- ${item}`).join('\n');
+      return `${index+1}. ${slide.title}\n${bullets}`;
+    }).join('\n\n');
     navigator.clipboard?.writeText(text);
   }
 
   function updateFullscreenButton(){
     const button=shell?.querySelector('[data-subject-fullscreen]');
     if(!button)return;
-    const active=!!document.fullscreenElement;
+    const active=!!document.fullscreenElement||!!window.parent?.document?.fullscreenElement;
     button.textContent=active?'Exit full screen':'Full screen';
     button.setAttribute('aria-pressed',String(active));
   }
 
-  function toggleFullscreen(){
-    const target=shell?.querySelector('.deep-deck')||shell;
-    if(!document.fullscreenElement)target?.requestFullscreen?.().catch(()=>{});
-    else document.exitFullscreen?.().catch(()=>{});
+  async function toggleFullscreen(){
+    try{
+      if(document.fullscreenElement){await document.exitFullscreen?.();return;}
+      const target=shell?.querySelector('.deep-deck')||shell;
+      await target?.requestFullscreen?.();
+      return;
+    }catch{}
+    try{
+      const parentDocument=window.parent?.document;
+      if(parentDocument?.fullscreenElement){await parentDocument.exitFullscreen?.();return;}
+      await window.frameElement?.requestFullscreen?.();
+    }catch{}
   }
 
-  function isTyping(target){return !!target?.closest?.('input,textarea,select,[contenteditable="true"]');}
+  function isTyping(target){
+    return !!target?.closest?.('input,textarea,select,[contenteditable="true"]');
+  }
+
   document.addEventListener('keydown',event=>{
     if(!shell||shell.hidden||isTyping(event.target))return;
     if(event.key==='Escape'){
-      if(document.fullscreenElement)return;
-      event.preventDefault();close();return;
+      if(document.fullscreenElement||window.parent?.document?.fullscreenElement)return;
+      event.preventDefault();
+      close();
+      return;
     }
-    if(event.key==='ArrowLeft'||event.key==='PageUp'){event.preventDefault();move(-1);return;}
+    if(event.key==='ArrowLeft'||event.key==='PageUp'){
+      event.preventDefault();
+      move(-1);
+      return;
+    }
     if(event.key==='ArrowRight'||event.key==='PageDown'||event.key===' '){
       if(event.key===' '&&event.target?.closest?.('button'))return;
-      event.preventDefault();move(1);
+      event.preventDefault();
+      move(1);
     }
   });
 
-  window.ALEVEL_SUBJECT_PRESENTATION={buildDeck,open,close,getDeck:()=>deck,getSlideIndex:()=>slideIndex};
+  window.ALEVEL_SUBJECT_PRESENTATION={
+    buildDeck,
+    open,
+    close,
+    getDeck:()=>deck,
+    getSlideIndex:()=>slideIndex
+  };
 })();
