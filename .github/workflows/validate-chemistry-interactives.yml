@@ -1,0 +1,52 @@
+name: Validate Chemistry interactives
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  chemistry-interactives:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout course and topic modules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Check interactive source and coverage
+        run: |
+          node --check subjects/chemistry-interactives.js
+          node tests/chemistry-interactives-coverage.mjs
+
+      - name: Assemble production output
+        run: bash scripts/vercel-build.sh
+
+      - name: Verify interactive assets ship
+        run: |
+          test -f dist/subjects/chemistry-interactives.js
+          test -f dist/subjects/chemistry-interactives.css
+          grep -q "chemistry-interactives.js" dist/subjects/topic-shell.html
+          grep -q "chemistry-interactives.css" dist/subjects/topic-shell.html
+
+      - name: Install browser dependency
+        timeout-minutes: 5
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Start production-like server
+        timeout-minutes: 2
+        run: |
+          python3 -m http.server 4173 --directory dist > /tmp/chem-int-http.log 2>&1 &
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/chem-int-http.log
+          exit 1
+
+      - name: Exercise Chemistry interactives
+        timeout-minutes: 3
+        run: node tests/chemistry-interactives.mjs
