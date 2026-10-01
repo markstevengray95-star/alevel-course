@@ -6,3 +6,6 @@
 .science-question{padding:14px 0;border-top:1px solid #30465e}.science-question h4{margin:0 0 8px}.science-question p{line-height:1.55}.science-question details{background:#0a1727;border:1px solid #405a78;border-radius:10px;padding:12px}.science-question details ol{display:grid;gap:10px;margin-top:16px;line-height:1.65}
 .science-source{color:#a9bcd0;font-size:.85rem;line-height:1.6;margin:18px 0}.ls-solution li{line-height:1.6;margin-bottom:9px}
 @media(max-width:600px){.science-lesson-index{padding:16px}.science-question details{padding:10px}}
+.chemistry-presentation-shell .phase3-deck-side,.biology-presentation-shell .phase3-deck-side{min-width:0;overflow-x:hidden}
+.chemistry-presentation-shell .phase3-deck-side .phase3-kicker,.biology-presentation-shell .phase3-deck-side .phase3-kicker{white-space:normal;overflow-wrap:anywhere;line-height:1.5}
+.chemistry-presentation-shell .phase3-deck-side h2,.biology-presentation-shell .phase3-deck-side h2{overflow-wrap:anywhere}

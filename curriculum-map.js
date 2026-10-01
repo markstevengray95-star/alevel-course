@@ -170,6 +170,7 @@
   const typeLabel = type => ({lesson:'Core lesson', practical:'Practical', skills:'Skills', review:'Mastery'}[type] || 'Lesson');
 
   function renderMap(){
+    if(window.ALEVEL_COURSE_CONFIG?.id && window.ALEVEL_COURSE_CONFIG.id !== 'physics') return;
     const courseMap = document.getElementById('courseMap');
     const courseTools = document.getElementById('courseTools');
     if(!courseMap || !courseTools || document.getElementById('lessonCurriculumMap')) return;

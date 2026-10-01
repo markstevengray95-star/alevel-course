@@ -1,0 +1,385 @@
+{
+  "source": "AQA Chemistry 7405 subject content",
+  "reviewed": "2026-10-01",
+  "areas": {
+    "physical-chemistry": {
+      "url": "https://www.aqa.org.uk/subjects/chemistry/a-level/chemistry-7405/specification/subject-content/physical-chemistry",
+      "lessons": [
+        {
+          "ref": "3.1.1.1",
+          "title": "Fundamental particles"
+        },
+        {
+          "ref": "3.1.1.2",
+          "title": "Mass number and isotopes"
+        },
+        {
+          "ref": "3.1.1.3",
+          "title": "Electron configuration"
+        },
+        {
+          "ref": "3.1.2.1",
+          "title": "Relative atomic mass and relative molecular mass"
+        },
+        {
+          "ref": "3.1.2.2",
+          "title": "The mole and the Avogadro constant"
+        },
+        {
+          "ref": "3.1.2.3",
+          "title": "The ideal gas equation"
+        },
+        {
+          "ref": "3.1.2.4",
+          "title": "Empirical and molecular formula"
+        },
+        {
+          "ref": "3.1.2.5",
+          "title": "Balanced equations and associated calculations"
+        },
+        {
+          "ref": "3.1.3.1",
+          "title": "Ionic bonding"
+        },
+        {
+          "ref": "3.1.3.2",
+          "title": "Nature of covalent and dative covalent bonds"
+        },
+        {
+          "ref": "3.1.3.3",
+          "title": "Metallic bonding"
+        },
+        {
+          "ref": "3.1.3.4",
+          "title": "Bonding and physical properties"
+        },
+        {
+          "ref": "3.1.3.5",
+          "title": "Shapes of simple molecules and ions"
+        },
+        {
+          "ref": "3.1.3.6",
+          "title": "Bond polarity"
+        },
+        {
+          "ref": "3.1.3.7",
+          "title": "Forces between molecules"
+        },
+        {
+          "ref": "3.1.4.1",
+          "title": "Enthalpy change"
+        },
+        {
+          "ref": "3.1.4.2",
+          "title": "Calorimetry"
+        },
+        {
+          "ref": "3.1.4.3",
+          "title": "Applications of Hess’s law"
+        },
+        {
+          "ref": "3.1.4.4",
+          "title": "Bond enthalpies"
+        },
+        {
+          "ref": "3.1.5.1",
+          "title": "Collision theory"
+        },
+        {
+          "ref": "3.1.5.2",
+          "title": "Maxwell–Boltzmann distribution"
+        },
+        {
+          "ref": "3.1.5.3",
+          "title": "Effect of temperature on reaction rate"
+        },
+        {
+          "ref": "3.1.5.4",
+          "title": "Effect of concentration and pressure"
+        },
+        {
+          "ref": "3.1.5.5",
+          "title": "Catalysts"
+        },
+        {
+          "ref": "3.1.6.1",
+          "title": "Chemical equilibria and Le Chatelier's principle"
+        },
+        {
+          "ref": "3.1.6.2",
+          "title": "Equilibrium constant Kc for homogeneous systems"
+        },
+        {
+          "ref": "3.1.7",
+          "title": "Oxidation, reduction and redox equations"
+        },
+        {
+          "ref": "3.1.8.1",
+          "title": "Born–Haber cycles (A-level only)"
+        },
+        {
+          "ref": "3.1.8.2",
+          "title": "Gibbs free-energy change, ∆ G, and entropy change, ∆ S (A-level only)"
+        },
+        {
+          "ref": "3.1.9.1",
+          "title": "Rate equations (A-level only)"
+        },
+        {
+          "ref": "3.1.9.2",
+          "title": "Determination of rate equation (A-level only)"
+        },
+        {
+          "ref": "3.1.10",
+          "title": "Equilibrium constant Kp for homogeneous systems (A-level only)"
+        },
+        {
+          "ref": "3.1.11.1",
+          "title": "Electrode potentials and cells (A-level only)"
+        },
+        {
+          "ref": "3.1.11.2",
+          "title": "Commercial applications of electrochemical cells (A-level only)"
+        },
+        {
+          "ref": "3.1.12.1",
+          "title": "Brønsted–Lowry acid–base equilibria in aqueous solution (A-level only)"
+        },
+        {
+          "ref": "3.1.12.2",
+          "title": "Definition and determination of pH (A-level only)"
+        },
+        {
+          "ref": "3.1.12.3",
+          "title": "The ionic product of water, Kw (A-level only)"
+        },
+        {
+          "ref": "3.1.12.4",
+          "title": "Weak acids and bases Ka for weak acids (A-level only)"
+        },
+        {
+          "ref": "3.1.12.5",
+          "title": "pH curves, titrations and indicators (A-level only)"
+        },
+        {
+          "ref": "3.1.12.6",
+          "title": "Buffer action (A-level only)"
+        }
+      ]
+    },
+    "inorganic-chemistry": {
+      "url": "https://www.aqa.org.uk/subjects/chemistry/a-level/chemistry-7405/specification/subject-content/inorganic-chemistry",
+      "lessons": [
+        {
+          "ref": "3.2.1.1",
+          "title": "Classification"
+        },
+        {
+          "ref": "3.2.1.2",
+          "title": "Physical properties of Period 3 elements"
+        },
+        {
+          "ref": "3.2.2",
+          "title": "Group 2, the alkaline earth metals"
+        },
+        {
+          "ref": "3.2.3.1",
+          "title": "Trends in properties"
+        },
+        {
+          "ref": "3.2.3.2",
+          "title": "Uses of chlorine and chlorate(I)"
+        },
+        {
+          "ref": "3.2.4",
+          "title": "Properties of Period 3 elements and their oxides (A-level only)"
+        },
+        {
+          "ref": "3.2.5.1",
+          "title": "General properties of transition metals (A-level only)"
+        },
+        {
+          "ref": "3.2.5.2",
+          "title": "Substitution reactions (A-level only)"
+        },
+        {
+          "ref": "3.2.5.3",
+          "title": "Shapes of complex ions (A-level only)"
+        },
+        {
+          "ref": "3.2.5.4",
+          "title": "Formation of coloured ions (A-level only)"
+        },
+        {
+          "ref": "3.2.5.5",
+          "title": "Variable oxidation states (A-level only)"
+        },
+        {
+          "ref": "3.2.5.6",
+          "title": "Catalysts (A-level only)"
+        },
+        {
+          "ref": "3.2.6",
+          "title": "Reactions of ions in aqueous solution (A-level only)"
+        }
+      ]
+    },
+    "organic-chemistry": {
+      "url": "https://www.aqa.org.uk/subjects/chemistry/a-level/chemistry-7405/specification/subject-content/organic-chemistry",
+      "lessons": [
+        {
+          "ref": "3.3.1.1",
+          "title": "Nomenclature"
+        },
+        {
+          "ref": "3.3.1.2",
+          "title": "Reaction mechanisms"
+        },
+        {
+          "ref": "3.3.1.3",
+          "title": "Isomerism"
+        },
+        {
+          "ref": "3.3.2.1",
+          "title": "Fractional distillation of crude oil"
+        },
+        {
+          "ref": "3.3.2.2",
+          "title": "Modification of alkanes by cracking"
+        },
+        {
+          "ref": "3.3.2.3",
+          "title": "Combustion of alkanes"
+        },
+        {
+          "ref": "3.3.2.4",
+          "title": "Chlorination of alkanes"
+        },
+        {
+          "ref": "3.3.3.1",
+          "title": "Nucleophilic substitution"
+        },
+        {
+          "ref": "3.3.3.2",
+          "title": "Elimination"
+        },
+        {
+          "ref": "3.3.3.3",
+          "title": "Ozone depletion"
+        },
+        {
+          "ref": "3.3.4.1",
+          "title": "Structure, bonding and reactivity"
+        },
+        {
+          "ref": "3.3.4.2",
+          "title": "Addition reactions of alkenes"
+        },
+        {
+          "ref": "3.3.4.3",
+          "title": "Addition polymers"
+        },
+        {
+          "ref": "3.3.5.1",
+          "title": "Alcohol production"
+        },
+        {
+          "ref": "3.3.5.2",
+          "title": "Oxidation of alcohols"
+        },
+        {
+          "ref": "3.3.5.3",
+          "title": "Elimination"
+        },
+        {
+          "ref": "3.3.6.1",
+          "title": "Identification of functional groups by test-tube reactions"
+        },
+        {
+          "ref": "3.3.6.2",
+          "title": "Mass spectrometry"
+        },
+        {
+          "ref": "3.3.6.3",
+          "title": "Infrared spectroscopy"
+        },
+        {
+          "ref": "3.3.7",
+          "title": "Optical isomerism (A-level only)"
+        },
+        {
+          "ref": "3.3.8",
+          "title": "Aldehydes and ketones (A-level only)"
+        },
+        {
+          "ref": "3.3.9.1",
+          "title": "Carboxylic acids and esters (A-level only)"
+        },
+        {
+          "ref": "3.3.9.2",
+          "title": "Acylation (A-level only)"
+        },
+        {
+          "ref": "3.3.10.1",
+          "title": "Bonding (A-level only)"
+        },
+        {
+          "ref": "3.3.10.2",
+          "title": "Electrophilic substitution (A-level only)"
+        },
+        {
+          "ref": "3.3.11.1",
+          "title": "Preparation (A-level only)"
+        },
+        {
+          "ref": "3.3.11.2",
+          "title": "Base properties (A-level only)"
+        },
+        {
+          "ref": "3.3.11.3",
+          "title": "Nucleophilic properties (A-level only)"
+        },
+        {
+          "ref": "3.3.12.1",
+          "title": "Condensation polymers (A-level only)"
+        },
+        {
+          "ref": "3.3.12.2",
+          "title": "Biodegradability and disposal of polymers (A-level only)"
+        },
+        {
+          "ref": "3.3.13.1",
+          "title": "Amino acids (A-level only)"
+        },
+        {
+          "ref": "3.3.13.2",
+          "title": "Proteins (A-level only)"
+        },
+        {
+          "ref": "3.3.13.3",
+          "title": "Enzymes (A-level only)"
+        },
+        {
+          "ref": "3.3.13.4",
+          "title": "DNA (A-level only)"
+        },
+        {
+          "ref": "3.3.13.5",
+          "title": "Action of anticancer drugs (A-level only)"
+        },
+        {
+          "ref": "3.3.14",
+          "title": "Organic synthesis (A-level only)"
+        },
+        {
+          "ref": "3.3.15",
+          "title": "Nuclear magnetic resonance spectroscopy (A-level only)"
+        },
+        {
+          "ref": "3.3.16",
+          "title": "Chromatography (A-level only)"
+        }
+      ]
+    }
+  }
+}
