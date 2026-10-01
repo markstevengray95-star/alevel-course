@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#132944">
+<title>A-Level Progress & Mastery</title>
+<meta name="description" content="Unified Physics, Biology and Chemistry progress and mastery dashboard for the AQA A-Level course.">
+<link rel="stylesheet" href="progress-mastery.css">
+</head>
+<body>
+<header class="topbar"><a id="backLink" href="../index.html">← Course</a><div class="brand"><span>◎</span><div><strong>Progress & Mastery</strong><small>Physics · Biology · Chemistry</small></div></div><button id="refreshBtn" type="button">Refresh data</button></header>
+<main class="shell">
+<section class="hero"><div><span class="eyebrow">Unified A-Level dashboard</span><h1>See the whole learning picture.</h1><p>Course coverage, assessment evidence, required practicals, quantitative skills and A* stretch are combined without replacing any existing progress data.</p></div><div class="hero-score"><strong id="overallScore">0%</strong><span>combined mastery evidence</span></div></section>
+<section class="summary-grid" id="summaryGrid"></section>
+<section class="panel"><div class="panel-head"><div><span class="eyebrow">Three-subject overview</span><h2>Subject readiness</h2></div><p>Scores are evidence indices, not predicted grades. Missing tools are excluded rather than counted as failure.</p></div><div class="subject-grid" id="subjectGrid"></div></section>
+<section class="two-col"><article class="panel"><div class="panel-head"><div><span class="eyebrow">What to do next</span><h2>Priority actions</h2></div></div><div id="priorityList" class="priority-list"></div></article><article class="panel"><div class="panel-head"><div><span class="eyebrow">Assessment evidence</span><h2>AO profile</h2></div></div><div id="aoGrid" class="ao-grid"></div></article></section>
+<section class="panel"><div class="panel-head"><div><span class="eyebrow">Mastery signals</span><h2>Evidence matrix</h2></div><p>Each row shows the strongest progress signal available from the tools already used.</p></div><div class="matrix" id="matrix"></div></section>
+<section class="two-col"><article class="panel"><div class="panel-head"><div><span class="eyebrow">Topic diagnosis</span><h2>Weak areas from assessed work</h2></div></div><div id="weakAreas" class="weak-list"></div></article><article class="panel"><div class="panel-head"><div><span class="eyebrow">Recent work</span><h2>Latest assessment attempts</h2></div></div><div id="recentAttempts" class="recent-list"></div></article></section>
+<section class="panel methodology"><div><span class="eyebrow">How the score works</span><h2>Transparent mastery model</h2><p id="methodText"></p></div><div class="method-grid"><span><b>Coverage</b> topics marked complete</span><span><b>Assessment</b> formative marks from the internal bank</span><span><b>Practicals</b> required practicals completed</span><span><b>Skills</b> Biology Data Coach / Chemistry Calculation Coach</span><span><b>Stretch</b> A* challenge attempts</span></div></section>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="progress-mastery.js"></script>
+</body></html>
