@@ -1,0 +1,58 @@
+name: Validate Biology and Chemistry assessments
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  assessments:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout course and topic modules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Check assessment source and coverage
+        run: |
+          node --check subjects/assessment-data.js
+          node --check subjects/assessment-engine.js
+          node --check subject-tool-bridge.js
+          node tests/assessment-coverage.mjs
+
+      - name: Assemble production output
+        run: bash scripts/vercel-build.sh
+
+      - name: Verify Phase 11 assets ship
+        run: |
+          test -f dist/subjects/assessment-hub.html
+          test -f dist/subjects/assessment-data.js
+          test -f dist/subjects/assessment-engine.js
+          test -f dist/subjects/assessment-engine.css
+          test -f dist/subject-tool-bridge.js
+          grep -q "Assessment Hub" dist/subjects/assessment-hub.html
+          grep -q "openBiologyAssessments" dist/subject-tool-bridge.js
+          grep -q "openChemistryAssessments" dist/subject-tool-bridge.js
+
+      - name: Install browser dependency
+        timeout-minutes: 5
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Start production-like server
+        timeout-minutes: 2
+        run: |
+          python3 -m http.server 4173 --directory dist > /tmp/assessment-http.log 2>&1 &
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/assessment-http.log
+          exit 1
+
+      - name: Exercise assessment engine and routing
+        timeout-minutes: 3
+        run: node tests/assessment-engine.mjs

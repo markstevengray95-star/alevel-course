@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#101726">
+  <title>A-Level Assessment Hub</title>
+  <meta name="description" content="AQA A-level Biology and Chemistry assessment engine with full-spec question banks, AO tracking, timed practice and saved results.">
+  <link rel="stylesheet" href="assessment-engine.css">
+</head>
+<body>
+<header class="assess-topbar">
+  <a id="backLink" class="back-link" href="../index.html">← Course</a>
+  <div class="brand"><span class="brand-mark">A*</span><div><strong id="brandTitle">Assessment Hub</strong><small id="brandSub">AQA A-Level</small></div></div>
+  <div class="top-progress"><strong id="bankCount">0 questions</strong><span id="attemptCount">0 saved attempts</span></div>
+</header>
+<main class="assess-shell">
+  <aside class="assess-sidebar">
+    <div class="subject-switch" role="group" aria-label="Subject">
+      <button type="button" data-subject="biology">Biology</button>
+      <button type="button" data-subject="chemistry">Chemistry</button>
+    </div>
+    <nav aria-label="Assessment hub">
+      <button type="button" class="side-nav active" data-view="setup">Build practice</button>
+      <button type="button" class="side-nav" data-view="dashboard">Progress</button>
+      <button type="button" class="side-nav" data-view="history">Attempt history</button>
+    </nav>
+    <article class="exam-map" id="examMap"></article>
+  </aside>
+
+  <section class="assess-main">
+    <section id="setupView" class="view active">
+      <div class="hero-card">
+        <div><span class="eyebrow" id="heroEyebrow">AQA</span><h1 id="heroTitle">Build an exam practice set</h1><p>Choose a paper, topic or assessment objective. Questions are original AQA-style practice generated from the detailed course specification profiles.</p></div>
+        <div class="hero-stat"><strong id="heroBankCount">0</strong><span>question templates</span></div>
+      </div>
+      <div class="setup-grid">
+        <label><span>Practice mode</span><select id="modeSelect"><option value="quick">Quick practice</option><option value="topic">Topic test</option><option value="paper1">Paper 1 mix</option><option value="paper2">Paper 2 mix</option><option value="paper3">Paper 3 / synoptic</option><option value="ao">AO focus</option><option value="practical">Practical & data skills</option></select></label>
+        <label><span>Topic</span><select id="topicSelect"><option value="all">All topics</option></select></label>
+        <label><span>Assessment objective</span><select id="aoSelect"><option value="all">Balanced AO1/AO2/AO3</option><option value="AO1">AO1 knowledge</option><option value="AO2">AO2 application</option><option value="AO3">AO3 analysis/evaluation</option></select></label>
+        <label><span>Question count</span><select id="countSelect"><option>5</option><option selected>10</option><option>15</option><option>20</option><option>30</option></select></label>
+        <label class="check-label"><input id="timedToggle" type="checkbox"><span>Timed practice</span></label>
+        <label class="check-label"><input id="practicalToggle" type="checkbox"><span>Include practical/data focus</span></label>
+      </div>
+      <div class="setup-summary" id="setupSummary"></div>
+      <button type="button" id="startBtn" class="primary-btn">Start practice set</button>
+      <section class="coverage-panel"><div class="section-head"><div><span class="eyebrow">Coverage</span><h2>Specification question bank</h2></div></div><div id="coverageGrid" class="coverage-grid"></div></section>
+    </section>
+
+    <section id="sessionView" class="view" hidden>
+      <div class="session-head"><div><span class="eyebrow" id="sessionLabel">Practice set</span><h2 id="questionProgress">Question 1 of 10</h2></div><div class="session-stats"><strong id="scoreLive">0 marks</strong><span id="timer" hidden>00:00</span></div></div>
+      <div class="question-progress-track"><i id="questionProgressBar"></i></div>
+      <article class="question-card">
+        <div class="question-meta"><span id="qRef"></span><span id="qAO"></span><span id="qPaper"></span><strong id="qMarks"></strong></div>
+        <h3 id="qPrompt"></h3>
+        <p id="qContext" class="question-context"></p>
+        <textarea id="answerInput" rows="8" placeholder="Type your answer here. Use precise scientific terminology and show working where relevant."></textarea>
+        <div class="answer-actions"><button type="button" id="markBtn" class="primary-btn">Mark answer</button><button type="button" id="skipBtn" class="secondary-btn">Skip</button></div>
+        <section id="feedbackPanel" class="feedback-panel" hidden>
+          <div class="feedback-score"><strong id="feedbackScore"></strong><span id="feedbackLabel"></span></div>
+          <div><h4>Indicative mark points</h4><ul id="markPoints"></ul></div>
+          <div><h4>How to improve</h4><p id="improveText"></p></div>
+          <button type="button" id="nextBtn" class="primary-btn">Next question</button>
+        </section>
+      </article>
+    </section>
+
+    <section id="resultView" class="view" hidden>
+      <div class="result-hero"><span class="eyebrow">Practice complete</span><h2 id="resultTitle">Your result</h2><div class="result-score"><strong id="resultPercent">0%</strong><span id="resultMarks">0 / 0 marks</span></div></div>
+      <div id="aoResults" class="ao-grid"></div>
+      <div class="result-grid"><article><h3>Strongest areas</h3><ul id="strongAreas"></ul></article><article><h3>Focus next</h3><ul id="weakAreas"></ul></article></div>
+      <div class="result-actions"><button id="retryBtn" type="button" class="primary-btn">Build another set</button><button id="reviewBtn" type="button" class="secondary-btn">View progress dashboard</button></div>
+    </section>
+
+    <section id="dashboardView" class="view" hidden>
+      <div class="section-head"><div><span class="eyebrow">Mastery</span><h2 id="dashboardTitle">Assessment progress</h2><p>Saved locally on this device. Scores are formative and intended to guide revision.</p></div></div>
+      <div id="dashboardStats" class="dashboard-stats"></div>
+      <div id="topicMastery" class="mastery-list"></div>
+    </section>
+
+    <section id="historyView" class="view" hidden>
+      <div class="section-head"><div><span class="eyebrow">History</span><h2>Saved attempts</h2><p>Review recent practice sets, scores and AO performance.</p></div><button id="clearHistoryBtn" type="button" class="secondary-btn">Clear history</button></div>
+      <div id="historyList" class="history-list"></div>
+    </section>
+  </section>
+</main>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script src="../course-config.js"></script>
+<script src="biology-content.js"></script>
+<script src="chemistry-content.js"></script>
+<script src="assessment-data.js"></script>
+<script src="assessment-engine.js"></script>
+</body>
+</html>

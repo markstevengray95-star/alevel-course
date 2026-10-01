@@ -26,6 +26,6 @@ for(const token of ['Purpose','Variables','Apparatus & techniques','Method outli
 for(const sim of ['enzyme','mitosis','water','membrane','dissection','antimicrobial','chrom','chloroplast','respiration','choice','glucose','ecology'])if(!source.includes(`sim:'${sim}'`))failures.push(`Simulation missing: ${sim}`);
 if(!html.includes('AQA 7402 · Activities 1–12'))failures.push('Practical hub identity missing');
 if(!bridge.includes("openBiologyPracticals:()=>openSubjectPracticals('biology')"))failures.push('Biology subject routing guard missing');
-if(!bridge.includes("biology:{hub:'subjects/biology-practicals.html'"))failures.push('Biology practical hub route missing from bridge');
+if(!bridge.includes("practicals:{hub:'subjects/biology-practicals.html'"))failures.push('Biology practical hub route missing from shared bridge');
 if(failures.length){console.error('Biology practical coverage audit failed:');for(const f of failures)console.error(`- ${f}`);process.exit(1);}
 console.log('Biology practical coverage passed: all 12 AQA 7402 required activities, AT a–l definitions, Phase 9 learning stages and subject-aware routing are represented.');
